@@ -1,67 +1,57 @@
-# InteractHub - Social Media Web Application (Đại học Sài Gòn) [1, 2]
+# 🎓 InteractHub — Social Media Web Application
 
-## Technology Stack
+> [cite_start]Đồ án môn **C# and .NET Development** — Khoa Công nghệ Thông tin — Trường Đại học Sài Gòn [cite: 1, 7]
 
-| Thành phần | Công nghệ |
-| :--- | :--- |
-| **Frontend** | React 18+, TypeScript (bật strict mode), Tailwind CSS, React Router v6+ [3]. |
-| **Backend** | ASP.NET Core 8.0+ Web API, RESTful API, JWT Auth, SignalR [4]. |
-| **Database** | Entity Framework Core 8.0+, SQL Server [4]. |
-| **Cloud & DevOps** | Microsoft Azure, Azure DevOps / GitHub Actions, Azure Blob Storage [4, 5]. |
+---
 
-### Database Schema
+## 📌 Tổng quan dự án
 
-Hệ thống yêu cầu thiết kế cơ sở dữ liệu với tối thiểu 8 thực thể có quan hệ với nhau [6]:
+[cite_start]**InteractHub** là nền tảng mạng xã hội hiện đại cho phép người dùng kết nối, chia sẻ nội dung và tương tác trong thời gian thực[cite: 28, 40]. [cite_start]Dự án được xây dựng theo mô hình **Full-stack** với kiến trúc Single Page Application (SPA) kết hợp cùng RESTful API mạnh mẽ, triển khai hoàn toàn trên hạ tầng đám mây Azure[cite: 29, 37, 65].
 
-*   **User**: Sử dụng `AspNetUsers` kết hợp ASP.NET Core Identity để quản lý người dùng [4, 7].
-*   **Post**: Lưu trữ các bài viết trạng thái của người dùng [7].
-*   **Comment**: Quản lý các bình luận trên bài viết [7].
-*   **Like**: Ghi nhận lượt thích trên các bài viết [7].
-*   **Friendship**: Quản lý mối quan hệ và các yêu cầu kết bạn [7].
-*   **Story**: Lưu trữ nội dung tạm thời (Stories) do người dùng chia sẻ [7].
-*   **Notification**: Quản lý các thông báo hệ thống gửi đến người dùng [7].
-*   **Hashtag**: Thống kê các thẻ xu hướng được sử dụng [7].
-*   **PostReport**: Ghi nhận các báo cáo vi phạm để quản trị viên kiểm duyệt [7].
+---
 
-## Project Structure
+## 🛠 Công nghệ sử dụng (Technology Stack)
 
-Dưới đây là sơ đồ cấu trúc thư mục tổng quan cho cả phía Client và Backend [8-10]:
+| Thành phần | Công nghệ | Chi tiết |
+|:---|:---|:---|
+| **Frontend** | **React 18+** | [cite_start]TypeScript (Strict mode), Tailwind CSS, React Router v6+[cite: 55, 56, 58, 61]. |
+| **Backend** | **ASP.NET Core 8.0+** | [cite_start]Web API, RESTful Architecture, SignalR (Real-time)[cite: 68, 69, 76]. |
+| **Database** | **SQL Server** | [cite_start]Entity Framework Core 8.0+ (Code First)[cite: 70, 71]. |
+| **Security** | **JWT & Identity** | [cite_start]JSON Web Tokens với ASP.NET Core Identity[cite: 72, 254]. |
+| **Cloud/DevOps** | **Microsoft Azure** | [cite_start]App Service, Blob Storage, GitHub Actions / Azure DevOps[cite: 78, 79, 80]. |
 
-    InteractHub/
-    ├── ClientApp/               # Single Page Application với React và TypeScript [3]
-    │   ├── src/
-    │   │   ├── components/      # Chứa các React component có thể tái sử dụng [8]
-    │   │   ├── pages/           # Các component đóng vai trò là trang trong routing [8]
-    │   │   ├── layouts/         # Các bố cục giao diện dùng chung [8]
-    │   │   ├── utils/           # Các hàm tiện ích và custom hooks [8]
-    │   │   └── services/        # Cấu hình Axios và lớp giao tiếp API [11]
-    ├── InteractHub.API/         # Backend Web API bằng ASP.NET Core [4]
-    │   ├── Controllers/         # Các RESTful API Controllers xử lý HTTP request [9]
-    │   ├── DTOs/                # Data Transfer Objects dùng cho request và response [9]
-    │   ├── Models/              # Các Entity class ánh xạ với CSDL [7]
-    │   ├── Services/            # Lớp Business Logic và Dependency Injection [10]
-    │   ├── Data/                # Cấu hình EF Core DbContext và Migrations [6]
-    │   └── Program.cs           # File khởi động, cấu hình middleware và JWT [12, 13]
-    └── InteractHub.Tests/       # Các bài kiểm thử Unit Test sử dụng xUnit/NUnit [14]
+---
 
-## Core Features
+## 🗄️ Cấu trúc cơ sở dữ liệu (Database Schema)
 
-| Tính năng | Mô tả chi tiết |
-| :--- | :--- |
-| **Authentication** | Tạo tài khoản, đăng nhập an toàn bảo mật sử dụng JWT [2, 4]. |
-| **Posts** | Đăng các cập nhật trạng thái bao gồm cả văn bản và hình ảnh [2]. |
-| **Interactions** | Cho phép người dùng thích, bình luận và chia sẻ bài viết [2]. |
-| **Stories** | Chia sẻ các nội dung mang tính chất tạm thời [2]. |
-| **Friends** | Gửi, nhận và quản lý các yêu cầu kết bạn [2]. |
-| **Real-time Notifications**| Nhận thông báo theo thời gian thực (real-time) thông qua SignalR [2, 4]. |
-| **Profile Management** | Cập nhật hồ sơ cá nhân và thay đổi cài đặt người dùng [2]. |
-| **Moderation & Hashtags** | Theo dõi hashtag thịnh hành và báo cáo các nội dung không phù hợp [2]. |
+[cite_start]Hệ thống yêu cầu thiết kế tối thiểu 8 thực thể với các mối quan hệ chặt chẽ[cite: 193, 196]:
 
-## Guidelines & Setup
+* [cite_start]**User**: Kế thừa `IdentityUser` quản lý tài khoản và định danh[cite: 203, 268].
+* [cite_start]**Post**: Bài viết trạng thái bao gồm văn bản và hình ảnh[cite: 204].
+* [cite_start]**Comment & Like**: Hệ thống tương tác và phản hồi trên bài viết[cite: 205, 206].
+* [cite_start]**Friendship**: Quản lý lời mời và danh sách bạn bè[cite: 207].
+* [cite_start]**Story**: Chia sẻ nội dung tạm thời (biến mất sau thời gian nhất định)[cite: 208].
+* [cite_start]**Notification**: Thông báo thời gian thực qua SignalR[cite: 209].
+* [cite_start]**Hashtag**: Theo dõi và thống kê các xu hướng thịnh hành[cite: 210].
+* [cite_start]**PostReport**: Ghi nhận báo cáo vi phạm phục vụ kiểm duyệt (Admin)[cite: 211].
 
-*   **Thời hạn nộp bài (Deadline):** April 19, 2026 [1].
-*   **Yêu cầu mã nguồn:** Toàn bộ Visual Studio solution (`.sln`) và file cấu hình `.gitignore` phải được đẩy lên GitHub hoặc Azure Repos [15].
-*   **Khởi tạo Database:** Khởi chạy file script SQL hoặc chạy các lệnh Entity Framework migration để tạo cấu trúc cơ sở dữ liệu. Cần chạy script seed data để có dữ liệu ban đầu cho việc kiểm thử [15].
-*   **Thiết lập Backend:** Cấu hình chuỗi kết nối (connection strings) tới SQL Server và khai báo các khóa bí mật của JWT Auth trong môi trường phát triển [5, 13].
-*   **Triển khai Đám mây (Cloud Deployment):** Thiết lập tài nguyên trên Microsoft Azure bao gồm Azure App Service và Azure Blob Storage [5]. Xây dựng 파ipeline tự động CI/CD (Azure DevOps hoặc GitHub Actions) để tự động hóa quá trình build và deploy [5].
-*   **Kiểm thử (Testing):** Code coverage cho các service backend phải đạt tối thiểu 60%; hệ thống phải được đính kèm báo cáo test và kết quả thực thi [14, 16].
+---
+
+## 📁 Cấu trúc thư mục (Project Structure)
+
+```text
+InteractHub/
+├── ClientApp/               # Frontend SPA (React + TypeScript) [cite: 65]
+│   ├── src/
+│   │   ├── components/      # Các UI component dùng chung [cite: 89, 92]
+│   │   ├── pages/           # Các trang (Home, Profile, Login...) [cite: 92]
+│   │   ├── services/        # API service layer (Axios) [cite: 114, 123]
+│   │   ├── hooks/           # Custom hooks cho logic xử lý [cite: 93, 100]
+│   │   └── context/         # Quản lý trạng thái toàn cục (Context API/Redux) [cite: 113, 122]
+├── InteractHub.API/         # Backend Web API (ASP.NET Core) [cite: 68]
+│   ├── Controllers/         # Các Endpoint xử lý yêu cầu HTTP [cite: 229]
+│   ├── DTOs/                # Đối tượng chuyển đổi dữ liệu [cite: 232, 239]
+│   ├── Services/            # Lớp xử lý nghiệp vụ (Business Logic) [cite: 281, 284]
+│   ├── Data/                # EF Core DbContext và Migrations [cite: 197, 198]
+│   └── Program.cs           # Cấu hình Middleware, Auth và DI [cite: 240, 267]
+└── InteractHub.Tests/       # Unit Testing project (xUnit/NUnit) [cite: 310, 318]
