@@ -87,3 +87,25 @@ InteractHub/
 ### Triển khai & Kiểm thử (Cloud & Testing)
 * **☁️ Cloud Deployment:** Thiết lập tài nguyên trên Microsoft Azure (Azure App Service, Azure Blob Storage). Xây dựng Pipeline CI/CD bằng **Azure DevOps** hoặc **GitHub Actions** để tự động hóa quá trình Build & Deploy.
 * **🧪 Testing:** Code coverage cho các service backend phải đạt tối thiểu **60%**. Toàn bộ hệ thống khi nộp phải đính kèm báo cáo test và kết quả thực thi chi tiết.
+
+### Hướng dẫn cài đặt
+#### 1. Nhóm Backend & Database (Siêu cần thiết)
+**SQL Server 2022 Express (Bản nhẹ cho sinh viên):**
+https://go.microsoft.com/fwlink/p/?linkid=2215158&clcid=0x409&culture=en-us&country=us
+
+**SQL Server Management Studio (SSMS) 20.1:**
+https://aka.ms/ssmsfullsetup
+
+#### 2. Nhóm Frontend & Editor (Giao diện React)
+**Node.js 20.x (Bản LTS ổn định nhất):**
+https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi
+
+#### 3. Nhóm Công cụ hỗ trợ & Quản lý
+**Git for Windows (64-bit): (Optional nhưng mà nên cài)**
+https://github.com/git-for-windows/git/releases/download/v2.45.0.windows.1/Git-2.45.0-64-bit.exe
+
+**Postman Desktop Agent (Dùng để test APIs và lưu trữ danh sách những API đã được viết):**
+https://dl.pstmn.io/download/latest/win64
+
+**Azure Data Studio: (tương tự như SSMS nhưng dễ xài hơn, ít tính năng hơn, cài SSMS rồi thì bỏ qua cũng được)**
+https://go.microsoft.com/fwlink/?linkid=2263435
