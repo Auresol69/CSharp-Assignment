@@ -1,0 +1,13 @@
+export interface IPost {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  createdAt: string;
+  content: string;
+  mediaUrl?: string;
+  // Thêm dòng này cho bài đăng được share l
+  sharedPost?: IPost; 
+  likesCount: number;
+  commentsCount: number;
+  sharesCount: number;
+}
