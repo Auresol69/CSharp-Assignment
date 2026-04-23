@@ -1,6 +1,6 @@
 import LogoApp from '../../assets/logo.svg';
 import {Link} from 'react-router-dom';
-import {LayoutDashboard, Users, Bell, SquareUserRound, CircleFadingPlus, LogOut, Settings, Moon, UserRoundPen} from "lucide-react";
+import {LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen} from "lucide-react";
 import type { ISidebarItem } from '../../types/Sidebar';
 import SidebarItem from './SidebarItem';
 const items: ISidebarItem[] = [
@@ -8,11 +8,6 @@ const items: ISidebarItem[] = [
     name: 'Dashboard',
     path: '/home',
     icon: LayoutDashboard ,
-  },
-  {
-    name: 'Stories',
-    path: '/stories',
-    icon: CircleFadingPlus
   },
   {
     name: 'Notifications',
@@ -60,7 +55,7 @@ const Sidebar = ({onClick}: {onClick?: () => void}) => {
         <Link to='/home'>
           <img className='h-12 w-fit pl-3' src={LogoApp} alt="Logo" />
         </Link>
-        <div className='flex flex-col space-y-6'>
+        <div className='flex flex-col space-y-8'>
           {items.map(item=>(
             <SidebarItem key={item.name} item={item} onClick={onClick}/> 
         ))}

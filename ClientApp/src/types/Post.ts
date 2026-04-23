@@ -5,7 +5,7 @@ export interface IPost {
   createdAt: string;
   content: string;
   mediaUrl?: string;
-  // Thêm dòng này cho bài đăng được share l
+  // Thêm dòng này cho bài đăng được share 
   sharedPost?: IPost; 
   likesCount: number;
   commentsCount: number;

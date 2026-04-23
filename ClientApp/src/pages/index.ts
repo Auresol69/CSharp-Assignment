@@ -1,7 +1,5 @@
-export { default as Test } from "./Test";
 export { default as LoginPages } from "./LoginPages";
 export { default as Home } from "./Home";
 export { default as Profile } from "./Profile";
 export { default as Notifications } from "./Notifications";
-export { default as Friends } from "./Friends";
-export { default as Stories } from "./Stories";
+export { default as Friends } from "./Friends/Friends";

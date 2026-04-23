@@ -11,21 +11,23 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PostDetailModal from '../components/Post/PostDetailModal';
 
 function Home() {
-  const { postId } = useParams<{ postId: string }>(); 
+  const { postId, userId, storyId } = useParams<{ 
+    postId?: string; 
+    userId?: string; 
+    storyId?: string 
+  }>();
+  
   const navigate = useNavigate();
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedUserStoryIndex, setSelectedUserStoryIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
-    
     const handleReload = () => {
       setIsLoading(true);
       setFilterTag(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    
     window.addEventListener('reload-dashboard', handleReload);
     return () => {
       clearTimeout(timer);
@@ -41,7 +43,7 @@ function Home() {
     <div className='flex flex-row w-full min-h-screen space-x-4 items-start justify-center gap-8 px-12 py-4'>
       <div className='flex flex-col flex-1 rounded-lg p-4 bg-gray-50 min-w-0 max-w-3/5'>
         <PostCreated />
-        <StoryBar onStoryClick={(index) => setSelectedUserStoryIndex(index)} />
+        <StoryBar />
 
         {filterTag && !isLoading && (
           <div className="mb-4 p-2 bg-blue-50 text-black rounded-lg flex justify-between items-center">
@@ -65,15 +67,17 @@ function Home() {
         <TrendingSidebar setFilterTag={setFilterTag} />
       </aside>
 
-      {selectedUserStoryIndex !== null && (
+      {/* Hiển thị Story khi URL khớp /Home/stories/:userId/:storyId */}
+      {userId && storyId && (
         <StoryViewer 
           userStories={MOCK_STORIES} 
-          initialUserIndex={selectedUserStoryIndex}
-          onClose={() => setSelectedUserStoryIndex(null)} 
+          initialUserIndex={MOCK_STORIES.findIndex(u => u.userId === userId)}
+          initialStoryId={storyId}
+          onClose={() => navigate('/Home')} 
         />
       )}
       
-      {/* ĐÃ FIX: Modal duy nhất điều khiển bởi URL */}
+      {/* Hiển thị Bài viết khi URL khớp /Home/:postId */}
       {postId && (
         <PostDetailModal 
           postId={postId} 

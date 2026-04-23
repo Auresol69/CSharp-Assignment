@@ -22,11 +22,8 @@ const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
     <NavLink
       to={path}
       className={({ isActive }) =>
-        `flex items-center space-x-3 p-3 rounded-lg transition-all -ml-5 -mt-5 ${
-          isActive ? 'bg-gray-200 font-bold scale-105 text-black' : 'text-gray-500 hover:text-black'
-        }`
-      }
-    >
+        `flex items-center space-x-3 p-3 rounded-lg transition-all -ml-5 -mt-5 
+        ${isActive ? 'bg-gray-200 font-bold scale-105 text-black' : 'text-gray-500 hover:text-black'}`}>
       <Icon size={18} />
       <span className="text-sm font-medium">{name}</span>
     </NavLink>

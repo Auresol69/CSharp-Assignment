@@ -1,12 +1,10 @@
-// src/components/Story/StoryBar.tsx
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MOCK_STORIES } from '../../services/MockedData/mockStories';
 
-interface StoryBarProps {
-  onStoryClick: (index: number) => void; // Khai báo props nhận vào từ Home.tsx
-}
+const StoryBar = () => {
+  const navigate = useNavigate();
 
-const StoryBar = ({ onStoryClick }: StoryBarProps) => {
   return (
     <div className="flex space-x-2 p-4 max-w-full w-full bg-white rounded-xl shadow-sm overflow-x-auto no-scrollbar mb-4">
       {/* Nút Tạo tin */}
@@ -21,10 +19,12 @@ const StoryBar = ({ onStoryClick }: StoryBarProps) => {
         </div>
       </div>
 
-      {/* Danh sách Stories của bạn bè */}
-      {MOCK_STORIES.map((user, index) => (
-        <div key={user.userId} className="relative flex-shrink-0 w-28 h-48 rounded-xl overflow-hidden cursor-pointer group"
-        onClick={() => onStoryClick(index)}> {/* Gọi hàm onStoryClick với index của story được click */}
+      {MOCK_STORIES.map((user) => (
+        <div 
+          key={user.userId} 
+          className="relative flex-shrink-0 w-28 h-48 rounded-xl overflow-hidden cursor-pointer group"
+          onClick={() => navigate(`/Home/stories/${user.userId}/${user.stories[0].id}`)}
+        >
           <img src={user.stories[0].url} className="w-full h-full object-cover group-hover:scale-105 transition" alt="story" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
           <div className="absolute top-3 left-3 p-0.5 bg-blue-500 rounded-full border-2 border-white">
