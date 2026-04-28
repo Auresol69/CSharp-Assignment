@@ -4,19 +4,15 @@ namespace InteractHub_API.Data.Entities;
 
 /// <summary>
 /// Đại diện cho tài khoản người dùng trong hệ thống.
-/// Kế thừa IdentityUser&lt;string&gt; để tích hợp ASP.NET Core Identity với khóa kiểu string (GUID).
+/// Kế thừa IdentityUser (string key) để tích hợp đầy đủ ASP.NET Core Identity.
 /// Maps to table: TaiKhoan
 /// </summary>
 public class ApplicationUser : IdentityUser
 {
-    /// <summary>Họ tên hiển thị của người dùng (TenTaiKhoan)</summary>
+    // IdentityUser đã cung cấp sẵn: Id, UserName, Email, PhoneNumber, PasswordHash, v.v.
+
+    /// <summary>Họ tên hiển thị của người dùng</summary>
     public string? TenTaiKhoan { get; set; }
-
-    /// <summary>Số điện thoại (SoDienThoai) - IdentityUser đã có PhoneNumber,
-    /// nhưng giữ lại để khớp schema gốc</summary>
-    public string? SoDienThoai { get; set; }
-
-    // Email và MatKhau (PasswordHash) đã được IdentityUser quản lý
 
     // ──────────────── Navigation Properties ────────────────
 
@@ -38,8 +34,11 @@ public class ApplicationUser : IdentityUser
     /// <summary>Các story của người dùng</summary>
     public ICollection<Story> Stories { get; set; } = new List<Story>();
 
-    /// <summary>Các thông báo của người dùng</summary>
+    /// <summary>Các thông báo mà người dùng NHẬN</summary>
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    /// <summary>Các thông báo mà hành động của người dùng GÂY RA (người trigger)</summary>
+    public ICollection<Notification> TriggeredNotifications { get; set; } = new List<Notification>();
 
     /// <summary>Các báo cáo bài viết do người dùng gửi</summary>
     public ICollection<PostReport> PostReports { get; set; } = new List<PostReport>();
