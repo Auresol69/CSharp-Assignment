@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InteractHub_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260428170332_InitialCreate")]
+    [Migration("20260428181736_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -100,8 +100,14 @@ namespace InteractHub_API.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<TimeOnly?>("Gio")
-                        .HasColumnType("time");
+                    b.Property<string>("Content")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
 
                     b.Property<string>("IdPost")
                         .HasColumnType("nvarchar(450)");
@@ -109,16 +115,23 @@ namespace InteractHub_API.Migrations
                     b.Property<string>("IdTaiKhoan")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateOnly?>("Ngay")
-                        .HasColumnType("date");
+                    b.Property<string>("ParentCommentId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdComment");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Comment_CreatedAt");
 
                     b.HasIndex("IdPost")
                         .HasDatabaseName("IX_Comment_IdPost");
 
                     b.HasIndex("IdTaiKhoan")
                         .HasDatabaseName("IX_Comment_IdTaiKhoan");
+
+                    b.HasIndex("ParentCommentId")
+                        .HasDatabaseName("IX_Comment_ParentCommentId");
 
                     b.ToTable("Comment", (string)null);
                 });
@@ -234,19 +247,28 @@ namespace InteractHub_API.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeOnly?>("Gio")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
 
                     b.Property<string>("IdTaiKhoan")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateOnly?>("Ngay")
-                        .HasColumnType("date");
+                    b.Property<string>("ParentPostId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdPost");
 
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Post_CreatedAt");
+
                     b.HasIndex("IdTaiKhoan")
                         .HasDatabaseName("IX_Post_IdTaiKhoan");
+
+                    b.HasIndex("ParentPostId")
+                        .HasDatabaseName("IX_Post_ParentPostId");
 
                     b.ToTable("Post", (string)null);
                 });
@@ -499,6 +521,13 @@ namespace InteractHub_API.Migrations
                         .HasForeignKey("IdTaiKhoan")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("InteractHub_API.Data.Entities.Comment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentComment");
+
                     b.Navigation("Post");
 
                     b.Navigation("TaiKhoan");
@@ -572,6 +601,13 @@ namespace InteractHub_API.Migrations
                         .WithMany("Posts")
                         .HasForeignKey("IdTaiKhoan")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("InteractHub_API.Data.Entities.Post", "ParentPost")
+                        .WithMany("Reposts")
+                        .HasForeignKey("ParentPostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentPost");
 
                     b.Navigation("TaiKhoan");
                 });
@@ -705,6 +741,11 @@ namespace InteractHub_API.Migrations
                     b.Navigation("TriggeredNotifications");
                 });
 
+            modelBuilder.Entity("InteractHub_API.Data.Entities.Comment", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
             modelBuilder.Entity("InteractHub_API.Data.Entities.Hashtag", b =>
                 {
                     b.Navigation("PostHashtags");
@@ -723,6 +764,8 @@ namespace InteractHub_API.Migrations
                     b.Navigation("PostMedias");
 
                     b.Navigation("PostReports");
+
+                    b.Navigation("Reposts");
                 });
 #pragma warning restore 612, 618
         }

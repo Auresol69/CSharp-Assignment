@@ -115,13 +115,19 @@ namespace InteractHub_API.Migrations
                 {
                     IdPost = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     IdTaiKhoan = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ParentPostId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Ngay = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gio = table.Column<TimeOnly>(type: "time", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Post", x => x.IdPost);
+                    table.ForeignKey(
+                        name: "FK_Post_Post_ParentPostId",
+                        column: x => x.ParentPostId,
+                        principalTable: "Post",
+                        principalColumn: "IdPost",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Post_TaiKhoan_IdTaiKhoan",
                         column: x => x.IdTaiKhoan,
@@ -242,12 +248,19 @@ namespace InteractHub_API.Migrations
                     IdComment = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     IdTaiKhoan = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IdPost = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Ngay = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gio = table.Column<TimeOnly>(type: "time", nullable: true)
+                    ParentCommentId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Comment", x => x.IdComment);
+                    table.ForeignKey(
+                        name: "FK_Comment_Comment_ParentCommentId",
+                        column: x => x.ParentCommentId,
+                        principalTable: "Comment",
+                        principalColumn: "IdComment",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Comment_Post_IdPost",
                         column: x => x.IdPost,
@@ -391,6 +404,11 @@ namespace InteractHub_API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comment_CreatedAt",
+                table: "Comment",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Comment_IdPost",
                 table: "Comment",
                 column: "IdPost");
@@ -399,6 +417,11 @@ namespace InteractHub_API.Migrations
                 name: "IX_Comment_IdTaiKhoan",
                 table: "Comment",
                 column: "IdTaiKhoan");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comment_ParentCommentId",
+                table: "Comment",
+                column: "ParentCommentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Friendship_IdNguoiNhan",
@@ -438,9 +461,19 @@ namespace InteractHub_API.Migrations
                 column: "TriggeredByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Post_CreatedAt",
+                table: "Post",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Post_IdTaiKhoan",
                 table: "Post",
                 column: "IdTaiKhoan");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_ParentPostId",
+                table: "Post",
+                column: "ParentPostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostHashtag_IdHashtag",

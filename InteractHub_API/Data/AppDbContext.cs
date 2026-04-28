@@ -59,7 +59,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
         // ══════════════════════════════════════════════════════════════
         // 2. Post
         //    - Bỏ Tag; thêm Content (nvarchar(max))
-        //    - Index Non-Clustered trên IdTaiKhoan (FK)
+        //    - Hợp nhất Ngay + Gio → CreatedAt (datetime2)
+        //    - Self-reference 1-N: Repost qua ParentPostId (nullable)
+        //    - Index Non-Clustered trên các FK
         // ══════════════════════════════════════════════════════════════
         builder.Entity<Post>(entity =>
         {
@@ -74,20 +76,46 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
             entity.Property(p => p.Content)
                   .HasColumnType("nvarchar(max)");
 
+            // CreatedAt → datetime2 (UTC)
+            entity.Property(p => p.CreatedAt)
+                  .HasColumnType("datetime2")
+                  .HasDefaultValueSql("SYSUTCDATETIME()");
+
+            // ParentPostId nullable: null = bài gốc, có giá trị = Repost
+            entity.Property(p => p.ParentPostId)
+                  .HasMaxLength(450);
+
             // ── Quan hệ: Post (n) → ApplicationUser (1) ──
             entity.HasOne(p => p.TaiKhoan)
                   .WithMany(u => u.Posts)
                   .HasForeignKey(p => p.IdTaiKhoan)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            // ── Non-Clustered Index trên FK ──
+            // ── Self-reference: Post (Repost, n) → Post (Original, 1) ──
+            // DeleteBehavior.Restrict: không xóa cascade để tránh cycle;
+            // Service layer xử lý xóa Repost trước khi xóa bài gốc.
+            entity.HasOne(p => p.ParentPost)
+                  .WithMany(p => p.Reposts)
+                  .HasForeignKey(p => p.ParentPostId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // ── Non-Clustered Indexes ──
             entity.HasIndex(p => p.IdTaiKhoan)
                   .HasDatabaseName("IX_Post_IdTaiKhoan");
+
+            entity.HasIndex(p => p.ParentPostId)
+                  .HasDatabaseName("IX_Post_ParentPostId");
+
+            entity.HasIndex(p => p.CreatedAt)
+                  .HasDatabaseName("IX_Post_CreatedAt");
         });
 
         // ══════════════════════════════════════════════════════════════
         // 3. Comment
-        //    - Index Non-Clustered trên IdTaiKhoan, IdPost
+        //    - Thêm Content (nội dung bình luận)
+        //    - Hợp nhất Ngay + Gio → CreatedAt (datetime2)
+        //    - Self-reference 1-N: Recomment/Reply qua ParentCommentId (nullable)
+        //    - Index Non-Clustered trên IdTaiKhoan, IdPost, ParentCommentId
         // ══════════════════════════════════════════════════════════════
         builder.Entity<Comment>(entity =>
         {
@@ -97,6 +125,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
             entity.Property(c => c.IdComment)
                   .HasMaxLength(450)
                   .ValueGeneratedNever();
+
+            // Nội dung bình luận
+            entity.Property(c => c.Content)
+                  .HasMaxLength(2000);
+
+            // CreatedAt → datetime2 (UTC)
+            entity.Property(c => c.CreatedAt)
+                  .HasColumnType("datetime2")
+                  .HasDefaultValueSql("SYSUTCDATETIME()");
+
+            // ParentCommentId nullable: null = top-level, có giá trị = reply
+            entity.Property(c => c.ParentCommentId)
+                  .HasMaxLength(450);
 
             // ── Quan hệ: Comment (n) → ApplicationUser (1) ──
             entity.HasOne(c => c.TaiKhoan)
@@ -110,12 +151,25 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
                   .HasForeignKey(c => c.IdPost)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            // ── Non-Clustered Indexes trên các FK ──
+            // ── Self-reference: Comment (Reply, n) → Comment (Parent, 1) ──
+            // DeleteBehavior.Restrict: Service layer xóa các reply trước khi xóa comment cha.
+            entity.HasOne(c => c.ParentComment)
+                  .WithMany(c => c.Replies)
+                  .HasForeignKey(c => c.ParentCommentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // ── Non-Clustered Indexes ──
             entity.HasIndex(c => c.IdTaiKhoan)
                   .HasDatabaseName("IX_Comment_IdTaiKhoan");
 
             entity.HasIndex(c => c.IdPost)
                   .HasDatabaseName("IX_Comment_IdPost");
+
+            entity.HasIndex(c => c.ParentCommentId)
+                  .HasDatabaseName("IX_Comment_ParentCommentId");
+
+            entity.HasIndex(c => c.CreatedAt)
+                  .HasDatabaseName("IX_Comment_CreatedAt");
         });
 
         // ══════════════════════════════════════════════════════════════
