@@ -72,7 +72,7 @@ export default defineConfig([
   },
 ])
 ```
-=======
+
 | 🎯 Tính năng | 📋 Mô tả chi tiết |
 | :--- | :--- |
 | **🔐 Authentication** | Tạo tài khoản, đăng nhập an toàn và bảo mật sử dụng JWT. |
@@ -83,6 +83,25 @@ export default defineConfig([
 | **⚡ Real-time Notifs**| Nhận thông báo hệ thống theo thời gian thực thông qua SignalR. |
 | **⚙️ Profile Mgt.** | Cập nhật hồ sơ cá nhân và tinh chỉnh các cài đặt người dùng. |
 | **🛡️ Moderation** | Theo dõi hashtag thịnh hành và báo cáo/kiểm duyệt nội dung xấu. |
+
+---
+
+## Directory structure
+```js
+InteractHub_API/
+├── Controllers/         # Có sẵn, chứa các API Endpoints
+├── Data/                # Thư mục mới
+│   ├── Entities/        # Chứa các class Database (User, Post...)
+│   ├── Repositories/    # Chứa các lớp truy vấn DB (IPostRepository...)
+│   └── AppDbContext.cs  # File cấu hình kết nối DB
+├── Services/            # Thư mục mới - Chứa Logic nghiệp vụ (AuthService, PostService...)
+├── DTOs/                # Thư mục mới - Chứa Data Transfer Objects
+├── Helpers/             # Thư mục mới - Chứa các tiện ích (JWT, AutoMapper...)
+├── Properties/          # <--- CHỈ ĐỂ CẤU HÌNH RUN
+├── appsettings.json     # Nơi để Connection String
+├── Program.cs           # File cấu hình chính của toàn bộ App
+└── InteractHub_API.csproj
+```
 
 ---
 
