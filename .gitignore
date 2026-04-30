@@ -27,4 +27,5 @@ obj
 bin
 packages
 
+.env
 appsettings.Development.json

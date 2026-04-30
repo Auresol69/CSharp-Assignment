@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+LoadDotEnv();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ═══════════════════════════════════════════════════════════════════
@@ -17,9 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions => sqlOptions.EnableRetryOnFailure(
-            maxRetryCount:       5,
-            maxRetryDelay:       TimeSpan.FromSeconds(10),
-            errorNumbersToAdd:   null)));
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null)));
 
 // ═══════════════════════════════════════════════════════════════════
 // 2. IDENTITY – ASP.NET Core Identity (khóa string/GUID)
@@ -28,16 +30,16 @@ builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         // Chính sách mật khẩu
-        options.Password.RequiredLength         = 6;
-        options.Password.RequireDigit           = true;
-        options.Password.RequireLowercase       = true;
-        options.Password.RequireUppercase       = false;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
 
         // Khóa tài khoản sau 5 lần sai
         options.Lockout.MaxFailedAccessAttempts = 5;
-        options.Lockout.DefaultLockoutTimeSpan  = TimeSpan.FromMinutes(15);
-        options.Lockout.AllowedForNewUsers      = true;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.AllowedForNewUsers = true;
 
         // Yêu cầu email duy nhất
         options.User.RequireUniqueEmail = true;
@@ -48,21 +50,21 @@ builder.Services
 // ═══════════════════════════════════════════════════════════════════
 // 3. AUTHENTICATION – JWT Bearer
 // ═══════════════════════════════════════════════════════════════════
-var jwtSection  = builder.Configuration.GetSection("Jwt");
-var secretKey   = jwtSection["SecretKey"]
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSection["SecretKey"]
     ?? throw new InvalidOperationException("Jwt:SecretKey chưa được cấu hình trong appsettings.json.");
-var issuer      = jwtSection["Issuer"]   ?? "InteractHub";
-var audience    = jwtSection["Audience"] ?? "InteractHub";
+var issuer = jwtSection["Issuer"] ?? "InteractHub";
+var audience = jwtSection["Audience"] ?? "InteractHub";
 
-var keyBytes    = Encoding.UTF8.GetBytes(secretKey);
+var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
 builder.Services
     .AddAuthentication(options =>
     {
         // Đặt scheme mặc định là JWT cho cả Authentication lẫn Challenge
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultScheme             = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(options =>
     {
@@ -70,14 +72,14 @@ builder.Services
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer           = true,
-            ValidateAudience         = true,
-            ValidateLifetime         = true,   // Tự động từ chối token hết hạn
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,   // Tự động từ chối token hết hạn
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer              = issuer,
-            ValidAudience            = audience,
-            IssuerSigningKey         = new SymmetricSecurityKey(keyBytes),
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
 
             // Không cho phép lệch đồng hồ (tốt nhất cho môi trường server)
             ClockSkew = TimeSpan.Zero
@@ -89,14 +91,14 @@ builder.Services
             OnChallenge = context =>
             {
                 context.HandleResponse();
-                context.Response.StatusCode  = StatusCodes.Status401Unauthorized;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json";
                 return context.Response.WriteAsync(
                     "{\"message\":\"Bạn chưa đăng nhập hoặc token không hợp lệ.\"}");
             },
             OnForbidden = context =>
             {
-                context.Response.StatusCode  = StatusCodes.Status403Forbidden;
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json";
                 return context.Response.WriteAsync(
                     "{\"message\":\"Bạn không có quyền truy cập tài nguyên này.\"}");
@@ -121,23 +123,23 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title       = "InteractHub API",
-        Version     = "v1",
+        Title = "InteractHub API",
+        Version = "v1",
         Description = "Social Media Web Application - ASP.NET Core 10"
     });
 
     // Them nut Authorize trong Swagger UI de test JWT
     var jwtScheme = new OpenApiSecurityScheme
     {
-        Name         = "Authorization",
-        Type         = SecuritySchemeType.Http,
-        Scheme       = "bearer",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
         BearerFormat = "JWT",
-        In           = ParameterLocation.Header,
-        Description  = "Nhap JWT token. Vi du: Bearer eyJhbGci...",
-        Reference    = new OpenApiReference
+        In = ParameterLocation.Header,
+        Description = "Nhap JWT token. Vi du: Bearer eyJhbGci...",
+        Reference = new OpenApiReference
         {
-            Id   = JwtBearerDefaults.AuthenticationScheme,
+            Id = JwtBearerDefaults.AuthenticationScheme,
             Type = ReferenceType.SecurityScheme
         }
     };
@@ -168,6 +170,8 @@ builder.Services.AddCors(options =>
 // ═══════════════════════════════════════════════════════════════════
 var app = builder.Build();
 
+await IdentitySeeder.SeedAsync(app.Services, app.Logger);
+
 // ─── Middleware Pipeline ───────────────────────────────────────────
 
 if (app.Environment.IsDevelopment())
@@ -184,10 +188,37 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowReactApp");
 
-// ⚠️ Thứ tự quan trọng: Authentication TRƯỚC Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+static void LoadDotEnv()
+{
+    var dotEnvPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+    if (!File.Exists(dotEnvPath))
+    {
+        return;
+    }
+
+    foreach (var line in File.ReadAllLines(dotEnvPath))
+    {
+        var trimmedLine = line.Trim();
+        if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = trimmedLine.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = trimmedLine[..separatorIndex].Trim();
+        var value = trimmedLine[(separatorIndex + 1)..].Trim().Trim('"');
+        Environment.SetEnvironmentVariable(key, value);
+    }
+}
