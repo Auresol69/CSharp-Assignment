@@ -26,3 +26,5 @@ dist-ssr
 obj
 bin
 packages
+
+appsettings.Development.json
