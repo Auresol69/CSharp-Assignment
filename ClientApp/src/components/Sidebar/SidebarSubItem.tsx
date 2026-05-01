@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { type LucideIcon } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ISubItemProps {
   name: string;
@@ -9,20 +9,7 @@ interface ISubItemProps {
 }
 
 const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextIsDark = !isDark;
-
-    document.documentElement.classList.toggle('dark', nextIsDark);
-    document.body.classList.toggle('dark', nextIsDark);
-    localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
-    setIsDark(nextIsDark);
-  };
+  const { isDark, toggleDarkMode } = useTheme();
 
   if (name === 'Dark Mode') {
     return (
@@ -36,6 +23,18 @@ const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
           {isDark ? 'Light Mode' : 'Dark Mode'}
         </span>
       </button>
+    );
+  }
+
+  if (name === 'Log Out') {
+    return (
+      <NavLink
+        to="/Login"
+        className="flex items-center space-x-3 p-3 -ml-5 -mt-5 rounded-lg transition-all text-gray-500 hover:text-red-600 hover:bg-red-50 dark:text-gray-300 dark:hover:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
+      >
+        <Icon size={18} />
+        <span className="text-sm font-medium">Đăng xuất</span>
+      </NavLink>
     );
   }
 

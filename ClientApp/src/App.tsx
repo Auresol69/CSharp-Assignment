@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import { LoginPages, Home, Profile, Notifications, Friends} from "./pages";
@@ -11,15 +10,7 @@ import EditAccount from "./pages/Settings/EditAccount";
 // Có thể thêm route con cho Home để hiển thị chi tiết bài viết hoặc story mà không cần thoát khỏi layout chính
 // Ví dụ: /Home/:postId để hiển thị chi tiết bài viết, /Home/stories/:userId/:storyId để hiển thị story lồng vào Home
 // Để hạn chế việc lạm dụng State và load lại trang
-function App() {  
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    }
-  }, []);
+function App() {
 
   return (
     <BrowserRouter>
