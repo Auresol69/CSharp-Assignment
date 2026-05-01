@@ -51,8 +51,12 @@ builder.Services
 // 3. AUTHENTICATION – JWT Bearer
 // ═══════════════════════════════════════════════════════════════════
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSection["SecretKey"]
-    ?? throw new InvalidOperationException("Jwt:SecretKey chưa được cấu hình trong appsettings.json.");
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+    ?? Environment.GetEnvironmentVariable("Jwt__SecretKey")
+    ?? jwtSection["SecretKey"]
+    ?? throw new InvalidOperationException(
+        "Thiếu JWT secret key. Hãy cấu hình JWT_SECRET_KEY (hoặc Jwt__SecretKey / Jwt:SecretKey)."
+    );
 var issuer = jwtSection["Issuer"] ?? "InteractHub";
 var audience = jwtSection["Audience"] ?? "InteractHub";
 
@@ -112,6 +116,13 @@ builder.Services.AddAuthorization();
 // 4. APPLICATION SERVICES (Dependency Injection)
 // ═══════════════════════════════════════════════════════════════════
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMediaService, CloudinaryService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IStoryService, StoryService>();
+
+// Background Service: tự động xóa Story hết hạn mỗi 1 giờ
+// AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
+builder.Services.AddHostedService<StoryCleanupService>();
 
 // ═══════════════════════════════════════════════════════════════════
 // 5. CONTROLLERS + SWAGGER / OPENAPI
