@@ -18,7 +18,7 @@ const TrendingSidebar = ({ setFilterTag }: TrendingSidebarProps) => {
   );
 
   return (
-    <div className={`w-full lg:w-70 h-[calc(100vh-100px)] border rounded-xl p-4 sticky top-20 self-start shadow-sm flex flex-col transition-all duration-300
+    <div className={`w-full  lg:w-70 h-[calc(100vh-100px)] border rounded-xl p-4 sticky top-20 self-start shadow-sm flex flex-col transition-all duration-300
       ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
       
       <div className={`flex items-center justify-between mb-4 border-b pb-2 min-h-[45px] relative overflow-hidden ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>

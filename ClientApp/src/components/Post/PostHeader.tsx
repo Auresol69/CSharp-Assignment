@@ -1,4 +1,4 @@
-import { MoreHorizontal, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 interface Props {
   postId: string;
@@ -41,10 +41,6 @@ const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props)
           </p>
         </div>
       </div>
-
-      <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full">
-        <MoreHorizontal size={20} />
-      </button>
     </div>
   );
 };

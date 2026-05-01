@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useNavigate } from 'react-router-dom';
+import { 
+  MoreHorizontal, EyeOff, Flag, Bookmark, 
+  Trash2, Edit3, Share2 
+} from 'lucide-react';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import type { IPost } from '../../types/Post';
 import PostActions from './PostActions';
 import PostHeader from './PostHeader';
-import { useTheme } from '../../context/ThemeContext'; // Import context để đồng bộ theme
+import { useTheme } from '../../context/ThemeContext';
 
 interface Props {
   post: IPost;
@@ -13,7 +17,6 @@ interface Props {
   onTagClick?: (tag: string) => void;
 }
 
-// Hàm định dạng nội dung và xử lý click Hashtag với hỗ trợ Dark Mode
 const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
   if (!content) return null;
   const parts = content.split(/(#[a-zA-Z0-9_]+)/g);
@@ -26,11 +29,8 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
               key={index}
               onClick={(e) => {
                 e.stopPropagation();
-                if (onTagClick) {
-                  onTagClick(part);
-                }
+                if (onTagClick) onTagClick(part);
               }}
-              // Cập nhật màu hashtag cho Dark Mode
               className="text-blue-600 dark:text-blue-400 font-semibold cursor-pointer hover:underline mx-0.5 inline-block"
             >
               {part}
@@ -44,114 +44,145 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
 };
 
 const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
-  const { theme } = useTheme(); // Sử dụng theme từ context để điều khiển logic hiển thị
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const navigate = useNavigate();
   
+  const [showMenu, setShowMenu] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // GIẢ ĐỊNH: Lấy thông tin user hiện tại (ní thay bằng logic thực tế của ní nhé)
+  const currentUser = { id: "user_123", role: "admin" }; 
+  const isAdmin = currentUser.role === "admin";
+  const isOwner = currentUser.id === post.authorId; // Giả định IPost có authorId
+
   const Player = ReactPlayer as any;
   const VIDEO_FILE_PATTERN = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i;
   const mediaUrl = post.mediaUrl;
   const { ref: inViewRef, shouldPlay, isYouTube } = useVideoPlayer(mediaUrl);
   const videoRef = useRef<HTMLVideoElement>(null);
+  
   const [isExpanded, setIsExpanded] = useState(false);
   const CHARACTER_LIMIT = 150;
-  const isLongContent = post.content.length > CHARACTER_LIMIT;
+  const isLongContent = post.content ? post.content.length > CHARACTER_LIMIT : false;
   const isVideoFile = !!mediaUrl && (VIDEO_FILE_PATTERN.test(mediaUrl) || mediaUrl.includes('vjs.zencdn.net'));
-  const navigate = useNavigate();
 
-  const handleOpenDetail = () => {
-    navigate(`/Home/${post.id}`);
-  };
-
-  const getDisplayContent = () => {
-    if (isExpanded || !isLongContent) {
-      return post.content;
-    }
-    return post.content.slice(0, CHARACTER_LIMIT);
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!isYouTube && isVideoFile && videoRef.current) {
-      if (shouldPlay) {
-        videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
-      }
+      if (shouldPlay) videoRef.current.play().catch(() => {});
+      else videoRef.current.pause();
     }
   }, [isVideoFile, isYouTube, shouldPlay]);
+
+  const handleOpenDetail = () => navigate(`/Home/${post.id}`);
+
+  const getDisplayContent = () => {
+    if (isExpanded || !isLongContent) return post.content;
+    return post.content.slice(0, CHARACTER_LIMIT);
+  };
+
+  // --- LOGIC KIỂM TRA ROLE TẠI ĐÂY ---
+  const menuItems = [
+    { icon: <Bookmark size={18} />, label: 'Lưu bài viết', onClick: () => console.log('Saved') },
+    { icon: <EyeOff size={18} />, label: 'Ẩn bài viết', onClick: () => setIsHidden(true) },
+    { icon: <Flag size={18} />, label: 'Báo cáo', onClick: () => console.log('Reported'), danger: true },
+    { icon: <Share2 size={18} />, label: 'Sao chép link', onClick: () => navigator.clipboard.writeText(window.location.origin + `/Home/${post.id}`) },
+  ];
+
+  // Chỉ Admin hoặc Chủ bài viết mới thấy nút Xóa và Chỉnh sửa
+  if (isOwner) {
+    menuItems.push({ icon: <Edit3 size={18} />, label: 'Chỉnh sửa', onClick: () => console.log('Edit') });
+  }
+
+  if (isAdmin || isOwner) {
+    menuItems.push({ icon: <Trash2 size={18} />, label: 'Xóa bài', onClick: () => console.log('Delete'), danger: true });
+  }
+
+  if (isHidden) {
+    return (
+      <div className={`p-4 rounded-xl border mb-4 text-center ${isDark ? 'bg-gray-900 border-gray-800 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+        <p className="text-sm mr-2 inline">Bài viết đã được ẩn.</p>
+        <button onClick={() => setIsHidden(false)} className="text-blue-500 font-bold hover:underline text-sm">Hoàn tác</button>
+      </div>
+    );
+  }
 
   return (
     <div
       ref={inViewRef}
-      className={`rounded-xl border shadow-sm mb-4 transition-all duration-300
+      className={`rounded-2xl border shadow-sm mb-4 transition-all duration-300 relative
       ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-4 w-full mx-auto'}
-      ${isDark 
-        ? (isShared ? 'bg-gray-900 border-gray-700' : 'bg-gray-800 border-gray-700') 
-        : (isShared ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200')
-      }`}
+      ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
     >
-      <div onClick={handleOpenDetail} className='cursor-pointer'>
-        <PostHeader
-          authorName={post.authorName}
-          authorAvatar={post.authorAvatar}
-          createdAt={post.createdAt}
-          postId={post.id}
-          onTimeClick={handleOpenDetail}
-        />
+      <div className="flex justify-between items-start">
+        <div onClick={handleOpenDetail} className='cursor-pointer flex-1'>
+          <PostHeader
+            authorName={post.authorName}
+            authorAvatar={post.authorAvatar}
+            createdAt={post.createdAt}
+            postId={post.id}
+            onTimeClick={handleOpenDetail}
+          />
+        </div>
+
+        <div className="relative" ref={menuRef}>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+            className={`p-2 rounded-full transition-all outline-none focus:ring-0 ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+          >
+            <MoreHorizontal size={20} />
+          </button>
+
+          {showMenu && (
+            <div className={`absolute right-0 mt-2 w-52 rounded-xl shadow-2xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+              <div className="py-1">
+                {menuItems.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => { e.stopPropagation(); item.onClick(); setShowMenu(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
+                      ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
+                      ${item.danger ? 'text-red-500' : (isDark ? 'text-gray-200' : 'text-gray-700')}`}
+                  >
+                    {item.icon} <span className="font-medium">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Cập nhật màu chữ cho nội dung bài viết */}
-      <div className={`mb-4 leading-relaxed whitespace-pre-wrap 
-        ${isDark ? 'text-gray-200' : 'text-gray-800'} 
-        ${isShared ? 'text-xs' : 'text-sm'}`}>
+      <div className={`my-4 leading-relaxed whitespace-pre-wrap ${isDark ? 'text-gray-200' : 'text-gray-800'} ${isShared ? 'text-xs' : 'text-sm'}`}>
         {formatContent(getDisplayContent(), onTagClick)}
-
         {isLongContent && !isExpanded && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsExpanded(true);
-            }}
-            // Đổi màu nút "Xem thêm" dựa trên theme[cite: 8, 9]
-            className={`font-semibold hover:underline ml-1 focus:outline-none 
-              ${isDark ? 'text-white' : 'text-black'}`}
-          >
+          <button onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} className={`font-semibold hover:underline ml-1 outline-none ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
             ...Xem thêm
           </button>
         )}
       </div>
 
       {mediaUrl && (
-        <div className={`rounded-lg overflow-hidden border mb-4 bg-black aspect-video relative 
-          ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+        <div className={`rounded-xl overflow-hidden border mb-4 bg-black aspect-video relative ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
           {isYouTube ? (
             <div className="w-full h-full">
-              <Player
-                key={mediaUrl}
-                src={mediaUrl} 
-                playing={shouldPlay}
-                muted={true}
-                controls={true}
-                playsInline={true}
-                width="100%"
-                height="100%"
-              />
+              <Player src={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
             </div>
           ) : isVideoFile ? (
-            <video
-              ref={videoRef}
-              key={mediaUrl}
-              src={mediaUrl}
-              muted
-              controls
-              playsInline
-              className="w-full h-full object-contain"
-            />
+            <video ref={videoRef} src={mediaUrl} muted controls className="w-full h-full object-contain" />
           ) : (
-            <img
-              src={mediaUrl}
-              alt="Content"
-              className="w-full h-auto object-cover max-h-[500px]"
-            />
+            <img src={mediaUrl} alt="Content" className="w-full h-auto object-cover max-h-125" />
           )}
         </div>
       )}
@@ -162,9 +193,7 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
         </div>
       )}
 
-      {!isShared && (
-        <PostActions onCommentClick={handleOpenDetail} />
-      )}
+      {!isShared && <PostActions onCommentClick={handleOpenDetail} />}
     </div>
   );
 };

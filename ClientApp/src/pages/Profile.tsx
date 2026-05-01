@@ -9,7 +9,7 @@ const Profile = () => {
   const userPosts = MOCK_POSTS.slice(0, 3); 
 
   return (
-    <div className="flex flex-col max-w-[calc(100%-10rem)] ml-36 min-h-screen bg-gray-100 pb-10 item-center justify-center">
+    <div className="flex flex-col max-w-[calc(100%-10rem)] mx-auto min-h-screen bg-gray-100 pb-10 item-center justify-center">
       {/* 1. Phần đầu trang cá nhân */}
       <ProfileHeader />
 

@@ -40,7 +40,7 @@ function Home() {
     : MOCK_POSTS;
 
   return (
-    <div className='flex flex-row w-full min-h-screen space-x-4 items-start justify-center gap-8 px-12 py-4'>
+    <div className='flex flex-row w-full mx-auto  items-start justify-center gap-8 px-12 py-4'>
       <div className='flex flex-col flex-1 rounded-lg p-4 bg-gray-50 w-4/5'>
         <PostCreated />
         <StoryBar />

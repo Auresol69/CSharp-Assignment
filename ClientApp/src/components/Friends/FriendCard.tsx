@@ -24,7 +24,7 @@ const FriendCard = ({ name, avatar, type, mutualFriends }: FriendCardProps) => (
       {type === 'request' && (
         <>
           <button className="flex-1 bg-blue-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700">Xác nhận</button>
-          <button className="flex-1 bg-gray-200 text-gray-700 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-300">Xóa</button>
+          <button className="flex-1 text-gray-700 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-50 border border-gray-200">Xóa</button>
         </>
       )}
       {type === 'friend' && (
