@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { type LucideIcon } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext'; // Import Hook để lấy theme và toggleTheme từ Context
 
 interface ISubItemProps {
   name: string;
@@ -9,44 +9,28 @@ interface ISubItemProps {
 }
 
 const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
-  const [isDark, setIsDark] = useState(false);
+  const { theme, toggleTheme } = useTheme(); //[cite: 11]
+  const isDark = theme === 'dark';
 
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextIsDark = !isDark;
-
-    document.documentElement.classList.toggle('dark', nextIsDark);
-    document.body.classList.toggle('dark', nextIsDark);
-    localStorage.setItem('theme', nextIsDark ? 'dark' : 'light');
-    setIsDark(nextIsDark);
-  };
+  const subItemClass = `flex items-center w-full space-x-2 p-3 rounded-lg transition-all text-sm font-medium
+    ${isDark 
+      ? 'text-gray-400 hover:bg-gray-800 hover:text-white' 
+      : 'text-gray-600 hover:bg-gray-100 hover:text-black'}`;
 
   if (name === 'Dark Mode') {
     return (
-      <button
-        type="button"
-        onClick={toggleDarkMode}
-        className="flex items-center space-x-3 p-3 -ml-5 -mt-5 rounded-lg transition-all text-left text-gray-500 hover:text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 cursor-pointer"
-      >
+      <button type="button" onClick={toggleTheme} className={subItemClass}>
         <Icon size={18} />
-        <span className="text-sm font-medium">
-          {isDark ? 'Light Mode' : 'Dark Mode'}
-        </span>
+        <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
       </button>
     );
   }
 
   return (
-    <NavLink
-      to={path}
-      className={({ isActive }) =>
-        `flex items-center space-x-3 p-3 rounded-lg transition-all -ml-5 -mt-5
-        ${isActive ? 'bg-gray-200 dark:bg-gray-700 font-bold scale-105 text-black dark:text-white' : 'text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white'}`}>
+    <NavLink to={path} className={({ isActive }) => 
+      `${subItemClass} ${isActive ? (isDark ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black font-bold') : ''}`}>
       <Icon size={18} />
-      <span className="text-sm font-medium">{name}</span>
+      <span>{name}</span>
     </NavLink>
   );
 };

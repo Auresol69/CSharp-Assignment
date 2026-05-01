@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
-import{ useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import type { IPost } from '../../types/Post';
 import PostActions from './PostActions';
 import PostHeader from './PostHeader';
+import { useTheme } from '../../context/ThemeContext'; // Import context để đồng bộ theme
 
 interface Props {
   post: IPost;
@@ -12,10 +13,10 @@ interface Props {
   onTagClick?: (tag: string) => void;
 }
 
-// Hàm định dạng nội dung và xử lý click Hashtag
+// Hàm định dạng nội dung và xử lý click Hashtag với hỗ trợ Dark Mode
 const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
   if (!content) return null;
-  const parts = content.split(/(#[a-zA-Z0-9_]+)/g); // Tách nội dung thành các phần, giữ lại hashtag như một phần riêng biệt
+  const parts = content.split(/(#[a-zA-Z0-9_]+)/g);
   return (
     <span className="whitespace-pre-wrap">
       {parts.map((part, index) => {
@@ -24,12 +25,13 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
             <span 
               key={index}
               onClick={(e) => {
-                e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài thẻ Card
+                e.stopPropagation();
                 if (onTagClick) {
-                  onTagClick(part); // Thực hiện hàm lọc bài viết
+                  onTagClick(part);
                 }
               }}
-              className="text-blue-600 font-semibold cursor-pointer hover:underline mx-0.5 inline-block"
+              // Cập nhật màu hashtag cho Dark Mode
+              className="text-blue-600 dark:text-blue-400 font-semibold cursor-pointer hover:underline mx-0.5 inline-block"
             >
               {part}
             </span>
@@ -41,22 +43,25 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
   );
 };
 
-const PostCard = ({ post, isShared = false, onTagClick }: Props) => { // ĐÃ FIX: Thêm onTagClick vào đây
+const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
+  const { theme } = useTheme(); // Sử dụng theme từ context để điều khiển logic hiển thị
+  const isDark = theme === 'dark';
+  
   const Player = ReactPlayer as any;
   const VIDEO_FILE_PATTERN = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i;
   const mediaUrl = post.mediaUrl;
   const { ref: inViewRef, shouldPlay, isYouTube } = useVideoPlayer(mediaUrl);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isExpanded, setIsExpanded] = useState(false); // Trạng thái mở rộng nội dung
-  const CHARACTER_LIMIT = 150; // Giới hạn ký tự hiển thị ban đầu
-  const isLongContent = post.content.length > CHARACTER_LIMIT;// Kiểm tra xem nội dung có vượt quá giới hạn không
+  const [isExpanded, setIsExpanded] = useState(false);
+  const CHARACTER_LIMIT = 150;
+  const isLongContent = post.content.length > CHARACTER_LIMIT;
   const isVideoFile = !!mediaUrl && (VIDEO_FILE_PATTERN.test(mediaUrl) || mediaUrl.includes('vjs.zencdn.net'));
   const navigate = useNavigate();
+
   const handleOpenDetail = () => {
-    navigate(`/Home/${post.id}`); // Cập nhật URL khi mở Modal
+    navigate(`/Home/${post.id}`);
   };
 
-  // Hàm quyết định hiển thị nội dung đầy đủ hay thu gọn
   const getDisplayContent = () => {
     if (isExpanded || !isLongContent) {
       return post.content;
@@ -77,8 +82,12 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => { // ĐÃ FI
   return (
     <div
       ref={inViewRef}
-      className={`bg-white rounded-xl border border-gray-200 shadow-sm mb-4
-      ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400 bg-gray-50' : 'p-4 w-full mx-auto'}`}
+      className={`rounded-xl border shadow-sm mb-4 transition-all duration-300
+      ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-4 w-full mx-auto'}
+      ${isDark 
+        ? (isShared ? 'bg-gray-900 border-gray-700' : 'bg-gray-800 border-gray-700') 
+        : (isShared ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200')
+      }`}
     >
       <div onClick={handleOpenDetail} className='cursor-pointer'>
         <PostHeader
@@ -86,21 +95,25 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => { // ĐÃ FI
           authorAvatar={post.authorAvatar}
           createdAt={post.createdAt}
           postId={post.id}
-          onTimeClick={handleOpenDetail} // Mở Modal khi click vào thời gian
+          onTimeClick={handleOpenDetail}
         />
       </div>
 
-      <div className={`text-gray-800 mb-4 leading-relaxed whitespace-pre-wrap ${isShared ? 'text-xs' : 'text-sm'}`}>
+      {/* Cập nhật màu chữ cho nội dung bài viết */}
+      <div className={`mb-4 leading-relaxed whitespace-pre-wrap 
+        ${isDark ? 'text-gray-200' : 'text-gray-800'} 
+        ${isShared ? 'text-xs' : 'text-sm'}`}>
         {formatContent(getDisplayContent(), onTagClick)}
 
-        {/* Hiển thị nút Xem thêm nếu nội dung dài và chưa mở rộng */}
         {isLongContent && !isExpanded && (
           <button
             onClick={(e) => {
-              e.stopPropagation(); // Ngăn mở Modal chi tiết khi chỉ muốn xem thêm text
+              e.stopPropagation();
               setIsExpanded(true);
             }}
-            className="text-black font-semibold hover:underline ml-1 focus:outline-none"
+            // Đổi màu nút "Xem thêm" dựa trên theme[cite: 8, 9]
+            className={`font-semibold hover:underline ml-1 focus:outline-none 
+              ${isDark ? 'text-white' : 'text-black'}`}
           >
             ...Xem thêm
           </button>
@@ -108,7 +121,8 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => { // ĐÃ FI
       </div>
 
       {mediaUrl && (
-        <div className="rounded-lg overflow-hidden border border-gray-100 mb-4 bg-black aspect-video relative">
+        <div className={`rounded-lg overflow-hidden border mb-4 bg-black aspect-video relative 
+          ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
           {isYouTube ? (
             <div className="w-full h-full">
               <Player
@@ -150,7 +164,7 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => { // ĐÃ FI
 
       {!isShared && (
         <PostActions onCommentClick={handleOpenDetail} />
-        )}
+      )}
     </div>
   );
 };

@@ -14,7 +14,7 @@ const Profile = () => {
       <ProfileHeader />
 
       {/* 2. Phần nội dung chính */}
-      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-6 gap-6">
         
         {/* CỘT TRÁI: Thông tin & Bạn bè */}
         <div className="md:col-span-7 space-y-6">
