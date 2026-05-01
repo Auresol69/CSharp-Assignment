@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Story { id: string; url: string; }

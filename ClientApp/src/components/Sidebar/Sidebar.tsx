@@ -50,7 +50,7 @@ const items: ISidebarItem[] = [
 
 const Sidebar = ({onClick}: {onClick?: () => void}) => {
   return (
-    <div className='fixed top-0 left-0 h-screen w-[256px] bg-white shadow-lg z-10 p-4'>
+    <div className='fixed top-0 left-0 h-screen w-[256px] bg-white dark:bg-gray-800 shadow-lg z-10 p-4'>
       <div className='flex flex-col space-y-10 w-full'>
         <Link to='/home'>
           <img className='h-12 w-fit pl-3' src={LogoApp} alt="Logo" />
