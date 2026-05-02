@@ -121,6 +121,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IInteractionService, InteractionService>();
 
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
