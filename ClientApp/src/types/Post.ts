@@ -1,6 +1,6 @@
 export interface IPost {
   id: string;
-  authorId: string;
+  authorId?: string;
   authorName: string;
   authorAvatar: string;
   createdAt: string;

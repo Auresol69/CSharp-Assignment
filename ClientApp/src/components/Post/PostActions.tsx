@@ -1,62 +1,91 @@
-// File: src/components/Post/PostActions.tsx
 import { useState } from 'react';
 import { MessageCircle, ThumbsUp, Share2 } from 'lucide-react';
+import api from '../../services/api';
 
 interface PostActionsProps {
+  postId: string;
   onCommentClick?: () => void;
   likesCount?: number;
   commentsCount?: number;
   sharesCount?: number;
 }
 
-const PostActions = ({ 
-  onCommentClick, 
-  likesCount = 0, 
-  commentsCount = 0, 
-  sharesCount = 0 
+const PostActions = ({
+  postId,
+  onCommentClick,
+  likesCount = 0,
+  commentsCount = 0,
+  sharesCount = 0
 }: PostActionsProps) => {
+  const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
+  const [currentLikes, setCurrentLikes] = useState(likesCount);
   const [currentShares, setCurrentShares] = useState(sharesCount);
+  const [isBusy, setIsBusy] = useState(false);
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Giả lập logic chia sẻ về trang cá nhân
-    if (!isShared) {
+    if (isLiked || isBusy) return;
+
+    const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
+    if (!authUser.id) return;
+
+    try {
+      setIsBusy(true);
+      await api.post('/interaction/addlike', {
+        idTaiKhoan: authUser.id,
+        idPost: postId
+      });
+      setIsLiked(true);
+      setCurrentLikes(prev => prev + 1);
+    } catch {
+      // Mock posts do not exist in DB, so backend may reject them.
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isShared || isBusy) return;
+
+    try {
+      setIsBusy(true);
+      await api.post(`/post/${postId}/repost`, { content: '' });
       setIsShared(true);
       setCurrentShares(prev => prev + 1);
-      // Sau này gọi API ở đây: await sharePostApi(postId);
-    }
-    else {
-      setIsShared(false);
-      setCurrentShares(prev => Math.max(prev - 1, 0));
+    } catch {
+      // Repost only works for posts that exist in the backend database.
+    } finally {
+      setIsBusy(false);
     }
   };
 
   return (
     <div className="flex items-center justify-start border-t border-gray-100 pt-2 mt-2 space-x-4">
-      {/* Nút Like */}
-      <button className="flex items-center space-x-1 py-2 px-3 hover:bg-gray-50 rounded-lg transition text-gray-600 group">
-        <ThumbsUp size={18} className="group-hover:text-blue-500" />
-        <span className="text-xs font-medium">{likesCount > 0 ? likesCount : ""}</span>
+      <button
+        onClick={handleLike}
+        className={`flex items-center space-x-1 py-2 px-3 hover:bg-gray-50 rounded-lg transition group ${isLiked ? 'text-blue-600' : 'text-gray-600'}`}
+      >
+        <ThumbsUp size={18} className="group-hover:text-blue-500" fill={isLiked ? 'currentColor' : 'none'} />
+        <span className="text-xs font-medium">{currentLikes > 0 ? currentLikes : ''}</span>
       </button>
 
-      {/* Nút Comment */}
-      <button 
+      <button
         onClick={onCommentClick}
         className="flex items-center space-x-1 py-2 px-3 hover:bg-gray-50 rounded-lg transition text-gray-600 group"
       >
         <MessageCircle size={18} className="group-hover:text-green-500" />
-        <span className="text-xs font-medium">{commentsCount > 0 ? commentsCount : ""}</span>
+        <span className="text-xs font-medium">{commentsCount > 0 ? commentsCount : ''}</span>
       </button>
 
-      {/* Nút Share */}
-      <button 
+      <button
         onClick={handleShare}
-        className={`flex items-center space-x-1 py-2 px-3 hover:bg-gray-50 rounded-lg transition 
+        className={`flex items-center space-x-1 py-2 px-3 hover:bg-gray-50 rounded-lg transition
           ${isShared ? 'text-blue-600' : 'text-gray-600'}`}
       >
-        <Share2 size={18} fill={isShared ? "currentColor" : "none"} />
-        <span className="text-xs font-medium">{currentShares > 0 ? currentShares : ""}</span>
+        <Share2 size={18} fill={isShared ? 'currentColor' : 'none'} />
+        <span className="text-xs font-medium">{currentShares > 0 ? currentShares : ''}</span>
       </button>
     </div>
   );

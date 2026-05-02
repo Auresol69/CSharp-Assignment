@@ -44,7 +44,7 @@ function Home() {
   const handleNewPost = (newPostData: any) => {
     const newPost: IPost = {
       id: newPostData.id,
-      authorId: "me",
+      authorId: newPostData.user.id || "me",
       authorName: newPostData.user.name,
       authorAvatar: newPostData.user.avatar,
       content: newPostData.content,
@@ -55,6 +55,10 @@ function Home() {
       sharesCount: 0
     };
     setAllPosts(prev => [newPost, ...prev]);
+  };
+
+  const handlePostDeleted = (deletedPostId: string) => {
+    setAllPosts(prev => prev.filter(post => post.id !== deletedPostId));
   };
   
   const filteredPosts = filterTag 
@@ -95,7 +99,7 @@ function Home() {
               </div>
             ) : (
               filteredPosts.map((post) => (
-                <PostCard key={post.id} post={post} onTagClick={setFilterTag} />
+                <PostCard key={post.id} post={post} onTagClick={setFilterTag} onDeleted={handlePostDeleted} />
               ))
             )}
           </div>

@@ -10,11 +10,13 @@ import type { IPost } from '../../types/Post';
 import PostActions from './PostActions';
 import PostHeader from './PostHeader';
 import { useTheme } from '../../context/ThemeContext';
+import api from '../../services/api';
 
 interface Props {
   post: IPost;
   isShared?: boolean;
   onTagClick?: (tag: string) => void;
+  onDeleted?: (postId: string) => void;
 }
 
 const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
@@ -43,7 +45,7 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
   );
 };
 
-const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
+const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const navigate = useNavigate();
@@ -52,9 +54,9 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const currentUser = { id: "user_123", role: "admin" }; 
-  const isAdmin = currentUser.role === "admin";
-  const isOwner = currentUser.id === post.authorId;
+  const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
+  const isAdmin = Array.isArray(authUser.roles) && authUser.roles.includes('Admin');
+  const isOwner = !!authUser.id && authUser.id === post.authorId;
 
   const Player = ReactPlayer as any;
   const VIDEO_FILE_PATTERN = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i;
@@ -91,6 +93,16 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
     return post.content.slice(0, CHARACTER_LIMIT);
   };
 
+  const handleDelete = async () => {
+    try {
+      await api.delete(`/post/${post.id}`);
+      onDeleted?.(post.id);
+      setIsHidden(true);
+    } catch {
+      setIsHidden(true);
+    }
+  };
+
   const menuItems = [
     { icon: <Bookmark size={18} />, label: 'Lưu bài viết', onClick: () => console.log('Saved') },
     { icon: <EyeOff size={18} />, label: 'Ẩn bài viết', onClick: () => setIsHidden(true) },
@@ -103,7 +115,7 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
   }
 
   if (isAdmin || isOwner) {
-    menuItems.push({ icon: <Trash2 size={18} />, label: 'Xóa bài', onClick: () => console.log('Delete'), danger: true });
+    menuItems.push({ icon: <Trash2 size={18} />, label: 'Xóa bài', onClick: handleDelete, danger: true });
   }
 
   if (isHidden) {
@@ -190,7 +202,15 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
         </div>
       )}
 
-      {!isShared && <PostActions onCommentClick={handleOpenDetail} />}
+      {!isShared && (
+        <PostActions
+          postId={post.id}
+          likesCount={post.likesCount}
+          commentsCount={post.commentsCount}
+          sharesCount={post.sharesCount}
+          onCommentClick={handleOpenDetail}
+        />
+      )}
     </div>
   );
 };

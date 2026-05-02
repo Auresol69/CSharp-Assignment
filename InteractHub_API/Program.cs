@@ -173,7 +173,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
         policy.WithOrigins(
                 "http://localhost:5173",  // Vite dev server
+                "http://127.0.0.1:5173",  // Vite dev server
                 "http://localhost:3000",  // CRA dev server
+                "http://127.0.0.1:3000",  // CRA dev server
                 "http://localhost:5153")  // Swagger UI
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -199,7 +201,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowReactApp");
 
