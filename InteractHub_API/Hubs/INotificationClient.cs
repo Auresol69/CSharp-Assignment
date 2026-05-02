@@ -15,4 +15,5 @@ public interface INotificationClient
 
     // Chấp nhận yêu cầu kết bạn
     Task FriendRequestAccepted(string accepterId, string accepterName, string accepterAvatarUrl);
+    Task ReceiveNotification(InteractHub_API.DTOs.Notifications.NotificationResponseDto notification);
 }

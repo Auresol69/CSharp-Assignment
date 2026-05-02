@@ -11,11 +11,13 @@ public sealed class PostService : IPostService
 {
     private readonly AppDbContext _dbContext;
     private readonly IMediaService _mediaService;
+    private readonly InteractHub_API.Data.Repositories.IPostRepository _postRepository;
 
-    public PostService(AppDbContext dbContext, IMediaService mediaService)
+    public PostService(AppDbContext dbContext, IMediaService mediaService, InteractHub_API.Data.Repositories.IPostRepository postRepository)
     {
         _dbContext = dbContext;
         _mediaService = mediaService;
+        _postRepository = postRepository;
     }
 
     public async Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request)
@@ -44,7 +46,17 @@ public sealed class PostService : IPostService
         _dbContext.Posts.Add(post);
         await _dbContext.SaveChangesAsync();
 
-        return post;
+        // Re-fetch with relations for response
+        var createdPost = await _dbContext.Posts
+            .Include(p => p.PostMedias)
+            .Include(p => p.TaiKhoan)
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .Include(p => p.Reposts)
+            .FirstOrDefaultAsync(p => p.IdPost == post.IdPost)
+            ?? throw new KeyNotFoundException($"Không tìm thấy post vừa tạo '{post.IdPost}'.");
+
+        return createdPost;
     }
 
     public async Task DeletePostAsync(string postId)
@@ -94,7 +106,17 @@ public sealed class PostService : IPostService
         _dbContext.Posts.Add(repost);
         await _dbContext.SaveChangesAsync();
 
-        return repost;
+        // Re-fetch with relations for response
+        var createdRepost = await _dbContext.Posts
+            .Include(p => p.PostMedias)
+            .Include(p => p.TaiKhoan)
+            .Include(p => p.Likes)
+            .Include(p => p.Comments)
+            .Include(p => p.Reposts)
+            .FirstOrDefaultAsync(p => p.IdPost == repost.IdPost)
+            ?? throw new KeyNotFoundException($"Không tìm thấy repost vừa tạo '{repost.IdPost}'.");
+
+        return createdRepost;
     }
 
     private static MediaType DetectMediaType(IFormFile file)
@@ -112,5 +134,10 @@ public sealed class PostService : IPostService
         }
 
         return MediaType.Image;
+    }
+
+    public async Task<List<Post>> GetPostsAsync(DateTime? lastTimestamp, int limit)
+    {
+        return await _postRepository.GetPostsAsync(lastTimestamp, limit);
     }
 }

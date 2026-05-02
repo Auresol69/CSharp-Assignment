@@ -17,19 +17,22 @@ public class FriendshipService : IFriendshipService
     private readonly IPresenceService _presenceService;
     private readonly IHubContext<NotificationHub, INotificationClient> _hubContext;
     private readonly ILogger<FriendshipService> _logger;
+    private readonly INotificationService _notificationService;
 
     public FriendshipService(
         AppDbContext context,
         UserManager<ApplicationUser> userManager,
         IPresenceService presenceService,
         IHubContext<NotificationHub, INotificationClient> hubContext,
-        ILogger<FriendshipService> logger)
+        ILogger<FriendshipService> logger,
+        INotificationService notificationService)
     {
         _context = context;
         _userManager = userManager;
         _presenceService = presenceService;
         _hubContext = hubContext;
         _logger = logger;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -99,6 +102,16 @@ public class FriendshipService : IFriendshipService
             // Notification lỗi không nên gây fail toàn bộ request
         }
 
+        // Persist notification
+        try
+        {
+            await _notificationService.CreateAndSendNotificationAsync(recipientId, senderId, null, "FriendRequest");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error persisting/sending friend request notification to {RecipientId}.", recipientId);
+        }
+
         return true;
     }
 
@@ -146,6 +159,16 @@ public class FriendshipService : IFriendshipService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending acceptance notification to {SenderId}.", requestSenderId);
+        }
+
+        // Persist notification to sender
+        try
+        {
+            await _notificationService.CreateAndSendNotificationAsync(requestSenderId, userId, null, "FriendRequestAccepted");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error persisting/sending acceptance notification to {SenderId}.", requestSenderId);
         }
 
         return true;
