@@ -10,11 +10,11 @@ interface Props {
 
 const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props) => {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center space-x-3">
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center space-x-4">
         {/* Click vào Avatar cũng mở Modal */}
         <div 
-          className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden cursor-pointer" 
+          className="w-12 h-12 rounded-full bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 overflow-hidden cursor-pointer ring-2 ring-white dark:ring-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" 
           onClick={(e) => {
             e.stopPropagation();
             if (onTimeClick) onTimeClick();
@@ -24,11 +24,11 @@ const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props)
         </div>
 
         <div>
-          <h4 className="font-bold text-gray-900 hover:underline cursor-pointer">{authorName}</h4>
-          <p className="text-xs text-gray-500 flex items-center">
+          <h4 className="font-bold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors duration-200 text-lg">{authorName}</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center font-medium">
             {/* 2. Gắn sự kiện click vào khung thời gian */}
             <span 
-              className="hover:underline cursor-pointer"
+              className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer transition-colors duration-200"
               onClick={(e) => {
                 e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
                 if (onTimeClick) onTimeClick(); // Gọi hàm mở Modal
@@ -36,8 +36,8 @@ const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props)
             >
               {createdAt}
             </span>
-            <span className="mx-1">·</span>
-            <Globe size={12} />
+            <span className="mx-2 text-gray-400 dark:text-gray-500">·</span>
+            <Globe size={14} className="text-gray-500 dark:text-gray-400" />
           </p>
         </div>
       </div>

@@ -31,7 +31,7 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
                 e.stopPropagation();
                 if (onTagClick) onTagClick(part);
               }}
-              className="text-blue-600 dark:text-blue-400 font-semibold cursor-pointer hover:underline mx-0.5 inline-block"
+              className="text-blue-600 dark:text-blue-400 font-bold hover:text-blue-700 dark:hover:text-blue-300 hover:underline decoration-2 mx-0.5 inline-block transition-colors duration-200"
             >
               {part}
             </span>
@@ -121,9 +121,8 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
   return (
     <div
       ref={inViewRef}
-      className={`rounded-2xl border shadow-sm mb-4 transition-all duration-300 relative
-      ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-4 w-full mx-auto'}
-      ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+      className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/50 dark:border-gray-700 shadow-lg mb-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1
+      ${isShared ? 'p-4 ml-3 border-l-4 border-l-gradient-to-r from-blue-400 to-blue-600 bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800' : 'p-6 w-full mx-auto max-w-2xl'}`}
     >
       <div className="flex justify-between items-start">
         <div onClick={handleOpenDetail} className='cursor-pointer flex-1'>
@@ -164,17 +163,23 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
         </div>
       </div>
 
-      <div className={`my-4 leading-relaxed whitespace-pre-wrap ${isDark ? 'text-gray-200' : 'text-gray-800'} ${isShared ? 'text-xs' : 'text-sm'}`}>
+      <div className={`text-gray-900 dark:text-gray-100 mb-6 leading-relaxed whitespace-pre-wrap font-medium ${isShared ? 'text-xs' : 'text-base'}`}>
         {formatContent(getDisplayContent(), onTagClick)}
         {isLongContent && !isExpanded && (
-          <button onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} className={`font-semibold hover:underline ml-1 outline-none ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Ngăn mở Modal chi tiết khi chỉ muốn xem thêm text
+              setIsExpanded(true);
+            }}
+            className="text-blue-600 dark:text-blue-400 font-bold hover:text-blue-700 dark:hover:text-blue-300 hover:underline decoration-2 ml-2 focus:outline-none transition-all duration-200 transform hover:scale-105"
+          >
             ...Xem thêm
           </button>
         )}
       </div>
 
       {mediaUrl && (
-        <div className={`rounded-xl overflow-hidden border mb-4 bg-black aspect-video relative ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+        <div className="rounded-2xl overflow-hidden border border-gray-200/30 dark:border-gray-600 mb-6 bg-gradient-to-br from-gray-900 to-black dark:from-gray-950 dark:to-black aspect-video relative shadow-inner">
           {isYouTube ? (
             <div className="w-full h-full">
               <Player src={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
