@@ -17,21 +17,22 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
     const isPasswordType = type === "password";
     const inputType = isPasswordType ? (showPassword ? "text" : "password") : type;
 
+    // Định nghĩa màu nền cố định để Span che được viền mà không bị lệch màu
+    const bgColor = isFocused ? "bg-[#2d3748]" : "bg-[#1a202c]";
+
     return (
-        <div className="relative w-full mx-auto my-5">
-            <div className={`relative flex items-center rounded-lg border-2 transition-all duration-300 min-h-14.5
-                /* Thay đổi nền từ bg-gray-900 sang dải màu xám xanh đậm có chiều sâu */
+        <div className="relative w-full mx-auto my-4 sm:my-5">
+            <div className={`relative flex items-center rounded-xl border-2 transition-all duration-300 min-h-14 sm:min-h-15
                 ${error 
-                    ? "border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)] bg-gray-900" 
+                    ? "border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)] bg-[#1a202c]" 
                     : isFocused 
-                        ? "border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.25)] bg-[#1e293b]" 
-                        : "border-gray-700 hover:border-gray-600 bg-[#0f172a]"
+                        ? "border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.2)] bg-[#2d3748]" 
+                        : "border-gray-600 hover:border-gray-500 bg-[#1a202c]"
                 }`}>
                 
                 <input 
                     type={inputType} 
-                    className={`w-full text-white text-lg outline-none z-10 px-4 py-3
-                        ${isPasswordType ? "pr-12" : "pr-4"}`}
+                    className="w-full bg-transparent text-white text-base sm:text-lg outline-none z-10 px-4 py-3 pr-12"
                     value={value}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => { 
@@ -41,18 +42,17 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     onChange={(e) => onChange(e.target.value)}
                 />
 
-                {/* Chú ý: Đổi màu nền của span label khớp với màu nền mới để không bị lộ vết cắt */}
-                <span className={`absolute left-2 px-2 transition-all duration-300 pointer-events-none z-20 whitespace-nowrap
+                <span className={`absolute left-4 px-2 transition-all duration-300 pointer-events-none z-20 whitespace-nowrap ${bgColor}
                     ${(isFocused || value !== "") 
-                        ? `top-0 -translate-y-1/2 text-sm opacity-100 font-medium ${isFocused ? "bg-[#1e293b]" : "bg-[#0f172a]"} ` + (error ? "text-red-500" : "text-blue-400")
-                        : "inset-y-0 my-auto h-fit text-lg text-gray-500 opacity-60"}`}>
+                        ? "top-0 -translate-y-1/2 text-[11px] sm:text-sm opacity-100 font-bold " + (error ? "text-red-400" : "text-blue-300")
+                        : "inset-y-0 my-auto h-fit text-base sm:text-lg text-gray-400 opacity-70"}`}>
                     {label}
                 </span>
 
                 {isPasswordType && (
                     <button 
                         type="button" 
-                        className="absolute right-3 p-1 text-gray-500 hover:text-blue-400 transition-colors z-30"
+                        className="absolute right-3 p-2 text-gray-400 hover:text-blue-300 transition-colors z-30"
                         onClick={() => setShowPassword(!showPassword)}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -68,7 +68,7 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     </button>
                 )}
             </div>
-            {error && <p className="text-red-500 text-[12px] mt-1.5 ml-1.5 font-medium">{error}</p>}
+            {error && <p className="text-red-400 text-[11px] sm:text-[12px] mt-1.5 ml-1.5 font-semibold">{error}</p>}
         </div>
     );
 }
