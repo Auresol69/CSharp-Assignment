@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { useNavigate } from 'react-router-dom';
 import { 
   MoreHorizontal, EyeOff, Flag, Bookmark, 
   Trash2, Edit3, Share2 
@@ -9,6 +8,7 @@ import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import type { IPost } from '../../types/Post';
 import PostActions from './PostActions';
 import PostHeader from './PostHeader';
+import PostDetailModal from './PostDetailModal';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 
@@ -48,10 +48,10 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
 const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const navigate = useNavigate();
   
   const [showMenu, setShowMenu] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
@@ -86,7 +86,7 @@ const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
     }
   }, [isVideoFile, isYouTube, shouldPlay]);
 
-  const handleOpenDetail = () => navigate(`/Home/${post.id}`);
+  const handleOpenDetail = () => setIsModalOpen(true);
 
   const getDisplayContent = () => {
     if (isExpanded || !isLongContent) return post.content;
@@ -128,90 +128,99 @@ const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
   }
 
   return (
-    <div
-      ref={inViewRef}
-      className={`rounded-2xl border shadow-sm mb-4 transition-all duration-300 relative
-      ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-3 sm:p-4 w-full mx-auto'}
-      ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
-    >
-      <div className="flex justify-between items-start">
-        <div onClick={handleOpenDetail} className='cursor-pointer flex-1 min-w-0'>
-          <PostHeader
-            authorName={post.authorName}
-            authorAvatar={post.authorAvatar}
-            createdAt={post.createdAt}
-            postId={post.id}
-            onTimeClick={handleOpenDetail}
-          />
+    <>
+      <div
+        ref={inViewRef}
+        className={`rounded-2xl border shadow-sm mb-4 transition-all duration-300 relative
+        ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-3 sm:p-4 w-full mx-auto'}
+        ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+      >
+        <div className="flex justify-between items-start">
+          <div onClick={handleOpenDetail} className='cursor-pointer flex-1 min-w-0'>
+            <PostHeader
+              authorName={post.authorName}
+              authorAvatar={post.authorAvatar}
+              createdAt={post.createdAt}
+              postId={post.id}
+              onTimeClick={handleOpenDetail}
+            />
+          </div>
+
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+              className={`p-2 rounded-full transition-all outline-none ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+            >
+              <MoreHorizontal size={20} />
+            </button>
+
+            {showMenu && (
+              <div className={`absolute right-0 mt-2 w-48 sm:w-52 rounded-xl shadow-2xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+                <div className="py-1">
+                  {menuItems.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => { e.stopPropagation(); item.onClick(); setShowMenu(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
+                        ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
+                        ${item.danger ? 'text-red-500' : (isDark ? 'text-gray-200' : 'text-gray-700')}`}
+                    >
+                      {item.icon} <span className="font-medium">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="relative" ref={menuRef}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-            className={`p-2 rounded-full transition-all outline-none ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-          >
-            <MoreHorizontal size={20} />
-          </button>
-
-          {showMenu && (
-            <div className={`absolute right-0 mt-2 w-48 sm:w-52 rounded-xl shadow-2xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <div className="py-1">
-                {menuItems.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={(e) => { e.stopPropagation(); item.onClick(); setShowMenu(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
-                      ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
-                      ${item.danger ? 'text-red-500' : (isDark ? 'text-gray-200' : 'text-gray-700')}`}
-                  >
-                    {item.icon} <span className="font-medium">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+        <div className={`my-3 sm:my-4 leading-relaxed whitespace-pre-wrap wrap-break-word ${isDark ? 'text-gray-200' : 'text-gray-800'} ${isShared ? 'text-xs' : 'text-sm sm:text-base'}`}>
+          {formatContent(getDisplayContent(), onTagClick)}
+          {isLongContent && !isExpanded && (
+            <button onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} className={`font-semibold hover:underline ml-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+              ...Xem thêm
+            </button>
           )}
         </div>
-      </div>
 
-      <div className={`my-3 sm:my-4 leading-relaxed whitespace-pre-wrap wrap-break-word ${isDark ? 'text-gray-200' : 'text-gray-800'} ${isShared ? 'text-xs' : 'text-sm sm:text-base'}`}>
-        {formatContent(getDisplayContent(), onTagClick)}
-        {isLongContent && !isExpanded && (
-          <button onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} className={`font-semibold hover:underline ml-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
-            ...Xem thêm
-          </button>
+        {mediaUrl && (
+          <div className={`rounded-xl overflow-hidden border mb-3 sm:mb-4 bg-black aspect-video relative ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+            {isYouTube ? (
+              <div className="w-full h-full">
+                <Player url={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
+              </div>
+            ) : isVideoFile ? (
+              <video ref={videoRef} src={mediaUrl} muted controls className="w-full h-full object-contain" />
+            ) : (
+              <img src={mediaUrl} alt="Content" className="w-full h-full object-cover sm:object-contain" />
+            )}
+          </div>
+        )}
+
+        {post.sharedPost && (
+          <div className="mt-2 mb-4">
+            <PostCard post={post.sharedPost} isShared={true} onTagClick={onTagClick} />
+          </div>
+        )}
+
+        {!isShared && (
+          <PostActions
+            postId={post.id}
+            likesCount={post.likesCount}
+            commentsCount={post.commentsCount}
+            sharesCount={post.sharesCount}
+            onCommentClick={() => setIsModalOpen(true)}
+          />
         )}
       </div>
 
-      {mediaUrl && (
-        <div className={`rounded-xl overflow-hidden border mb-3 sm:mb-4 bg-black aspect-video relative ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
-          {isYouTube ? (
-            <div className="w-full h-full">
-              <Player url={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
-            </div>
-          ) : isVideoFile ? (
-            <video ref={videoRef} src={mediaUrl} muted controls className="w-full h-full object-contain" />
-          ) : (
-            <img src={mediaUrl} alt="Content" className="w-full h-full object-cover sm:object-contain" />
-          )}
-        </div>
-      )}
-
-      {post.sharedPost && (
-        <div className="mt-2 mb-4">
-          <PostCard post={post.sharedPost} isShared={true} onTagClick={onTagClick} />
-        </div>
-      )}
-
-      {!isShared && (
-        <PostActions
-          postId={post.id}
-          likesCount={post.likesCount}
-          commentsCount={post.commentsCount}
-          sharesCount={post.sharesCount}
-          onCommentClick={handleOpenDetail}
+      {isModalOpen && (
+        <PostDetailModal 
+          post={post} 
+          onClose={() => setIsModalOpen(false)} 
         />
       )}
-    </div>
+    </>
   );
 };
 

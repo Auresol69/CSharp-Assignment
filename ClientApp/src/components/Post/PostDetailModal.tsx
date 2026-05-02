@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { MOCK_POSTS } from '../../services/MockedData/mockPost';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
+import CommentItem from '../Comment/CommentItem';
 
 interface Props {
   postId?: string;
@@ -101,14 +102,11 @@ const PostDetailModal = ({ postId, post: initialPost, onClose }: Props) => {
             </h4>
             {commentError && <p className="text-sm font-bold text-red-500">{commentError}</p>}
             {comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-2 sm:space-x-3 items-start">
-                <img src={comment.avatar} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-200" alt="avatar" />
-                <div className={`p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm flex-1
-                  ${isDark ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
-                  <p className="font-bold mb-0.5">{comment.user}</p>
-                  <p className="leading-relaxed">{comment.text}</p>
-                </div>
-              </div>
+              <CommentItem 
+                key={comment.id} 
+                comment={comment}
+                isReply={false}
+              />
             ))}
           </div>
         </div>
