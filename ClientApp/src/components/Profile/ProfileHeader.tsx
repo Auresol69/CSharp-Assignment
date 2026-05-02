@@ -17,7 +17,7 @@ const ProfileHeader = () => {
   return (
     <div className="relative bg-white shadow-sm">
       {/* Cover Photo */}
-      <div className="h-64 md:h-80 bg-gradient-to-r from-blue-400 to-indigo-500 relative">
+      <div className="h-64 md:h-80 bg-linear-to-r from-blue-400 to-indigo-500 relative">
         <button className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded-lg flex items-center space-x-2 hover:bg-black/70">
           <Camera size={18} />
           <span className="text-sm">Chỉnh sửa ảnh bìa</span>

@@ -25,7 +25,7 @@ const EditProfileModal = ({ onClose, initialData }: { onClose: () => void, initi
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
+      <div className="fixed inset-0 bg-black/60 z-3000 flex items-center justify-center p-4 backdrop-blur-sm">
         <div ref={modalRef} className="bg-white w-full max-w-xl rounded-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
           {/* Header */}
           <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">

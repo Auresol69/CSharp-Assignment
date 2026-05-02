@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
+
   // 1. Quét tất cả các file có thể chứa class Tailwind
   content: [
     "./index.html",

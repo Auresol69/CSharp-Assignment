@@ -18,7 +18,7 @@ const Friends = () => {
   );
 
   return (
-    <div className="max-w-[calc(100%-10rem)] ml-36 p-6 space-y-10">
+    <div className="max-w-[calc(100%-10rem)] mx-auto p-6 space-y-10">
       {/* 1. Lời mời kết bạn */}
       <section>
         <GridHeader title="Lời mời kết bạn" route="/friends/requests" />

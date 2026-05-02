@@ -1,113 +1,143 @@
-import { useRef, useState, useEffect } from 'react';
-import { Camera, Image, Send, X, Clapperboard } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Image, Send, X, Smile, BarChart2, MapPin } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
-const CreatePost = () => {
-  const [content, setContent] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [content, setContent] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Dùng để kiểm tra click ra ngoài
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => setSelectedImage(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
-  const removeFile = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    if (imageInputRef.current) imageInputRef.current.value = '';
-    if (videoInputRef.current) videoInputRef.current.value = '';
+  const handleSubmit = () => {
+    if (!content.trim() && !selectedImage) return;
+
+    const newPost = {
+      id: Date.now().toString(),
+      user: { name: "Bạn", avatar: "https://i.pravatar.cc/150?u=me" },
+      content,
+      image: selectedImage,
+      time: "Vừa xong",
+      likes: 0,
+      comments: 0
+    };
+
+    onPostCreated(newPost);
+    setContent('');
+    setSelectedImage(null);
+    setIsExpanded(false);
+  };
+
+  // Logic thu gọn khi click ra ngoài
+  const handleBlur = (e: React.FocusEvent) => {
+    // Nếu click vào một phần tử vẫn nằm trong containerRef thì không thu gọn
+    if (containerRef.current && !containerRef.current.contains(e.relatedTarget as Node)) {
+      // Chỉ thu gọn nếu không có nội dung và không có ảnh
+      if (!content.trim() && !selectedImage) {
+        setIsExpanded(false);
+      }
+    }
   };
 
   return (
-    // Nền trắng, viền xám nhẹ nhàng
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3 mb-6 w-full mx-auto flex flex-row items-center space-x-3">
-      
-      <input type="file" ref={imageInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-      <input type="file" ref={videoInputRef} onChange={handleFileChange} accept="video/*" className="hidden" />
-
-      {/* User's Avatar */}
-      <img 
-        src="https://via.placeholder.com/40" 
-        alt="Avatar" 
-        className="h-10 w-10 rounded-full object-cover border border-gray-100 shadow-sm"
-      />
-      
-      {/* Ô nhập liệu */}
-      <div className="flex-1 relative">
-        <input
-          type="text"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="User ơi, bạn đang nghĩ gì thế?"
-          className="w-full bg-gray-100 border-none rounded-full py-2.5 px-5 text-sm text-gray-800 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-100 focus:bg-gray-50 outline-none transition-all"
+    <div 
+      ref={containerRef}
+      onBlur={handleBlur}
+      tabIndex={-1} // Cho phép div nhận sự kiện liên quan đến focus
+      className={`p-4 rounded-2xl shadow-sm border transition-all duration-300 ease-in-out outline-none
+        ${isDark ? 'bg-gray-900' : 'bg-white'}
+        ${isExpanded 
+          ? (isDark ? 'border-blue-500/50 shadow-lg' : 'border-blue-300 shadow-md') 
+          : (isDark ? 'border-gray-800' : 'border-gray-200')
+        }`}
+    >
+      <div className="flex gap-4">
+        <img 
+          src="https://i.pravatar.cc/150?u=me" 
+          className={`w-10 h-10 rounded-full transition-transform ${isExpanded ? 'scale-110' : ''}`} 
+          alt="avatar" 
         />
-
-        {(content || selectedFile) && (
-          <button 
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-full transition shadow-md"
-          >
-            <Send size={14} />
-          </button>
-        )}
-      </div>
-      
-      {/* Cụm Icons bên trái */}
-      <div className="flex flex-row items-center">
-        {/* Nút bấm chụp ảnh bằng camera để đăng bài */}
-        <button 
-          onClick={() => videoInputRef.current?.click()} 
-          className="hover:bg-gray-100 p-2 rounded-full transition-colors group"
-        >
-          <Camera size={22} className="text-[#f03243]" />
-        </button>
         
-        {/* Nút bấm chọn ảnh từ thư viện để đăng bài */}
-        <button 
-          onClick={() => imageInputRef.current?.click()} 
-          className="hover:bg-gray-100 p-2 rounded-full transition-colors group"
-        >
-          <Image size={22} className="text-[#2acb4a]" />
-        </button>
-        
-        {/* Nút bấm chọn video từ thư viện để đăng bài */}
-        <button 
-          className="hover:bg-gray-100 p-2 rounded-full transition-colors group"
-        >
-          <Clapperboard size={22} className="text-[#ea3163]" />
-        </button>
-      </div>
+        <div className="flex-1">
+          <textarea
+            placeholder="Bạn đang nghĩ gì thế?"
+            onFocus={() => setIsExpanded(true)}
+            className={`w-full bg-transparent border-none focus:ring-0 outline-none resize-none transition-all duration-300
+              ${isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'}
+              ${isExpanded ? 'min-h-25 text-base' : 'min-h-10 text-sm flex items-center pt-2'}`}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
 
-      {/* Preview vùng chọn file - not done yet */}
-      {previewUrl && (
-        <div className="absolute top-0 left-0 w-full h-full bg-white/90 p-2 rounded-xl z-20 flex items-center justify-between px-6">
-            <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
-                    {selectedFile?.type.startsWith('image/') ? (
-                        <img src={previewUrl} className="w-full h-full object-cover" alt="" />
-                    ) : (
-                        <div className="w-full h-full bg-black flex items-center justify-center italic text-[10px] text-white">Video</div>
-                    )}
-                </div>
-                <span className="text-xs font-medium text-gray-600 truncate max-w-[150px]">{selectedFile?.name}</span>
-            </div>
-            <button onClick={removeFile} className="p-1.5 hover:bg-gray-200 rounded-full text-gray-500">
+          {selectedImage && (
+            <div className="relative mt-3 group">
+              <img src={selectedImage} className="max-h-80 w-full rounded-xl object-cover border border-gray-700" alt="preview" />
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80"
+              >
                 <X size={18} />
-            </button>
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      <div className={`overflow-hidden transition-all duration-500 ease-in-out
+        ${isExpanded || selectedImage ? 'max-h-40 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}
+      >
+        <div className={`pt-3 border-t flex justify-between items-center ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
+          <div className="flex gap-1">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-800 text-green-400' : 'hover:bg-green-50 text-green-600'}`}
+            >
+              <Image size={20} />
+            </button>
+            <input type="file" hidden ref={fileInputRef} accept="image/*" onChange={handleImageChange} />
+            
+            <button className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-800 text-yellow-400' : 'hover:bg-yellow-50 text-yellow-600'}`}>
+              <Smile size={20} />
+            </button>
+            
+            <button className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-800 text-blue-400' : 'hover:bg-blue-50 text-blue-600'}`}>
+              <MapPin size={20} />
+            </button>
+
+            <button className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-gray-800 text-purple-400' : 'hover:bg-purple-50 text-purple-600'}`}>
+              <BarChart2 size={20} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSubmit}
+              onMouseDown={(e) => e.preventDefault()} // Ngăn chặn mất focus trước khi kịp click Đăng
+              disabled={!content.trim() && !selectedImage}
+              className={`px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all
+                ${(!content.trim() && !selectedImage) 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'}`}
+            >
+              <span>Đăng</span>
+              <Send size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

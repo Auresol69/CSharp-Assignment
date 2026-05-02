@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Story { id: string; url: string; }
@@ -67,16 +67,16 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
     }, [progress, isPaused, nextStory]);
 
     return (
-        <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center select-none">
-            <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-2 rounded-full z-[1001]">
+        <div className="fixed inset-0 z-999 bg-black/90 flex items-center justify-center select-none">
+            <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-2 rounded-full z-1001">
                 <X size={32} />
             </button>
 
-            <button onClick={prevStory} className="absolute left-10 md:left-40 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-white transition-all z-[1001]">
+            <button onClick={prevStory} className="absolute left-10 md:left-40 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-white transition-all z-1001">
                 <ChevronLeft size={80} strokeWidth={1.5} />
             </button>
 
-            <div className="relative w-full max-w-[450px] aspect-[9/16] bg-gray-900 overflow-hidden shadow-2xl rounded-2xl cursor-pointer"
+            <div className="relative w-full max-w-112.5 aspect-9/16 bg-gray-900 overflow-hidden shadow-2xl rounded-2xl cursor-pointer"
                 onMouseDown={() => setIsPaused(true)}
                 onMouseUp={() => setIsPaused(false)}
             >
@@ -99,7 +99,7 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
                 <img src={currentStory.url} className="w-full h-full object-contain" alt="story-content" />
             </div>
 
-            <button onClick={nextStory} className="absolute right-10 md:right-40 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all z-[1001]">
+            <button onClick={nextStory} className="absolute right-10 md:right-40 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all z-1001">
                 <ChevronRight size={80} strokeWidth={1.5} />
             </button>
         </div>

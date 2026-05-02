@@ -9,12 +9,12 @@ const Profile = () => {
   const userPosts = MOCK_POSTS.slice(0, 3); 
 
   return (
-    <div className="flex flex-col max-w-[calc(100%-10rem)] ml-36 min-h-screen bg-gray-100 pb-10 item-center justify-center">
+    <div className="flex flex-col max-w-[calc(100%-10rem)] mx-auto min-h-screen bg-gray-100 pb-10 item-center justify-center">
       {/* 1. Phần đầu trang cá nhân */}
       <ProfileHeader />
 
       {/* 2. Phần nội dung chính */}
-      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 md:grid-cols-6 gap-6">
         
         {/* CỘT TRÁI: Thông tin & Bạn bè */}
         <div className="md:col-span-7 space-y-6">

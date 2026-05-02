@@ -142,6 +142,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPresenceService, PresenceService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
@@ -193,7 +194,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
         policy.WithOrigins(
                 "http://localhost:5173",  // Vite dev server
-                "http://localhost:3000")  // CRA dev server
+                "http://localhost:3000",  // CRA dev server
+                "http://localhost:5153")  // Swagger UI
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());

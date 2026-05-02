@@ -49,7 +49,7 @@ const EditAccount = () => {
   );
 
   return (
-    <div className="max-w-[calc(100%-10rem)] ml-36 p-8 pt-24"> {/* pt-24 để tránh bị Sidebar/Header che */}
+    <div className="max-w-[calc(100%-10rem)] mx-auto p-8 pt-4"> {/* pt-24 để tránh bị Sidebar/Header che */}
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition">

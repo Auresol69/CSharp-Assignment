@@ -14,6 +14,24 @@ public class ApplicationUser : IdentityUser
     /// <summary>Họ tên hiển thị của người dùng</summary>
     public string? TenTaiKhoan { get; set; }
 
+    /// <summary>URL ảnh đại diện</summary>
+    public string? AvatarUrl { get; set; }
+
+    /// <summary>Tiểu sử</summary>
+    public string? Bio { get; set; }
+
+    /// <summary>Ngày sinh</summary>
+    public DateTime? NgaySinh { get; set; }
+
+    /// <summary>Giới tính</summary>
+    public string? GioiTinh { get; set; }
+
+    /// <summary>Địa chỉ</summary>
+    public string? DiaChi { get; set; }
+
+    /// <summary>Ngày tạo tài khoản</summary>
+    public DateTime? CreatedAt { get; set; }
+
     // ──────────────── Navigation Properties ────────────────
 
     /// <summary>Các bài viết của người dùng</summary>
