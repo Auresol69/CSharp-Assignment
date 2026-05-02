@@ -10,7 +10,8 @@ import EditAccount from "./pages/Settings/EditAccount";
 // Có thể thêm route con cho Home để hiển thị chi tiết bài viết hoặc story mà không cần thoát khỏi layout chính
 // Ví dụ: /Home/:postId để hiển thị chi tiết bài viết, /Home/stories/:userId/:storyId để hiển thị story lồng vào Home
 // Để hạn chế việc lạm dụng State và load lại trang
-function App() {  
+function App() {
+
   return (
     <BrowserRouter>
       <Routes>
