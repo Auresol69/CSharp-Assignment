@@ -2,6 +2,7 @@ using System.Text;
 using InteractHub_API.Data;
 using InteractHub_API.Data.Entities;
 using InteractHub_API.Services;
+using InteractHub_API.Services.Friends;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +122,8 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 
+//Thêm để FriendService có thể inject
+builder.Services.AddScoped<FriendService>();
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
 builder.Services.AddHostedService<StoryCleanupService>();
