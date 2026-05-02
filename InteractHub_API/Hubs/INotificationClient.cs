@@ -2,11 +2,17 @@ namespace InteractHub_API.Hubs;
 
 public interface INotificationClient
 {
-    // Client cần lắng nghe sự kiện này
+    // Tin nhắn realtime
     Task ReceiveMessage(string senderId, string message);
 
-    // Ví dụ: Gửi thông báo có người online
+    // Người dùng online/offline
     Task UserConnected(string userId);
 
     Task UserDisconnected(string userId);
+
+    // Yêu cầu kết bạn
+    Task ReceiveFriendRequest(string senderId, string senderName, string senderAvatarUrl);
+
+    // Chấp nhận yêu cầu kết bạn
+    Task FriendRequestAccepted(string accepterId, string accepterName, string accepterAvatarUrl);
 }

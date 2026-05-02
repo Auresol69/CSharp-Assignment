@@ -96,6 +96,25 @@ builder.Services
         // Xử lý lỗi 401/403 trả về JSON thay vì trang HTML
         options.Events = new JwtBearerEvents
         {
+            // Chấp nhận token từ Query String cho SignalR
+            OnMessageReceived = context =>
+            {
+                // 1. Lấy token từ query string
+                var accessToken = context.Request.Query["access_token"];
+
+                // 2. Nếu là request đến SignalR Hub
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    // Gán vào context để hệ thống dùng token này xác thực
+                    context.Token = accessToken;
+                }
+
+                // Nếu không có access_token trong query, middleware sẽ tự động 
+                // tìm trong Header "Authorization: Bearer ..." như mặc định.
+                return Task.CompletedTask;
+            },
+
             OnChallenge = context =>
             {
                 context.HandleResponse();
@@ -124,6 +143,9 @@ var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRIN
     ?? "localhost:6379";
 
 // 1. Đăng ký ConnectionMultiplexer (Cái mà PresenceService đang cần)
+// Quản lý kết nối Redis: Nó chịu trách nhiệm thiết lập, duy trì và quản lý kết nối giữa ứng dụng .NET và máy chủ Redis.
+// Chia sẻ kết nối (Multiplexing): Nó cho phép nhiều phần của ứng dụng (nhiều luồng - threads) chia sẻ chung một kết nối vật lý duy nhất tới Redis.
+// Điều này giúp tối ưu hóa hiệu suất và giảm bớt gánh nặng tạo/đóng kết nối liên tục
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisConnection));
 
@@ -143,15 +165,18 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPresenceService, PresenceService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
 builder.Services.AddHostedService<StoryCleanupService>();
 
 // ═══════════════════════════════════════════════════════════════════
-// 5. CONTROLLERS + SWAGGER / OPENAPI
+// 5. CONTROLLERS + SWAGGER / OPENAPI + SIGNALR
 // ═══════════════════════════════════════════════════════════════════
 builder.Services.AddControllers();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

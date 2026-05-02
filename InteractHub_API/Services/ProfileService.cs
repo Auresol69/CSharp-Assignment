@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using InteractHub_API.Data;
 using InteractHub_API.Data.Entities;
 using InteractHub_API.DTOs.Profiles;
+using InteractHub_API.Hubs;
 
 namespace InteractHub_API.Services;
 
@@ -11,12 +13,18 @@ public class ProfileService : IProfileService
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IMediaService _mediaService;
+    private readonly IHubContext<NotificationHub, INotificationClient> _hubContext;
 
-    public ProfileService(AppDbContext context, UserManager<ApplicationUser> userManager, IMediaService mediaService)
+    public ProfileService(
+        AppDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IMediaService mediaService,
+        IHubContext<NotificationHub, INotificationClient> hubContext)
     {
         _context = context;
         _userManager = userManager;
         _mediaService = mediaService;
+        _hubContext = hubContext;
     }
 
     public async Task<ProfileResponseDto?> GetProfileAsync(string userId, string currentUserId)
@@ -115,8 +123,8 @@ public class ProfileService : IProfileService
             throw new Exception("File size must be less than 5MB");
 
         // Upload to Cloudinary
-        var uploadResult = await _mediaService.UploadImageAsync(file);
-        
+        var uploadResult = await _mediaService.UploadMediaAsync(file, $"avatars/{userId}");
+
         // Update user avatar URL
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
