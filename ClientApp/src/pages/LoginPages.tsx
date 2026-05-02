@@ -10,10 +10,13 @@ const LoginPages: React.FC = () => {
     return (
         <>
             <SplitScreenLayout background={<LoginCarousel/>}>
-                <LoginForm onOpenRegister={() => setIsRegisterOpen(true)} />
-                
-                <div className="mt-12 text-center text-[10px] text-gray-400 uppercase tracking-widest">
-                    © 2026 InteractHub - SGU Student Project
+                <div className="w-full h-full flex flex-col items-center justify-center px-6">
+                    <LoginForm onOpenRegister={() => setIsRegisterOpen(true)} />
+                    
+                    {/* Footer nhỏ phía dưới Form */}
+                    <div className="mt-8 text-center text-[10px] text-slate-500 uppercase tracking-[0.2em] font-medium">
+                        © 2026 InteractHub — SGU Student Project
+                    </div>
                 </div>
             </SplitScreenLayout>
 

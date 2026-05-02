@@ -20,32 +20,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
         setPasswordError(pErr);
 
         if (!eErr && !pErr) {
-            console.log("Đăng nhập:", { email, password });
-            // Gọi service API ở đây
+            console.log("Đăng nhập InteractHub:", { email, password });
         }
     };
 
     return (
-        <div className="w-[80%] max-w-sm bg-[#ffffff]/95 backdrop-blur-sm p-8 rounded-[40px] mx-auto shadow-lg border border-gray-200">
+        <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-xl p-10 rounded-[32px] mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-700/50">
             <div className="text-center mb-10">
-                <h1 className="text-4xl font-black text-blue-600 tracking-tighter mb-2 italic">InteractHub</h1>
-                <h2 className="text-xl font-bold text-gray-700">Chào mừng trở lại!</h2>
+                <h1 className="text-5xl font-black text-blue-500 tracking-tighter mb-3 italic">InteractHub</h1>
+                <h2 className="text-xl font-semibold text-slate-200">Chào mừng trở lại!</h2>
             </div>
 
-            <form className="space-y-[20px] px-[20px]" onSubmit={handleSubmit}>
-                <CustomInput label="Email" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
-                <CustomInput label="Password" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+                <CustomInput label="Email sinh viên" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
+                <CustomInput label="Mật khẩu" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
 
-                <div className="flex items-center justify-between text-sm pt-2">
-                    <button type="button" className="text-gray-400 hover:text-blue-600">Quên mật khẩu?</button>
-                    <button type="button" onClick={onOpenRegister} className="text-blue-600 font-bold hover:underline">Tạo tài khoản</button>
+                <div className="flex items-center justify-between text-sm px-1">
+                    <button type="button" className="text-slate-400 hover:text-blue-400 transition-colors">Quên mật khẩu?</button>
+                    <button type="button" onClick={onOpenRegister} className="text-blue-400 font-bold hover:text-blue-300 transition-all">Tạo tài khoản mới</button>
                 </div>
 
-                <button type="submit" className="block mx-auto w-[140px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all mb-[20px]
-                                                active:scale-95">
-                    Đăng nhập
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-lg">
+                    Đăng nhập ngay
                 </button>
             </form>
+            
+            <p className="text-center text-slate-500 text-xs mt-8 uppercase tracking-widest font-medium">SGU Student Portal</p>
         </div>
     );
 };
