@@ -8,4 +8,6 @@ public interface IPostService
     Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request);
 
     Task DeletePostAsync(string postId);
+
+    Task<Post> RepostAsync(string userId, string parentPostId, string? content);
 }

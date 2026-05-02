@@ -85,6 +85,11 @@ public sealed class CloudinaryService : IMediaService
         return new MediaUploadResultDto(uploadResult.PublicId, url);
     }
 
+    public async Task<MediaUploadResultDto> UploadImageAsync(IFormFile file)
+    {
+        return await UploadMediaAsync(file, "avatars");
+    }
+
     public async Task DeleteMediaAsync(string publicId)
     {
         if (string.IsNullOrWhiteSpace(publicId))
