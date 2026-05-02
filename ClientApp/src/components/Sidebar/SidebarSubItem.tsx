@@ -26,6 +26,8 @@ const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
     );
   }
 
+
+
   return (
     <NavLink to={path} className={({ isActive }) => 
       `${subItemClass} ${isActive ? (isDark ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black font-bold') : ''}`}>

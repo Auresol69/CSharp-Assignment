@@ -66,4 +66,27 @@ public class PostController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    [HttpPost("{postId}/repost")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Repost(string postId, [FromBody] DTOs.Posts.RepostRequestDto request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue("uid") ?? User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var repost = await _postService.RepostAsync(userId ?? string.Empty, postId, request.Content);
+
+            return Created($"/api/posts/{repost.IdPost}", new { repost.IdPost, repost.ParentPostId, repost.Content });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException || ex is KeyNotFoundException)
+        {
+            _logger.LogWarning(ex, "Repost failed.");
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
 }

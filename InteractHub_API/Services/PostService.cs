@@ -67,6 +67,36 @@ public sealed class PostService : IPostService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task<Post> RepostAsync(string userId, string parentPostId, string? content)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new UnauthorizedAccessException("Không xác định được người dùng hiện tại.");
+        }
+
+        var parent = await _dbContext.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.IdPost == parentPostId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy post '{parentPostId}'.");
+
+        if (parent.ParentPostId is not null)
+        {
+            throw new InvalidOperationException("Không thể repost một repost.");
+        }
+
+        var repost = new Post
+        {
+            IdTaiKhoan = userId,
+            ParentPostId = parentPostId,
+            Content = content?.Trim()
+        };
+
+        _dbContext.Posts.Add(repost);
+        await _dbContext.SaveChangesAsync();
+
+        return repost;
+    }
+
     private static MediaType DetectMediaType(IFormFile file)
     {
         if (file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)

@@ -1,5 +1,13 @@
+/* Import Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Apply Inter font globally */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
 
 .dark body {
   background-color: #111827;
