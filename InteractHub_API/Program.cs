@@ -2,11 +2,13 @@ using System.Text;
 using InteractHub_API.Data;
 using InteractHub_API.Data.Entities;
 using InteractHub_API.Services;
+using InteractHub_API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 LoadDotEnv();
 
@@ -46,6 +48,8 @@ builder.Services
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddSignalR();
 
 // ═══════════════════════════════════════════════════════════════════
 // 3. AUTHENTICATION – JWT Bearer
@@ -113,6 +117,23 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // ═══════════════════════════════════════════════════════════════════
+// 3.5 CACHING – Redis Distributed Cache
+// ═══════════════════════════════════════════════════════════════════
+var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING")
+    ?? builder.Configuration.GetConnectionString("Redis")
+    ?? "localhost:6379";
+
+// 1. Đăng ký ConnectionMultiplexer (Cái mà PresenceService đang cần)
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisConnection));
+
+// 2. Vẫn giữ cái này nếu có dùng IDistributedCache ở ngay tác vụ cache trong extensions
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+});
+
+// ═══════════════════════════════════════════════════════════════════
 // 4. APPLICATION SERVICES (Dependency Injection)
 // ═══════════════════════════════════════════════════════════════════
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -120,6 +141,7 @@ builder.Services.AddScoped<IMediaService, CloudinaryService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IPresenceService, PresenceService>();
 
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
@@ -182,6 +204,23 @@ builder.Services.AddCors(options =>
 // ═══════════════════════════════════════════════════════════════════
 var app = builder.Build();
 
+// Tự động tạo DB và chạy Migration khi khởi động
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<AppDbContext>();
+        // Lệnh này sẽ kiểm tra: nếu chưa có DB thì tạo DB, nếu chưa chạy migration nào thì chạy hết
+        await dbContext.Database.MigrateAsync();
+        app.Logger.LogInformation("Đã chạy Migration và cập nhật Database thành công.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Có lỗi xảy ra khi tự động chạy Migration.");
+    }
+}
+
 await IdentitySeeder.SeedAsync(app.Services, app.Logger);
 
 // ─── Middleware Pipeline ───────────────────────────────────────────
@@ -204,6 +243,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("/hubs/notification");
 
 app.Run();
 

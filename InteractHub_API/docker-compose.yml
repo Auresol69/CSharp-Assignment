@@ -1,0 +1,73 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: interacthub_api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
+      ConnectionStrings__Redis: redis:6379
+      JWT_SECRET_KEY: ${Jwt__SecretKey}
+      REDIS_CONNECTION_STRING: redis:6379
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      SeedData__Enabled: ${SeedData__Enabled}
+      SeedUsers__Admin__Email: ${SeedUsers__Admin__Email}
+      SeedUsers__Admin__Password: ${SeedUsers__Admin__Password}
+      SeedUsers__Admin__TenTaiKhoan: ${SeedUsers__Admin__TenTaiKhoan}
+      SeedUsers__Moderator__Email: ${SeedUsers__Moderator__Email}
+      SeedUsers__Moderator__Password: ${SeedUsers__Moderator__Password}
+      SeedUsers__Moderator__TenTaiKhoan: ${SeedUsers__Moderator__TenTaiKhoan}
+    ports:
+      - "5153:8080"
+    networks:
+      - interacthub_net
+    restart: unless-stopped
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: interacthub_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - interacthub_net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:alpine
+    container_name: interacthub_redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - interacthub_net
+    restart: unless-stopped
+
+networks:
+  interacthub_net:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
+  redis_data:
