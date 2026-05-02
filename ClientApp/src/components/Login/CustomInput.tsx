@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import React, { useState } from "react";
 
 interface CustomInputProps {
@@ -22,8 +21,8 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
     const bgColor = isFocused ? "bg-[#2d3748]" : "bg-[#1a202c]";
 
     return (
-        <div className="relative w-full mx-auto my-5">
-            <div className={`relative flex items-center rounded-xl border-2 transition-all duration-300 min-h-14.5
+        <div className="relative w-full mx-auto my-4 sm:my-5">
+            <div className={`relative flex items-center rounded-xl border-2 transition-all duration-300 min-h-14 sm:min-h-15
                 ${error 
                     ? "border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)] bg-[#1a202c]" 
                     : isFocused 
@@ -33,7 +32,7 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                 
                 <input 
                     type={inputType} 
-                    className="w-full bg-transparent text-white text-lg outline-none z-10 px-4 py-3 pr-12"
+                    className="w-full bg-transparent text-white text-base sm:text-lg outline-none z-10 px-4 py-3 pr-12"
                     value={value}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => { 
@@ -45,15 +44,15 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
 
                 <span className={`absolute left-4 px-2 transition-all duration-300 pointer-events-none z-20 whitespace-nowrap ${bgColor}
                     ${(isFocused || value !== "") 
-                        ? "top-0 -translate-y-1/2 text-sm opacity-100 font-bold " + (error ? "text-red-400" : "text-blue-300")
-                        : "inset-y-0 my-auto h-fit text-lg text-gray-400 opacity-70"}`}>
+                        ? "top-0 -translate-y-1/2 text-[11px] sm:text-sm opacity-100 font-bold " + (error ? "text-red-400" : "text-blue-300")
+                        : "inset-y-0 my-auto h-fit text-base sm:text-lg text-gray-400 opacity-70"}`}>
                     {label}
                 </span>
 
                 {isPasswordType && (
                     <button 
                         type="button" 
-                        className="absolute right-3 p-1 text-gray-400 hover:text-blue-300 transition-colors z-30"
+                        className="absolute right-3 p-2 text-gray-400 hover:text-blue-300 transition-colors z-30"
                         onClick={() => setShowPassword(!showPassword)}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -69,7 +68,7 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     </button>
                 )}
             </div>
-            {error && <p className="text-red-400 text-[12px] mt-1.5 ml-1.5 font-semibold">{error}</p>}
+            {error && <p className="text-red-400 text-[11px] sm:text-[12px] mt-1.5 ml-1.5 font-semibold">{error}</p>}
         </div>
     );
 }

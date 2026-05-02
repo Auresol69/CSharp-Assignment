@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import CustomInput from "../Login/CustomInput";
 import { validateFullName, validateEmail, validatePassword, validateConfirmPassword } from "../../utils/validation";
-import { X } from "lucide-react"; // Dùng icon cho xịn
+import { X } from "lucide-react";
 
 interface RegisterModalProps {
     isOpen: boolean;
@@ -34,36 +34,31 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 flex items-center justify-center z-99999 p-4">
-            {/* OVERLAY: Làm mờ hậu cảnh và tối đi */}
+        <div className="fixed inset-0 flex items-end sm:items-center justify-center z-99999 sm:p-4">
             <div 
-                className="absolute inset-0 bg-[#020617]/90 backdrop-blur-md transition-opacity" 
+                className="absolute inset-0 bg-[#020617]/95 backdrop-blur-lg transition-opacity" 
                 onClick={onClose}
             ></div>
 
-            {/* MODAL CONTENT: Tone màu Slate/Navy khớp với Input */}
             <div 
-                className="relative bg-[#0f172a] border border-slate-700 rounded-4xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full max-w-lg overflow-y-auto transition-all scale-100"
-                style={{ maxHeight: '90vh' }}
+                className="relative bg-[#0f172a] border border-slate-800 rounded-t-4xl sm:rounded-4xl p-6 sm:p-8 shadow-2xl w-full max-w-lg h-[92vh] sm:h-auto overflow-y-auto transition-all animate-in slide-in-from-bottom duration-300"
             >
-                {/* Nút đóng X: Chuyển sang icon cho thanh thoát */}
                 <button 
                     onClick={onClose}
-                    className="absolute top-6 right-6 text-slate-500 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-all"
+                    className="absolute top-4 right-4 sm:top-6 sm:right-6 text-slate-500 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-all"
                 >
                     <X size={24} />
                 </button>
 
                 {/* Header Section */}
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-center mb-6 sm:mb-8 mt-4 sm:mt-0">
+                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                         Gia nhập <span className="text-blue-500">InteractHub</span>
                     </h2>
-                    <p className="text-slate-400 text-sm mt-2 font-medium">Cộng đồng sinh viên SGU kết nối & sẻ chia</p>
+                    <p className="text-slate-400 text-[13px] sm:text-sm mt-2 font-bold">Cộng đồng sinh viên SGU kết nối & sẻ chia</p>
                 </div>
                 
-                {/* Form Section: Chỉnh lại width cho hợp lý thay vì w-1/2 */}
-                <form className="space-y-2 w-full px-2" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-1.5 sm:space-y-2 w-full" onSubmit={(e) => e.preventDefault()}>
                     <CustomInput 
                         label="Họ và tên" 
                         value={fullName} 
@@ -86,7 +81,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                         onBlur={() => handleBlur("email")}
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-4">
                         <CustomInput 
                             label="Mật khẩu" 
                             type="password"
@@ -114,16 +109,15 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                     
                     <button 
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 mt-6 transition-all active:scale-[0.98] text-lg"
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-900/40 mt-6 transition-all active:scale-[0.98] text-base sm:text-lg"
                     >
-                        Đăng ký tài khoản
+                        Đăng ký ngay
                     </button>
                 </form>
 
-                {/* Footer Section */}
-                <div className="mt-8 text-center text-[11px] text-slate-500 leading-relaxed font-medium">
+                <div className="mt-8 text-center text-[10px] text-slate-500 leading-relaxed font-bold uppercase tracking-widest">
                     © 2026 INTERACTHUB - ĐỒ ÁN SGU<br/>
-                    Việc nhấn đăng ký đồng nghĩa bạn chấp nhận mọi điều khoản sử dụng.
+                    Việc nhấn đăng ký đồng nghĩa bạn chấp nhận mọi điều khoản.
                 </div>
             </div>
         </div>,

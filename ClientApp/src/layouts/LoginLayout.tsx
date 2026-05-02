@@ -1,29 +1,33 @@
 import React from "react";
 
 interface SplitScreenLayoutProps {
-    children: React.ReactNode; // Phần nội dung chính (Form)
-    background: React.ReactNode; // Phần hình nền động (Carousel)
-    rightWidth?: string; // Tùy chỉnh độ rộng phần bên phải (mặc định 30%)
+    children: React.ReactNode; 
+    background: React.ReactNode; 
+    rightWidth?: string; 
 }
 
 const SplitScreenLayout: React.FC<SplitScreenLayoutProps> = ({ 
     children, 
     background, 
-    rightWidth = "w-[30%]" 
+    rightWidth = "md:w-[35%] lg:w-[30%]" 
 }) => {
     return (
-        <div className="relative w-full h-screen overflow-hidden ">
-            {/* Lớp nền (Carousel) */}
+        <div className="relative w-full h-screen overflow-hidden">
+            {/* Lớp nền (Carousel) - Luôn chiếm toàn màn hình */}
+            <div className="absolute inset-0 z-0">
                 {background}
+            </div>
 
-            {/* Lớp nội dung (Chia tỷ lệ) */}
+            {/* Lớp nội dung */}
             <div className="relative z-10 flex w-full h-full bg-transparent">
-                {/* Phần bên trái: Để trống để lộ ảnh nền */}
-                <div className={`block md:block flex-1`}></div>
+                {/* Phần bên trái: Ẩn trên mobile để Form chiếm toàn màn hình */}
+                <div className="hidden md:block md:flex-1"></div>
 
-                {/* Phần bên phải: Chứa Form nội dung */}
-                <div className={`${rightWidth} h-full flex flex-col justify-center bg-transparent`}>
-                    {children}
+                {/* Phần bên phải: Responsive width */}
+                <div className={`w-full ${rightWidth} h-full flex flex-col justify-center bg-transparent backdrop-blur-[2px] md:backdrop-blur-none`}>
+                    <div className="w-full px-6 md:px-0">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
