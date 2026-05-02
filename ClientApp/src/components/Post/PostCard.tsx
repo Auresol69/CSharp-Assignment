@@ -31,7 +31,7 @@ const formatContent = (content: string, onTagClick?: (tag: string) => void) => {
                 e.stopPropagation();
                 if (onTagClick) onTagClick(part);
               }}
-              className="text-blue-600 dark:text-blue-400 font-bold hover:text-blue-700 dark:hover:text-blue-300 hover:underline decoration-2 mx-0.5 inline-block transition-colors duration-200"
+              className="text-blue-600 dark:text-blue-400 font-semibold cursor-pointer hover:underline mx-0.5 inline-block"
             >
               {part}
             </span>
@@ -52,10 +52,9 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // GIẢ ĐỊNH: Lấy thông tin user hiện tại (ní thay bằng logic thực tế của ní nhé)
   const currentUser = { id: "user_123", role: "admin" }; 
   const isAdmin = currentUser.role === "admin";
-  const isOwner = currentUser.id === post.authorId; // Giả định IPost có authorId
+  const isOwner = currentUser.id === post.authorId;
 
   const Player = ReactPlayer as any;
   const VIDEO_FILE_PATTERN = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i;
@@ -92,7 +91,6 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
     return post.content.slice(0, CHARACTER_LIMIT);
   };
 
-  // --- LOGIC KIỂM TRA ROLE TẠI ĐÂY ---
   const menuItems = [
     { icon: <Bookmark size={18} />, label: 'Lưu bài viết', onClick: () => console.log('Saved') },
     { icon: <EyeOff size={18} />, label: 'Ẩn bài viết', onClick: () => setIsHidden(true) },
@@ -100,7 +98,6 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
     { icon: <Share2 size={18} />, label: 'Sao chép link', onClick: () => navigator.clipboard.writeText(window.location.origin + `/Home/${post.id}`) },
   ];
 
-  // Chỉ Admin hoặc Chủ bài viết mới thấy nút Xóa và Chỉnh sửa
   if (isOwner) {
     menuItems.push({ icon: <Edit3 size={18} />, label: 'Chỉnh sửa', onClick: () => console.log('Edit') });
   }
@@ -121,11 +118,12 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
   return (
     <div
       ref={inViewRef}
-      className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/50 dark:border-gray-700 shadow-lg mb-6 transition-all duration-300 hover:shadow-2xl hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1
-      ${isShared ? 'p-4 ml-3 border-l-4 border-l-gradient-to-r from-blue-400 to-blue-600 bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800' : 'p-6 w-full mx-auto max-w-2xl'}`}
+      className={`rounded-2xl border shadow-sm mb-4 transition-all duration-300 relative
+      ${isShared ? 'p-3 ml-2 border-l-4 border-l-blue-400' : 'p-3 sm:p-4 w-full mx-auto'}
+      ${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
     >
       <div className="flex justify-between items-start">
-        <div onClick={handleOpenDetail} className='cursor-pointer flex-1'>
+        <div onClick={handleOpenDetail} className='cursor-pointer flex-1 min-w-0'>
           <PostHeader
             authorName={post.authorName}
             authorAvatar={post.authorAvatar}
@@ -138,19 +136,19 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
         <div className="relative" ref={menuRef}>
           <button 
             onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-            className={`p-2 rounded-full transition-all outline-none focus:ring-0 ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+            className={`p-2 rounded-full transition-all outline-none ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
           >
             <MoreHorizontal size={20} />
           </button>
 
           {showMenu && (
-            <div className={`absolute right-0 mt-2 w-52 rounded-xl shadow-2xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+            <div className={`absolute right-0 mt-2 w-48 sm:w-52 rounded-xl shadow-2xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
               <div className="py-1">
                 {menuItems.map((item, index) => (
                   <button
                     key={index}
                     onClick={(e) => { e.stopPropagation(); item.onClick(); setShowMenu(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
                       ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
                       ${item.danger ? 'text-red-500' : (isDark ? 'text-gray-200' : 'text-gray-700')}`}
                   >
@@ -163,31 +161,25 @@ const PostCard = ({ post, isShared = false, onTagClick }: Props) => {
         </div>
       </div>
 
-      <div className={`text-gray-900 dark:text-gray-100 mb-6 leading-relaxed whitespace-pre-wrap font-medium ${isShared ? 'text-xs' : 'text-base'}`}>
+      <div className={`my-3 sm:my-4 leading-relaxed whitespace-pre-wrap wrap-break-word ${isDark ? 'text-gray-200' : 'text-gray-800'} ${isShared ? 'text-xs' : 'text-sm sm:text-base'}`}>
         {formatContent(getDisplayContent(), onTagClick)}
         {isLongContent && !isExpanded && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Ngăn mở Modal chi tiết khi chỉ muốn xem thêm text
-              setIsExpanded(true);
-            }}
-            className="text-blue-600 dark:text-blue-400 font-bold hover:text-blue-700 dark:hover:text-blue-300 hover:underline decoration-2 ml-2 focus:outline-none transition-all duration-200 transform hover:scale-105"
-          >
+          <button onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} className={`font-semibold hover:underline ml-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
             ...Xem thêm
           </button>
         )}
       </div>
 
       {mediaUrl && (
-        <div className="rounded-2xl overflow-hidden border border-gray-200/30 dark:border-gray-600 mb-6 bg-gradient-to-br from-gray-900 to-black dark:from-gray-950 dark:to-black aspect-video relative shadow-inner">
+        <div className={`rounded-xl overflow-hidden border mb-3 sm:mb-4 bg-black aspect-video relative ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
           {isYouTube ? (
             <div className="w-full h-full">
-              <Player src={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
+              <Player url={mediaUrl} playing={shouldPlay} muted controls width="100%" height="100%" />
             </div>
           ) : isVideoFile ? (
             <video ref={videoRef} src={mediaUrl} muted controls className="w-full h-full object-contain" />
           ) : (
-            <img src={mediaUrl} alt="Content" className="w-full h-auto object-cover max-h-125" />
+            <img src={mediaUrl} alt="Content" className="w-full h-full object-cover sm:object-contain" />
           )}
         </div>
       )}

@@ -26,17 +26,7 @@ const SidebarSubItem = ({ name, path, icon: Icon }: ISubItemProps) => {
     );
   }
 
-  if (name === 'Log Out') {
-    return (
-      <NavLink
-        to="/Login"
-        className="flex items-center space-x-3 p-3 -ml-5 -mt-5 rounded-lg transition-all text-gray-500 hover:text-red-600 hover:bg-red-50 dark:text-gray-300 dark:hover:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
-      >
-        <Icon size={18} />
-        <span className="text-sm font-medium">Đăng xuất</span>
-      </NavLink>
-    );
-  }
+
 
   return (
     <NavLink to={path} className={({ isActive }) => 

@@ -20,32 +20,35 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
         setPasswordError(pErr);
 
         if (!eErr && !pErr) {
-            console.log("Đăng nhập:", { email, password });
-            // Gọi service API ở đây
+            console.log("Đăng nhập InteractHub:", { email, password });
         }
     };
 
     return (
-        <div className="w-[90%] max-w-md bg-white/90 dark:bg-blue-950/80 backdrop-blur-xl p-8 rounded-3xl mx-auto shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-white/30 dark:border-blue-800/50 transition-all duration-300 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]">
-            <div className="text-center mb-10">
-                <h1 className="text-5xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight mb-4">InteractHub</h1>
-                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Chào mừng trở lại!</h2>
-                <p className="text-lg font-medium text-slate-700 dark:text-slate-300 leading-relaxed">Đăng nhập để tiếp tục trải nghiệm</p>
+        /* Thêm w-[92%] để không dính sát mép màn hình mobile */
+        <div className="w-[92%] max-w-md bg-[#0f172a]/80 backdrop-blur-xl p-6 sm:p-10 rounded-3xl sm:rounded-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-700/50">
+            <div className="text-center mb-8 sm:mb-10">
+                {/* Giảm size chữ trên mobile từ 5xl xuống 4xl */}
+                <h1 className="text-4xl sm:text-5xl font-black text-blue-500 tracking-tighter mb-2 sm:mb-3 italic">InteractHub</h1>
+                <h2 className="text-lg sm:text-xl font-semibold text-slate-200">Chào mừng trở lại!</h2>
             </div>
 
-            <form className="space-y-8" onSubmit={handleSubmit}>
-                <CustomInput label="Email" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
-                <CustomInput label="Password" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+                <CustomInput label="Email sinh viên" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
+                <CustomInput label="Mật khẩu" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
 
-                <div className="flex items-center justify-between text-base font-medium">
-                    <button type="button" className="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">Quên mật khẩu?</button>
-                    <button type="button" onClick={onOpenRegister} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline transition-all duration-200">Tạo tài khoản</button>
+                {/* Chuyển sang dạng cột trên mobile cực nhỏ để tránh đè chữ */}
+                <div className="flex flex-col sm:flex-row items-center justify-between text-sm gap-3 sm:gap-0 px-1">
+                    <button type="button" className="text-slate-400 hover:text-blue-400 transition-colors">Quên mật khẩu?</button>
+                    <button type="button" onClick={onOpenRegister} className="text-blue-400 font-bold hover:text-blue-300 transition-all">Tạo tài khoản mới</button>
                 </div>
 
-                <button type="submit" className="w-full py-4 bg-slate-900 dark:bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:bg-slate-800 dark:hover:bg-indigo-700 hover:shadow-[0_15px_30px_rgba(0,0,0,0.2)] active:scale-[0.97] transition-all duration-200">
-                    Đăng nhập
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg">
+                    Đăng nhập ngay
                 </button>
             </form>
+            
+            <p className="text-center text-slate-500 text-[10px] sm:text-xs mt-8 uppercase tracking-widest font-medium">SGU Student Portal</p>
         </div>
     );
 };

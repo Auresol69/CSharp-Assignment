@@ -3,14 +3,10 @@ import SplitScreenLayout from "../layouts/LoginLayout.tsx";
 import LoginCarousel from "../components/Login/LoginCarousel.tsx";
 import LoginForm from "../components/Login/LoginForm.tsx";
 import RegisterModal from "../components/Login/RegisterModal.tsx";
-import { useTheme } from "../hooks/useTheme";
 
 const LoginPages: React.FC = () => {
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-    const { isDark } = useTheme();
 
-    // Tối ưu hiệu năng bằng useCallback
-    const handleOpenRegister = useCallback(() => setIsRegisterOpen(true), []);
     const handleCloseRegister = useCallback(() => setIsRegisterOpen(false), []);
 
     // Tách phần Footer ra để code sạch hơn
@@ -23,11 +19,12 @@ const LoginPages: React.FC = () => {
     ), []);
 
     return (
-        <div className="min-h-screen">
-            <SplitScreenLayout background={<LoginCarousel />}>
-                <div className="flex flex-col h-full justify-center px-4 sm:px-8">
-                    {/* LoginForm wrapper để kiểm soát spacing tốt hơn */}
-                    <LoginForm onOpenRegister={handleOpenRegister} />
+        <div className= 'min-h-screen'>
+            <SplitScreenLayout background={<LoginCarousel/>}>
+                <div className="w-full h-full flex flex-col items-center justify-center px-6">
+                    <LoginForm onOpenRegister={() => setIsRegisterOpen(true)} />
+                    
+                    {/* Footer nhỏ phía dưới Form */}
                     {Footer}
                 </div>
             </SplitScreenLayout>

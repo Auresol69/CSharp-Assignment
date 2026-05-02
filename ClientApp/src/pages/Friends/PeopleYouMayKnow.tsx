@@ -7,7 +7,7 @@ const PeopleYouMayKnow = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-[calc(100%-10rem)] ml-36 p-6">
+    <div className="max-w-[calc(100%-10rem)] p-6">
       <div className="flex items-center gap-4 mb-8">
         <button onClick={() => navigate('/friends')} className="p-2 hover:bg-gray-100 rounded-full">
           <ArrowLeft size={24} />
