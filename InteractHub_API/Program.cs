@@ -167,6 +167,7 @@ builder.Services.AddScoped<IPresenceService, PresenceService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 builder.Services.AddScoped<InteractHub_API.Data.Repositories.IPostRepository, InteractHub_API.Data.Repositories.PostRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IInteractionService, InteractionService>();
 builder.Services.AddScoped<IHashtagService, HashtagService>();

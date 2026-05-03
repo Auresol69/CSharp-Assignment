@@ -13,11 +13,13 @@ namespace InteractHub_API.Controllers;
 public class PostController : ControllerBase
 {
     private readonly IPostService _postService;
+    private readonly IReportService _reportService;
     private readonly ILogger<PostController> _logger;
 
-    public PostController(IPostService postService, ILogger<PostController> logger)
+    public PostController(IPostService postService, IReportService reportService, ILogger<PostController> logger)
     {
         _postService = postService;
+        _reportService = reportService;
         _logger = logger;
     }
 
@@ -128,6 +130,34 @@ public class PostController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{postId}/report")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Report(string postId, [FromBody] ReportPostRequestDto request)
+    {
+        try
+        {
+            var reporterId = User.FindFirstValue("uid") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _reportService.ReportPostAsync(postId, request.Reason ?? string.Empty, reporterId ?? string.Empty);
+
+            return Ok(new { message = "Đã gửi báo cáo." });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
         }
     }
 
