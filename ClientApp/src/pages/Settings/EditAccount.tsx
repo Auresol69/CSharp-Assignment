@@ -72,6 +72,8 @@ const EditAccount = () => {
           type={type}
           className="bg-transparent w-full outline-none text-sm font-bold text-gray-800 placeholder-gray-400"
           value={value}
+          aria-label={label}
+          placeholder={label}
           onChange={onChange}
         />
       </div>
@@ -83,7 +85,7 @@ const EditAccount = () => {
       {/* Top Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl shadow-sm transition-all active:scale-90">
+          <button onClick={() => navigate(-1)} className="p-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl shadow-sm transition-all active:scale-90" aria-label="Quay lại" title="Quay lại">
             <ArrowLeft size={20} className="text-gray-700" />
           </button>
           <div>
@@ -123,6 +125,8 @@ const EditAccount = () => {
                 className="p-3.5 bg-gray-50 border border-gray-200 rounded-2xl outline-none text-sm font-bold text-gray-800 appearance-none focus:border-blue-500"
                 value={formData.gender}
                 onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                aria-label="Giới tính"
+                title="Giới tính"
               >
                 <option value="Nam">Nam</option>
                 <option value="Nữ">Nữ</option>

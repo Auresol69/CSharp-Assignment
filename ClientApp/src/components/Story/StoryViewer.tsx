@@ -69,12 +69,12 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
 
     return (
         <div className="fixed inset-0 z-999 bg-black/95 flex items-center justify-center select-none touch-none">
-            <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-2 rounded-full z-1001">
+            <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-2 rounded-full z-1001" aria-label="Đóng story" title="Đóng story">
                 <X size={28} />
             </button>
 
             {/* Điều hướng trên Desktop */}
-            <button onClick={prevStory} className="hidden md:block absolute left-10 lg:left-40 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-white transition-all z-1001">
+            <button onClick={prevStory} className="hidden md:block absolute left-10 lg:left-40 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-white transition-all z-1001" aria-label="Story trước" title="Story trước">
                 <ChevronLeft size={64} strokeWidth={1.5} />
             </button>
 
@@ -94,8 +94,10 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
                 <div className="absolute top-4 left-2 right-2 flex gap-1 z-50">
                     {currentUser.stories.map((_, index) => (
                         <div key={index} className="h-0.5 sm:h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
-                            <div className="h-full bg-white transition-all duration-50 ease-linear"
-                                style={{ width: index === storyIndex ? `${progress}%` : index < storyIndex ? '100%' : '0%' }}
+                            <progress
+                                max={100}
+                                value={index === storyIndex ? progress : index < storyIndex ? 100 : 0}
+                                className="story-progress h-full w-full"
                             />
                         </div>
                     ))}
@@ -109,7 +111,7 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
                 {storySrc ? <img src={storySrc} className="w-full h-full object-cover md:object-contain" alt="story-content" /> : <div className="w-full h-full bg-gray-900" />}
             </div>
 
-            <button onClick={nextStory} className="hidden md:block absolute right-10 lg:right-40 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all z-1001">
+            <button onClick={nextStory} className="hidden md:block absolute right-10 lg:right-40 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all z-1001" aria-label="Story tiếp theo" title="Story tiếp theo">
                 <ChevronRight size={64} strokeWidth={1.5} />
             </button>
         </div>

@@ -9,6 +9,7 @@ interface Props {
 
 const ProfileHeader = ({ profile }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const avatarSrc = profile?.avatarUrl?.trim() ? profile.avatarUrl : undefined;
 
   const userProfile = {
     bio: profile?.bio ?? 'Sinh viên Đại học Sài Gòn',
@@ -33,12 +34,18 @@ const ProfileHeader = ({ profile }: Props) => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-16 md:-mt-20 pb-6 relative">
         <div className="flex flex-col md:flex-row md:items-end md:space-x-5 items-center text-center md:text-left justify-between">
           <div className="relative inline-block">
-            <img 
-              src={profile?.avatarUrl ?? 'https://via.placeholder.com/150'} 
-              alt={profile?.tenTaiKhoan ?? 'Avatar'} 
-              className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 rounded-full border-4 border-white object-cover shadow-md"
-            />
+            {avatarSrc ? (
+              <img 
+                src={avatarSrc} 
+                alt={profile?.tenTaiKhoan ?? 'Avatar'} 
+                className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 rounded-full border-4 border-white object-cover shadow-md"
+              />
+            ) : (
+              <div className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 rounded-full border-4 border-white bg-gray-200 shadow-md" />
+            )}
             <button className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-gray-200 p-1.5 sm:p-2 rounded-full hover:bg-gray-300 border-2 border-white shadow-sm">
+              aria-label="Chỉnh sửa ảnh đại diện"
+              title="Chỉnh sửa ảnh đại diện"
               <Camera size={16} />
             </button>
           </div>

@@ -33,6 +33,8 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     className={`w-full text-white text-lg outline-none z-10 px-4 py-3
                         ${isPasswordType ? "pr-12" : "pr-4"}`}
                     value={value}
+                    aria-label={label}
+                    placeholder={label}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => { 
                         setIsFocused(false); 
@@ -53,6 +55,8 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     <button 
                         type="button" 
                         className="absolute right-3 p-1 text-gray-500 hover:text-blue-400 transition-colors z-30"
+                        aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                         onClick={() => setShowPassword(!showPassword)}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">

@@ -46,6 +46,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                 <button 
                     onClick={onClose}
                     className="absolute top-4 right-4 sm:top-6 sm:right-6 text-slate-500 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-all"
+                    aria-label="Đóng hộp thoại đăng ký"
+                    title="Đóng hộp thoại đăng ký"
                 >
                     <X size={24} />
                 </button>

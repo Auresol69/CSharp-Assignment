@@ -33,7 +33,7 @@ const EditProfileModal = ({ onClose, initialData }: { onClose: () => void, initi
           {/* Header */}
           <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
             <h2 className="text-lg sm:text-xl font-black text-gray-900">Chỉnh sửa trang cá nhân</h2>
-            <button onClick={handleAttemptClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500"><X size={24}/></button>
+            <button onClick={handleAttemptClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500" aria-label="Đóng chỉnh sửa trang cá nhân" title="Đóng chỉnh sửa trang cá nhân"><X size={24}/></button>
           </div>
 
           <div className="p-4 sm:p-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
@@ -41,14 +41,14 @@ const EditProfileModal = ({ onClose, initialData }: { onClose: () => void, initi
             <div className="relative mb-6">
               <div className="w-full h-28 sm:h-32 bg-gray-200 rounded-2xl overflow-hidden relative group">
                 {coverImageSrc ? <img src={coverImageSrc} className="w-full h-full object-cover" alt="cover" /> : <div className="w-full h-full bg-gray-200" />}
-                <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-label="Chỉnh sửa ảnh bìa" title="Chỉnh sửa ảnh bìa">
                   <Camera size={20} />
                 </button>
               </div>
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white overflow-hidden shadow-lg bg-white relative group">
                   {avatarSrc ? <img src={avatarSrc} className="w-full h-full object-cover" alt="avatar" /> : <div className="w-full h-full bg-gray-300" />}
-                  <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" aria-label="Chỉnh sửa ảnh đại diện" title="Chỉnh sửa ảnh đại diện">
                     <Camera size={16}/>
                   </button>
                 </div>

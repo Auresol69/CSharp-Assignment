@@ -15,7 +15,7 @@ const FriendRequests = () => {
   return (
     <div className="max-w-[calc(100%-10rem)] p-6">
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/friends')} className="p-2 hover:bg-gray-100 rounded-full">
+        <button onClick={() => navigate('/friends')} className="p-2 hover:bg-gray-100 rounded-full" aria-label="Quay lại danh sách bạn bè" title="Quay lại danh sách bạn bè">
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-2xl font-bold text-gray-800">Lời mời kết bạn</h1>

@@ -8,9 +8,12 @@ public class FriendService
 {
     private readonly AppDbContext _context;
 
-    public FriendService(AppDbContext context)
+    private readonly INotificationService _notificationService;
+
+    public FriendService(AppDbContext context, INotificationService notificationService)
     {
         _context = context;
+        _notificationService = notificationService;
     }
 
     // Gửi lời mời
@@ -41,6 +44,8 @@ public class FriendService
         });
 
         await _context.SaveChangesAsync();
+
+        await _notificationService.CreateAndSendNotificationAsync(targetUserId, currentUserId, null, "FriendRequest");
     }
 
     // Chấp nhận lời mời
@@ -57,6 +62,11 @@ public class FriendService
 
         request.TrangThai = FriendshipStatus.Accepted;
         await _context.SaveChangesAsync();
+
+        // Xóa thông báo lời mời cũ ở phía người nhận vì request đã được xử lý
+        await _notificationService.DeleteByCriteriaAsync(currentUserId, senderId, "FriendRequest");
+
+        await _notificationService.CreateAndSendNotificationAsync(senderId, currentUserId, null, "AcceptRequest");
     }
 
     // Từ chối lời mời
@@ -73,6 +83,9 @@ public class FriendService
 
         _context.Friendships.Remove(request);
         await _context.SaveChangesAsync();
+
+        // Lời mời bị từ chối thì xóa notification pending ở người nhận
+        await _notificationService.DeleteByCriteriaAsync(currentUserId, senderId, "FriendRequest");
     }
 
     // Hủy lời mời đã gửi
@@ -89,6 +102,9 @@ public class FriendService
 
         _context.Friendships.Remove(request);
         await _context.SaveChangesAsync();
+
+        // Người gửi hủy lời mời: xóa notification đã gửi sang người nhận
+        await _notificationService.DeleteByCriteriaAsync(targetUserId, currentUserId, "FriendRequest");
     }
 
     // Hủy kết bạn
