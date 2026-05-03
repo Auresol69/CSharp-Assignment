@@ -5,6 +5,8 @@ namespace InteractHub_API.Services;
 
 public interface IPostService
 {
+    Task<List<Post>> GetPostsAsync(DateTime? lastTimestamp, int limit);
+
     Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request);
 
     Task DeletePostAsync(string postId);

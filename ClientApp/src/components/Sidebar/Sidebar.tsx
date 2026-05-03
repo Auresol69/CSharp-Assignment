@@ -1,6 +1,6 @@
 import Logo from '../Logo.tsx';
 import {Link} from 'react-router-dom';
-import {LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen} from "lucide-react";
+import {LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert} from "lucide-react";
 import type { ISidebarItem } from '../../types/Sidebar';
 import SidebarItem from './SidebarItem';
 import { useTheme } from '../../context/ThemeContext';
@@ -10,6 +10,7 @@ const items: ISidebarItem[] = [
   { name: 'Notifications', path: '/notifications', icon: Bell },
   { name: 'Friends', path: '/friends', icon: Users },
   { name: 'Profile', path: '/profile', icon: SquareUserRound },
+  { name: 'Moderation', path: '/admin/moderation', icon: ShieldAlert },
   {
     name: 'Setting',
     path: '#',

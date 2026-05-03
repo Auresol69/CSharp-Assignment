@@ -6,7 +6,5 @@ public interface IMediaService
 {
     Task<MediaUploadResultDto> UploadMediaAsync(IFormFile file, string folder);
 
-    Task<MediaUploadResultDto> UploadImageAsync(IFormFile file);
-
     Task DeleteMediaAsync(string publicId);
 }

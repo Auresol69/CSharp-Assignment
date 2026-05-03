@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import { LoginPages, Home, Profile, Notifications, Friends} from "./pages";
+import { LoginPages, Home, Profile, Notifications, Friends, Moderation} from "./pages";
 import FriendsList from "./pages/Friends/FriendsList";
 import FriendRequests from "./pages/Friends/FriendsRequest";
 import PeopleYouMayKnow from "./pages/Friends/PeopleYouMayKnow";
@@ -28,6 +28,7 @@ function App() {
             <Route path="/Profile" element={<Profile />} />
             <Route path="/settings/edit-information" element={<EditAccount />} />
             <Route path="/Notifications" element={<Notifications />} />
+            <Route path="/admin/moderation" element={<Moderation />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/friends/list" element={<FriendsList />} />
             <Route path="/friends/requests" element={<FriendRequests />} />
