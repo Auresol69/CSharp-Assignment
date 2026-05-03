@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CustomInput from "../Login/CustomInput";
 import { validateEmail, validatePassword } from "../../utils/validation";
+import authService from "../../services/authService";
 
 interface LoginFormProps {
     onOpenRegister: () => void;
@@ -11,16 +13,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const [serverError, setServerError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setServerError("");
         const eErr = validateEmail(email);
         const pErr = validatePassword(password);
         setEmailError(eErr);
         setPasswordError(pErr);
 
-        if (!eErr && !pErr) {
-            console.log("Đăng nhập InteractHub:", { email, password });
+        if (eErr || pErr) return;
+
+        setLoading(true);
+        try {
+            const resp = await authService.login({ email, password });
+            authService.saveAuth(resp);
+            setPassword("");
+            navigate("/");
+        } catch (err: any) {
+            if (err?.response?.data?.message) setServerError(err.response.data.message);
+            else setServerError("Đăng nhập thất bại. Vui lòng thử lại.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -33,9 +50,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
                 <h2 className="text-lg sm:text-xl font-semibold text-slate-200">Chào mừng trở lại!</h2>
             </div>
 
+
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <CustomInput label="Email sinh viên" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
                 <CustomInput label="Mật khẩu" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
+
+                {serverError && <div className="text-sm text-red-400">{serverError}</div>}
 
                 {/* Chuyển sang dạng cột trên mobile cực nhỏ để tránh đè chữ */}
                 <div className="flex flex-col sm:flex-row items-center justify-between text-sm gap-3 sm:gap-0 px-1">
@@ -43,8 +63,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
                     <button type="button" onClick={onOpenRegister} className="text-blue-400 font-bold hover:text-blue-300 transition-all">Tạo tài khoản mới</button>
                 </div>
 
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg">
-                    Đăng nhập ngay
+                <button disabled={loading} type="submit" className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg">
+                    {loading ? "Đang xử lý..." : "Đăng nhập ngay"}
                 </button>
             </form>
             

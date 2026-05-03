@@ -7,7 +7,7 @@ export const validateEmail = (email: string) => {
 };
 
 export const validatePassword = (password: string) => {
-    const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passRegex = /^(?=.*[A-Za-z])(?=.*\d)\S{7,}$/;
     if (!password) return "Mật khẩu không được để trống";
     if (!passRegex.test(password)) return "Mật khẩu phải từ 8 ký tự, gồm cả chữ và số";
     return "";

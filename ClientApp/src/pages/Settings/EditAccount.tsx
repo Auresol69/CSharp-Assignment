@@ -1,26 +1,66 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getMyProfile, updateMyProfile } from '../../services/profileApi';
 
 const EditAccount = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: 'Nguyễn Văn A',
+    fullName: '',
     gender: 'Nam',
-    birthday: '2004-01-01',
-    phone: '0901234567',
-    email: 'sinhvien.sgu@gmail.com',
+    birthday: '',
+    phone: '',
+    email: '',
     job: 'Sinh viên',
-    workplace: 'Đại học Sài Gòn (SGU)',
-    hometown: 'Long An',
-    currentAddress: 'Quận 5, TP.HCM',
+    workplace: '',
+    hometown: '',
+    currentAddress: '',
     website: 'https://interacthub.id.vn'
   });
 
-  const handleSave = () => {
-    console.log("Dữ liệu cập nhật:", formData);
-    alert("Đã lưu tất cả thay đổi!");
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await getMyProfile();
+        setFormData({
+          fullName: profile.tenTaiKhoan ?? '',
+          gender: profile.gioiTinh ?? 'Nam',
+          birthday: profile.ngaySinh ? profile.ngaySinh.slice(0, 10) : '',
+          phone: profile.phoneNumber ?? '',
+          email: profile.email ?? '',
+          job: 'Sinh viên',
+          workplace: profile.diaChi ?? '',
+          hometown: '',
+          currentAddress: profile.diaChi ?? '',
+          website: 'https://interacthub.id.vn'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadProfile();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateMyProfile({
+        tenTaiKhoan: formData.fullName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        bio: formData.job,
+        gioiTinh: formData.gender,
+        diaChi: formData.currentAddress,
+        ngaySinh: formData.birthday || undefined,
+      });
+      alert('Đã lưu tất cả thay đổi!');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const InputGroup = ({ label, icon: Icon, value, onChange, type = "text" }: any) => (
@@ -55,9 +95,10 @@ const EditAccount = () => {
         {/* Nút lưu luôn hiển thị dễ thấy */}
         <button 
           onClick={handleSave}
+          disabled={loading || saving}
           className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95 text-sm"
         >
-          <Save size={20} /> Lưu thay đổi
+          <Save size={20} /> {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
         </button>
       </div>
 

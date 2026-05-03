@@ -1,4 +1,4 @@
-import { MOCK_POSTS } from '../services/MockedData/mockPost';
+import useFeed from '../hooks/useFeed';
 import { useEffect, useState } from 'react';
 import PostCard from '../components/Post/PostCard';
 import PostSkeleton from '../components/Post/PostSkeleton';
@@ -9,7 +9,7 @@ import StoryViewer from '../components/Story/StoryViewer';
 import StoryBar from '../components/Story/StoryBar';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostDetailModal from '../components/Post/PostDetailModal';
-import type { IPost } from '../types/Post';
+// import type { IPost } from '../types/Post';
 import { useTheme } from '../context/ThemeContext';
 
 function Home() {
@@ -24,42 +24,29 @@ function Home() {
   
   const navigate = useNavigate();
   const [filterTag, setFilterTag] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [allPosts, setAllPosts] = useState<IPost[]>(MOCK_POSTS as IPost[]);
+  const { posts, loading: isLoading, refresh } = useFeed(true, 10);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
     const handleReload = () => {
-      setIsLoading(true);
       setFilterTag(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      refresh();
     };
     window.addEventListener('reload-dashboard', handleReload);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('reload-dashboard', handleReload);
     };
-  }, []);
+  }, [refresh]);
 
   const handleNewPost = (newPostData: any) => {
-    const newPost: IPost = {
-      id: newPostData.id,
-      authorId: "me",
-      authorName: newPostData.user.name,
-      authorAvatar: newPostData.user.avatar,
-      content: newPostData.content,
-      mediaUrl: newPostData.image || undefined,
-      createdAt: "Vừa xong",
-      likesCount: 0,
-      commentsCount: 0,
-      sharesCount: 0
-    };
-    setAllPosts(prev => [newPost, ...prev]);
+    void newPostData;
+    // Refresh feed after new post created
+    refresh();
   };
   
   const filteredPosts = filterTag 
-    ? allPosts.filter(p => p.content.includes(filterTag) || p.sharedPost?.content.includes(filterTag))
-    : allPosts;
+    ? posts.filter(p => p.content.includes(filterTag) || p.sharedPost?.content.includes(filterTag))
+    : posts;
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-[#020617] text-white' : 'bg-gray-50 text-gray-900'}`}>

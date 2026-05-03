@@ -9,6 +9,8 @@ interface Props {
 }
 
 const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props) => {
+  const avatarSrc = authorAvatar.trim() ? authorAvatar : undefined;
+
   return (
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center space-x-3">
@@ -20,7 +22,7 @@ const PostHeader = ({ authorName, authorAvatar, createdAt, onTimeClick }: Props)
             if (onTimeClick) onTimeClick();
           }}
         >
-          <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
+          {avatarSrc ? <img src={avatarSrc} alt={authorName} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-300" />}
         </div>
 
         <div>

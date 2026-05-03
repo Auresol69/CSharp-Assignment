@@ -4,6 +4,7 @@ export const MOCK_POSTS: IPost[] = [
   // 1. TRƯỜNG HỢP: BÀI VIẾT ĐẦY ĐỦ (TEXT + HASHTAG + IMAGE)
   {
     id: '1',
+    authorId: 'user-1',
     authorName: 'Nguyễn Văn A',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
     createdAt: '12 giờ trước',
@@ -17,6 +18,7 @@ export const MOCK_POSTS: IPost[] = [
   // 2. TRƯỜNG HỢP: CHỈ CÓ TEXT (KIỂM TRA BỐ CỤC KHI KHÔNG CÓ MEDIA)
   {
     id: '2',
+    authorId: 'user-2',
     authorName: 'Lê Thị Hoa',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
     createdAt: '2 giờ trước',
@@ -29,6 +31,7 @@ export const MOCK_POSTS: IPost[] = [
   // 3. TRƯỜNG HỢP: VIDEO MP4 TRỰC TIẾP (KIỂM TRA VIDEO PLAYER)
   {
     id: '3',
+    authorId: 'user-3',
     authorName: 'Trần Minh Tuấn',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SGU_Student',
     createdAt: 'Vừa xong',
@@ -42,6 +45,7 @@ export const MOCK_POSTS: IPost[] = [
   // 4. TRƯỜNG HỢP: CHIA SẺ BÀI VIẾT (SHARED POST - 1 CẤP)
   {
     id: '5',
+    authorId: 'user-5',
     authorName: 'Lâm Đẹp Trai',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lam',
     createdAt: '5 phút trước',
@@ -51,6 +55,7 @@ export const MOCK_POSTS: IPost[] = [
     sharesCount: 0,
     sharedPost: {
       id: '4',
+      authorId: 'user-4',
       authorName: 'Đại học Sài Gòn (SGU)',
       authorAvatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=SGU',
       createdAt: '5 giờ trước',
@@ -64,6 +69,7 @@ export const MOCK_POSTS: IPost[] = [
   // 5. TRƯỜNG HỢP: LINK YOUTUBE (KIỂM TRA REACTPLAYER VỚI YOUTUBE)
   {
     id: '9',
+    authorId: 'user-9',
     authorName: 'Đặng Minh Hoàng',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hoang',
     createdAt: '1 phút trước',
@@ -73,6 +79,7 @@ export const MOCK_POSTS: IPost[] = [
     sharesCount: 1,
     sharedPost: {
       id: 'yt-rickroll',
+      authorId: 'user-rick',
       authorName: 'Rick Astley',
       authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rick',
       createdAt: '25 tháng 10, 2009',
@@ -87,6 +94,7 @@ export const MOCK_POSTS: IPost[] = [
   // 6. TRƯỜNG HỢP: CONTENT QUÁ DÀI (KIỂM TRA HIỂN THỊ TRUNCATE/CUỘN)
   {
     id: '10',
+    authorId: 'user-10',
     authorName: 'Hội Cuồng Code',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Code',
     createdAt: '3 giờ trước',
@@ -99,6 +107,7 @@ export const MOCK_POSTS: IPost[] = [
   // 7. TRƯỜNG HỢP: CHIA SẺ BÀI VIẾT NHƯNG BÀI GỐC CÓ MEDIA (ẢNH)
   {
     id: '11',
+    authorId: 'user-11',
     authorName: 'Trần Thị B',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=B',
     createdAt: '10 phút trước',
@@ -108,6 +117,7 @@ export const MOCK_POSTS: IPost[] = [
     sharesCount: 2,
     sharedPost: {
       id: '12',
+      authorId: 'user-12',
       authorName: 'Setup Inspiration',
       authorAvatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=Setup',
       createdAt: '1 ngày trước',
@@ -122,6 +132,7 @@ export const MOCK_POSTS: IPost[] = [
   // 8. TRƯỜNG HỢP: HASHTAG TRÙNG LẶP & KÝ TỰ ĐẶC BIỆT
   {
     id: '13',
+    authorId: 'user-13',
     authorName: 'Hacker lỏ',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hacker',
     createdAt: 'Vừa xong',

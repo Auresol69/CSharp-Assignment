@@ -6,6 +6,8 @@ const EditProfileModal = ({ onClose, initialData }: { onClose: () => void, initi
   const [data, setData] = useState(initialData);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const coverImageSrc = data.coverImage?.trim() ? data.coverImage : undefined;
+  const avatarSrc = data.avatar?.trim() ? data.avatar : undefined;
 
   const isDirty = JSON.stringify(data) !== JSON.stringify(initialData);
 
@@ -38,14 +40,14 @@ const EditProfileModal = ({ onClose, initialData }: { onClose: () => void, initi
             {/* Media Section */}
             <div className="relative mb-6">
               <div className="w-full h-28 sm:h-32 bg-gray-200 rounded-2xl overflow-hidden relative group">
-                <img src={data.coverImage} className="w-full h-full object-cover" alt="cover" />
+                {coverImageSrc ? <img src={coverImageSrc} className="w-full h-full object-cover" alt="cover" /> : <div className="w-full h-full bg-gray-200" />}
                 <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <Camera size={20} />
                 </button>
               </div>
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white overflow-hidden shadow-lg bg-white relative group">
-                  <img src={data.avatar} className="w-full h-full object-cover" alt="avatar" />
+                  {avatarSrc ? <img src={avatarSrc} className="w-full h-full object-cover" alt="avatar" /> : <div className="w-full h-full bg-gray-300" />}
                   <button className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Camera size={16}/>
                   </button>

@@ -25,6 +25,8 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
     const [isPaused, setIsPaused] = useState(false);
     const currentUser = userStories[userIndex];
     const currentStory = currentUser.stories[storyIndex];
+    const userAvatarSrc = currentUser?.userAvatar?.trim() ? currentUser.userAvatar : undefined;
+    const storySrc = currentStory?.url?.trim() ? currentStory.url : undefined;
 
     useEffect(() => {
         if (currentUser && currentStory) {
@@ -100,11 +102,11 @@ const StoryViewer = ({ userStories, initialUserIndex, initialStoryId, onClose }:
                 </div>
 
                 <div className="absolute top-8 left-4 flex items-center gap-3 z-50 pt-2">
-                    <img src={currentUser.userAvatar} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-500" alt="avatar" />
+                    {userAvatarSrc ? <img src={userAvatarSrc} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-500" alt="avatar" /> : <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-500 bg-gray-600" />}
                     <span className="text-white font-bold text-xs sm:text-sm shadow-black drop-shadow-md">{currentUser.userName}</span>
                 </div>
 
-                <img src={currentStory.url} className="w-full h-full object-cover md:object-contain" alt="story-content" />
+                {storySrc ? <img src={storySrc} className="w-full h-full object-cover md:object-contain" alt="story-content" /> : <div className="w-full h-full bg-gray-900" />}
             </div>
 
             <button onClick={nextStory} className="hidden md:block absolute right-10 lg:right-40 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all z-1001">

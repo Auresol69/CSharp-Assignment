@@ -10,11 +10,15 @@ interface FriendCardProps {
 const FriendCard = ({ name, avatar, type, mutualFriends }: FriendCardProps) => (
   <div className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:shadow-md transition-all active:scale-[0.98]">
     <div className="relative mb-3">
-      <img 
-        src={avatar} 
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-500 transition-colors cursor-pointer" 
-        alt={name} 
-      />
+      {avatar.trim() ? (
+        <img 
+          src={avatar} 
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-500 transition-colors cursor-pointer" 
+          alt={name} 
+        />
+      ) : (
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 border-2 border-blue-100" />
+      )}
     </div>
     
     <h3 className="font-bold text-xs sm:text-sm text-gray-800 truncate w-full hover:underline cursor-pointer px-1">

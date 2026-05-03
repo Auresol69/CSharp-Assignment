@@ -1,10 +1,16 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import FriendCard from '../../components/Friends/FriendCard';
-import { MOCK_REQUESTS } from '../../services/MockedData/mockRequests';
+import { useState, useEffect } from 'react';
 
 const FriendRequests = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Backend API for friend requests not yet implemented
+    // TODO: Wire to getFriendRequests() when endpoint is available
+    setTimeout(() => setLoading(false), 500);
+  }, []);
 
   return (
     <div className="max-w-[calc(100%-10rem)] p-6">
@@ -15,11 +21,9 @@ const FriendRequests = () => {
         <h1 className="text-2xl font-bold text-gray-800">Lời mời kết bạn</h1>
       </div>
 
-      {MOCK_REQUESTS.length > 0 ? (
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 grid-cols-4 gap-4">
-          {MOCK_REQUESTS.map((req) => (
-            <FriendCard key={req.id} {...req} type="request" />
-          ))}
+      {loading ? (
+        <div className="flex items-center justify-center pt-20 text-gray-500 opacity-60">
+          <p>Đang tải...</p>
         </div>
       ) : (
         <div className="text-center py-20 text-gray-500">

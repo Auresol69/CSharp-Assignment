@@ -1,14 +1,19 @@
 import { Camera, Edit3 } from 'lucide-react';
 import { useState } from 'react';
 import EditProfileModal from './EditProfileModal/EditProfileModal';
+import type { IProfileResponseDto } from '../../types/Profile';
 
-const ProfileHeader = () => {
+interface Props {
+  profile?: IProfileResponseDto | null;
+}
+
+const ProfileHeader = ({ profile }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const userProfile = {
-    bio: "Sinh viên Đại học Sài Gòn",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SGU",
-    coverImage: "https://picsum.photos/800/300",
+    bio: profile?.bio ?? 'Sinh viên Đại học Sài Gòn',
+    avatar: profile?.avatarUrl ?? 'https://api.dicebear.com/7.x/avataaars/svg?seed=SGU',
+    coverImage: 'https://picsum.photos/800/300',
     showEmail: true,
     showPhone: false,
     showWorkplace: true
@@ -29,8 +34,8 @@ const ProfileHeader = () => {
         <div className="flex flex-col md:flex-row md:items-end md:space-x-5 items-center text-center md:text-left justify-between">
           <div className="relative inline-block">
             <img 
-              src="https://via.placeholder.com/150" 
-              alt="Avatar" 
+              src={profile?.avatarUrl ?? 'https://via.placeholder.com/150'} 
+              alt={profile?.tenTaiKhoan ?? 'Avatar'} 
               className="h-28 w-28 sm:h-32 sm:w-32 md:h-40 md:w-40 rounded-full border-4 border-white object-cover shadow-md"
             />
             <button className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-gray-200 p-1.5 sm:p-2 rounded-full hover:bg-gray-300 border-2 border-white shadow-sm">
@@ -39,8 +44,10 @@ const ProfileHeader = () => {
           </div>
 
           <div className="mt-3 md:mt-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 leading-tight">Tên của ông nè</h1>
-            <p className="text-gray-500 text-sm sm:text-base font-medium">500 bạn bè • 20 bài viết</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 leading-tight">{profile?.tenTaiKhoan ?? 'Tên của ông nè'}</h1>
+            <p className="text-gray-500 text-sm sm:text-base font-medium">
+              {profile ? `${profile.soLuongFollower} bạn bè • ${profile.soLuongPost} bài viết` : '500 bạn bè • 20 bài viết'}
+            </p>
           </div>
 
           <div className="mt-4 md:mt-0 w-full md:w-auto">
