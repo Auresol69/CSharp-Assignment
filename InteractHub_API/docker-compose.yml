@@ -12,7 +12,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=YourStrongP@ssw0rd;TrustServerCertificate=True;MultipleActiveResultSets=True
       ConnectionStrings__Redis: redis:6379
       Jwt__SecretKey: ${Jwt__SecretKey}
       REDIS_CONNECTION_STRING: redis:6379
@@ -29,7 +29,9 @@ services:
     ports:
       - "5153:8080"
     networks:
-      - interacthub_net
+      interacthub_net:
+        aliases:
+          - sqlserver
     restart: unless-stopped
 
   sqlserver:
@@ -37,7 +39,7 @@ services:
     container_name: interacthub_sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_SA_PASSWORD: YourStrongP@ssw0rd
       MSSQL_PID: Developer
     ports:
       - "1433:1433"

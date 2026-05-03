@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import type { CommentItemProps, IComment } from '../../types/Comment';
 
-const CommentItem = ({ comment, isReply = false }) => {
+
+
+// 2. Gán kiểu dữ liệu cho Component Props
+const CommentItem = ({ comment, isReply = false }: CommentItemProps) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
 
   const handleSendReply = () => {
     console.log(`Gửi reply cho bình luận ${comment.id}:`, replyContent);
-    // Sau khi nối API, logic gọi axios sẽ nằm ở đây
     setReplyContent("");
     setShowReplyForm(false);
   };
@@ -23,9 +26,9 @@ const CommentItem = ({ comment, isReply = false }) => {
 
       {/* Nội dung bình luận */}
       <div className="flex-1 min-w-0">
-        <div className="bg-gray-100 rounded-2xl px-4 py-2 inline-block max-w-full">
-          <p className="text-[13px] font-black text-gray-900">{comment.userName}</p>
-          <p className="text-sm text-gray-800 leading-relaxed">{comment.content}</p>
+        <div className="bg-gray-100 rounded-2xl px-4 py-2 inline-block max-w-full dark:bg-gray-800">
+          <p className="text-[13px] font-black text-gray-900 dark:text-white">{comment.userName}</p>
+          <p className="text-sm text-gray-800 leading-relaxed dark:text-gray-300">{comment.content}</p>
         </div>
 
         {/* Nút tương tác */}
@@ -37,15 +40,15 @@ const CommentItem = ({ comment, isReply = false }) => {
           >
             Phản hồi
           </button>
-          <span className="font-medium text-gray-400 italic">2 phút trước</span>
+          <span className="font-medium text-gray-400 italic">Vừa xong</span>
         </div>
 
-        {/* Form nhập Reply (Chỉ hiện khi bấm Phản hồi) */}
+        {/* Form nhập Reply */}
         {showReplyForm && (
           <div className="mt-3 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
             <input 
               autoFocus
-              className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="flex-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
               placeholder={`Trả lời ${comment.userName}...`}
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
@@ -60,10 +63,10 @@ const CommentItem = ({ comment, isReply = false }) => {
           </div>
         )}
 
-        {/* Cấp độ lồng nhau (Đệ quy) */}
+        {/* Cấp độ lồng nhau (Đệ quy) - Giải quyết lỗi TS7006 bằng cách định kiểu cho 'reply'[cite: 10] */}
         {comment.replies && comment.replies.length > 0 && (
-          <div className="ml-2 mt-2 border-l-2 border-gray-200/50 pl-4">
-            {comment.replies.map((reply) => (
+          <div className="ml-2 mt-2 border-l-2 border-gray-200/50 dark:border-gray-700 pl-4">
+            {comment.replies.map((reply: IComment) => (
               <CommentItem key={reply.id} comment={reply} isReply={true} />
             ))}
           </div>

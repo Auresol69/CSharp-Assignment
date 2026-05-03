@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Home } from 'lucide-react';
+import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Key, X, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -7,6 +7,7 @@ const EditAccount = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -20,6 +21,14 @@ const EditAccount = () => {
     currentAddress: '',
     website: ''
   });
+
+  // State cho đổi mật khẩu
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -38,7 +47,6 @@ const EditAccount = () => {
         setStatus('Khong tai duoc thong tin tai khoan tu backend.');
       }
     };
-
     loadProfile();
   }, []);
 
@@ -62,6 +70,30 @@ const EditAccount = () => {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordStatus({ type: 'error', message: 'Mat khau xac nhan khong khop.' });
+      return;
+    }
+
+    try {
+      // Thay doi endpoint theo API thuc te cua ban (vi du: /auth/change-password)
+      await api.post('/auth/change-password', {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword
+      });
+      setPasswordStatus({ type: 'success', message: 'Doi mat khau thanh cong!' });
+      setTimeout(() => {
+        setIsPasswordModalOpen(false);
+        setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setPasswordStatus({ type: '', message: '' });
+      }, 2000);
+    } catch {
+      setPasswordStatus({ type: 'error', message: 'Sai mat khau cu hoac loi he thong.' });
+    }
+  };
+
   const InputGroup = ({ label, icon: Icon, value, onChange, type = 'text', disabled = false }: any) => (
     <div className="flex flex-col gap-1.5">
       <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider">{label}</label>
@@ -80,6 +112,7 @@ const EditAccount = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 pt-4 sm:pt-6">
+      {/* Header & Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl shadow-sm transition-all active:scale-90">
@@ -87,17 +120,26 @@ const EditAccount = () => {
           </button>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">Thiet lap tai khoan</h1>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium">Du lieu dang doc/ghi qua Profile API cua backend</p>
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Quan ly thong tin va bao mat tai khoan</p>
           </div>
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black hover:bg-blue-700 disabled:bg-blue-800 shadow-xl shadow-blue-100 transition-all active:scale-95 text-sm"
-        >
-          <Save size={20} /> {isSaving ? 'Dang luu...' : 'Luu thay doi'}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-6 py-3.5 rounded-2xl font-black hover:bg-gray-50 transition-all active:scale-95 text-sm"
+          >
+            <Key size={20} /> Doi mat khau
+          </button>
+          
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black hover:bg-blue-700 disabled:bg-blue-800 shadow-xl shadow-blue-100 transition-all active:scale-95 text-sm"
+          >
+            <Save size={20} /> {isSaving ? 'Dang luu...' : 'Luu thay doi'}
+          </button>
+        </div>
       </div>
 
       {status && (
@@ -106,6 +148,7 @@ const EditAccount = () => {
         </div>
       )}
 
+      {/* Main Grid Content (Giu nguyen nhu code cu) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-6">
           <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5">
@@ -157,23 +200,75 @@ const EditAccount = () => {
             </h2>
             <InputGroup label="Nghe nghiep" icon={Briefcase} value={formData.job} disabled onChange={() => {}} />
             <InputGroup label="Noi lam viec / Truong hoc" icon={MapPin} value={formData.workplace} disabled onChange={() => {}} />
-            <p className="text-xs font-bold text-gray-400">Backend hien chua co field nghe nghiep/truong hoc trong UpdateProfileRequestDto.</p>
           </div>
 
           <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5">
             <h2 className="font-black text-blue-600 flex items-center gap-2 text-sm uppercase tracking-widest mb-4">
               <MapPin size={18} /> Dia chi
             </h2>
-            <InputGroup label="Que quan" icon={Home} value={formData.hometown} disabled onChange={() => {}} />
             <InputGroup
               label="Dia chi hien tai" icon={MapPin} value={formData.currentAddress}
               onChange={(e:any) => setFormData({...formData, currentAddress: e.target.value})}
             />
-            <InputGroup label="Website ca nhan" icon={Globe} value={formData.website} disabled onChange={() => {}} />
-            <p className="text-xs font-bold text-gray-400">Backend hien chi co mot field diaChi cho dia chi.</p>
           </div>
         </div>
       </div>
+
+      {/* Modal Doi Mat Khau */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-black text-gray-900 flex items-center gap-2">
+                <Lock className="text-blue-600" size={20} /> Doi mat khau moi
+              </h3>
+              <button onClick={() => setIsPasswordModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-xl transition-colors">
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleChangePassword} className="p-6 space-y-5">
+              {passwordStatus.message && (
+                <div className={`p-3 rounded-xl text-xs font-bold ${passwordStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                  {passwordStatus.message}
+                </div>
+              )}
+
+              <InputGroup 
+                label="Mat khau hien tai" icon={Key} type="password" 
+                value={passwordData.oldPassword}
+                onChange={(e:any) => setPasswordData({...passwordData, oldPassword: e.target.value})}
+              />
+              <InputGroup 
+                label="Mat khau moi" icon={Lock} type="password" 
+                value={passwordData.newPassword}
+                onChange={(e:any) => setPasswordData({...passwordData, newPassword: e.target.value})}
+              />
+              <InputGroup 
+                label="Xac nhan mat khau" icon={Lock} type="password" 
+                value={passwordData.confirmPassword}
+                onChange={(e:any) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+              />
+
+              <div className="pt-2 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="flex-1 py-3.5 rounded-2xl font-black text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all text-sm"
+                >
+                  Huy bo
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-3.5 rounded-2xl font-black text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all text-sm"
+                >
+                  Xac nhan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

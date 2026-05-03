@@ -1,5 +1,41 @@
 # React + TypeScript + Vite
 
+## Danh sach API moi them ngay 2026-05-02
+
+Tat ca endpoint ben duoi yeu cau JWT Bearer token, tru khi co cau hinh khac trong controller.
+
+### Profile
+
+| Method | Endpoint | Mo ta |
+| :--- | :--- | :--- |
+| `GET` | `/api/Profile/me` | Lay profile cua nguoi dung hien tai. |
+| `GET` | `/api/Profile/{userId}` | Lay profile cua nguoi dung khac. |
+| `PUT` | `/api/Profile/me` | Cap nhat profile cua nguoi dung hien tai. |
+| `POST` | `/api/Profile/change-password` | Doi mat khau. |
+| `POST` | `/api/Profile/upload-avatar` | Upload avatar bang `multipart/form-data`. |
+| `POST` | `/api/Profile/{userId}/follow` | Follow hoac unfollow mot nguoi dung. |
+| `GET` | `/api/Profile/{userId}/followers?page=1&size=20` | Lay danh sach followers. |
+| `GET` | `/api/Profile/{userId}/following?page=1&size=20` | Lay danh sach following. |
+
+### Friendship
+
+| Method | Endpoint | Mo ta |
+| :--- | :--- | :--- |
+| `POST` | `/api/Friendship/{recipientId}/request` | Gui yeu cau ket ban. |
+| `POST` | `/api/Friendship/{senderId}/accept` | Chap nhan yeu cau ket ban. |
+
+### Posts
+
+| Method | Endpoint | Mo ta |
+| :--- | :--- | :--- |
+| `GET` | `/api/Post/feed?lastTimestamp={isoDateTime}&limit=10` | Lay feed bai viet dang phan trang theo thoi gian. |
+
+### Realtime
+
+| Type | Endpoint | Mo ta |
+| :--- | :--- | :--- |
+| `SignalR Hub` | `/hubs/notification` | Ket noi realtime notification/presence; client nhan cac event `ReceiveMessage`, `ReceiveNotification`, `UserConnected`, `UserDisconnected`, `ReceiveFriendRequest`, `FriendRequestAccepted`. |
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

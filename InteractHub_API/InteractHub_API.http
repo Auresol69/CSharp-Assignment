@@ -1,6 +1,110 @@
 @InteractHub_API_HostAddress = http://localhost:5153
+@AccessToken = paste-jwt-token-here
 
 GET {{InteractHub_API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# API moi them ngay 2026-05-02
+
+### Profile - lay profile hien tai
+GET {{InteractHub_API_HostAddress}}/api/Profile/me
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Profile - lay profile theo userId
+GET {{InteractHub_API_HostAddress}}/api/Profile/{{userId}}
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Profile - cap nhat profile hien tai
+PUT {{InteractHub_API_HostAddress}}/api/Profile/me
+Authorization: Bearer {{AccessToken}}
+Content-Type: application/json
+
+{
+  "tenTaiKhoan": "Nguyen Van A",
+  "email": "nguyenvana@example.com",
+  "phoneNumber": "0900000000",
+  "avatarUrl": "https://example.com/avatar.png",
+  "bio": "Hello InteractHub",
+  "ngaySinh": "2004-01-01T00:00:00",
+  "gioiTinh": "Nam",
+  "diaChi": "Ho Chi Minh City"
+}
+
+###
+
+### Profile - doi mat khau
+POST {{InteractHub_API_HostAddress}}/api/Profile/change-password
+Authorization: Bearer {{AccessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewPassword123!",
+  "confirmPassword": "NewPassword123!"
+}
+
+###
+
+### Profile - upload avatar
+POST {{InteractHub_API_HostAddress}}/api/Profile/upload-avatar
+Authorization: Bearer {{AccessToken}}
+Content-Type: multipart/form-data; boundary=avatarBoundary
+
+--avatarBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< ./avatar.png
+--avatarBoundary--
+
+###
+
+### Profile - follow/unfollow user
+POST {{InteractHub_API_HostAddress}}/api/Profile/{{userId}}/follow
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Profile - followers
+GET {{InteractHub_API_HostAddress}}/api/Profile/{{userId}}/followers?page=1&size=20
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Profile - following
+GET {{InteractHub_API_HostAddress}}/api/Profile/{{userId}}/following?page=1&size=20
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Friendship - gui yeu cau ket ban
+POST {{InteractHub_API_HostAddress}}/api/Friendship/{{recipientId}}/request
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Friendship - chap nhan yeu cau ket ban
+POST {{InteractHub_API_HostAddress}}/api/Friendship/{{senderId}}/accept
+Authorization: Bearer {{AccessToken}}
+Accept: application/json
+
+###
+
+### Post - feed
+GET {{InteractHub_API_HostAddress}}/api/Post/feed?limit=10
+Authorization: Bearer {{AccessToken}}
 Accept: application/json
 
 ###

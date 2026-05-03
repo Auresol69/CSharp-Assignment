@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { MOCK_POSTS } from '../../services/MockedData/mockPost';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
+import type { IComment } from '../../types/Comment';
 import CommentItem from '../Comment/CommentItem';
 
 interface Props {
@@ -19,9 +20,23 @@ const PostDetailModal = ({ postId, post: initialPost, onClose }: Props) => {
   const post = initialPost || MOCK_POSTS.find(p => p.id === postId);
   const [commentText, setCommentText] = useState('');
   const [commentError, setCommentError] = useState('');
-  const [comments, setComments] = useState([
-    { id: '1', user: 'Nguyen Van A', text: 'Bai viet hay qua bro!', avatar: 'https://i.pravatar.cc/150?u=a' },
-    { id: '2', user: 'Le Thi B', text: 'Dinh cua chop SGU oi', avatar: 'https://i.pravatar.cc/150?u=b' }
+  
+  // Sửa dữ liệu mẫu để khớp hoàn toàn với Interface IComment[cite: 10, 11]
+  const [comments, setComments] = useState<IComment[]>([
+    { 
+      id: '1', 
+      userName: 'Nguyen Van A', 
+      content: 'Bai viet hay qua bro!', 
+      avatar: 'https://i.pravatar.cc/150?u=a',
+      replies: [] 
+    },
+    { 
+      id: '2', 
+      userName: 'Le Thi B', 
+      content: 'Dinh cua chop SGU oi', 
+      avatar: 'https://i.pravatar.cc/150?u=b',
+      replies: [] 
+    }
   ]);
 
   useEffect(() => {
@@ -38,20 +53,24 @@ const PostDetailModal = ({ postId, post: initialPost, onClose }: Props) => {
 
     try {
       setCommentError('');
+      // Gửi request lên Backend[cite: 8, 11]
       const response = await api.post('/comments', {
         idPost: post.id,
         content: commentText
       });
+      
       const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
-      setComments(prev => [
-        {
-          id: response.data.idComment,
-          user: authUser.tenTaiKhoan || 'Ban',
-          text: response.data.content || commentText,
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=me'
-        },
-        ...prev
-      ]);
+      
+      // Map dữ liệu từ response sang cấu trúc IComment[cite: 10, 11]
+      const newComment: IComment = {
+        id: response.data.idComment || Date.now().toString(),
+        userName: authUser.tenTaiKhoan || 'Ban',
+        content: response.data.content || commentText,
+        avatar: authUser.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=me',
+        replies: []
+      };
+
+      setComments(prev => [newComment, ...prev]);
       setCommentText('');
     } catch {
       setCommentError('Khong gui duoc binh luan. Bai viet mau co the chua ton tai trong database.');
