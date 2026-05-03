@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using InteractHub_API.DTOs.Interactions;
 using InteractHub_API.Services;
+using InteractHub_API.DTOs.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,32 @@ public class CommentsController : ControllerBase
     {
         _commentService = commentService;
         _logger = logger;
+    }
+
+    [HttpGet("post/{postId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetByPost(string postId)
+    {
+        try
+        {
+            var comments = await _commentService.GetCommentsByPostAsync(postId);
+            var commentDtos = comments
+                .Where(c => c.ParentCommentId == null)
+                .OrderBy(c => c.CreatedAt)
+                .Select(MapComment)
+                .ToList();
+
+            return Ok(new { postId, data = commentDtos });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost]
@@ -65,5 +92,23 @@ public class CommentsController : ControllerBase
         {
             return Unauthorized(new { message = ex.Message });
         }
+    }
+
+    private static CommentResponseDto MapComment(Data.Entities.Comment comment)
+    {
+        return new CommentResponseDto
+        {
+            IdComment = comment.IdComment,
+            Content = comment.Content,
+            CreatedAt = comment.CreatedAt,
+            ParentCommentId = comment.ParentCommentId,
+            TaiKhoan = comment.TaiKhoan != null ? new UserResponseDto
+            {
+                Id = comment.TaiKhoan.Id,
+                TenTaiKhoan = comment.TaiKhoan.TenTaiKhoan,
+                AvatarUrl = comment.TaiKhoan.AvatarUrl
+            } : null,
+            Replies = comment.Replies?.OrderBy(r => r.CreatedAt).Select(MapComment).ToList() ?? new()
+        };
     }
 }

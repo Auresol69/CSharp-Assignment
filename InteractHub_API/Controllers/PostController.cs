@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using InteractHub_API.DTOs.Posts;
 using InteractHub_API.Services;
+using InteractHub_API.Data.Entities;
+using InteractHub_API.DTOs.Interactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +23,22 @@ public class PostController : ControllerBase
         _postService = postService;
         _reportService = reportService;
         _logger = logger;
+    }
+
+    [HttpGet("{postId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(string postId)
+    {
+        try
+        {
+            var post = await _postService.GetPostByIdAsync(postId);
+            return Ok(MapPostDetail(post));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     [HttpPost]
@@ -200,5 +218,54 @@ public class PostController : ControllerBase
             nextTimestamp = nextTimestamp,
             hasMore = posts.Count == limit
         });
+    }
+
+    private static PostDetailResponseDto MapPostDetail(Post post)
+    {
+        return new PostDetailResponseDto
+        {
+            IdPost = post.IdPost,
+            Content = post.Content,
+            CreatedAt = post.CreatedAt,
+            ParentPostId = post.ParentPostId,
+            TaiKhoan = post.TaiKhoan != null ? new UserResponseDto
+            {
+                Id = post.TaiKhoan.Id,
+                TenTaiKhoan = post.TaiKhoan.TenTaiKhoan,
+                AvatarUrl = post.TaiKhoan.AvatarUrl
+            } : null,
+            Media = post.PostMedias?.Select(m => new PostMediaDto
+            {
+                Id = m.Id,
+                Url = m.Url ?? string.Empty,
+                MediaType = m.MediaType.ToString()
+            }).ToList() ?? new(),
+            LikesCount = post.Likes?.Count ?? 0,
+            CommentsCount = post.Comments?.Count ?? 0,
+            RepostsCount = post.Reposts?.Count ?? 0,
+            Comments = post.Comments
+                .Where(c => c.ParentCommentId == null)
+                .OrderBy(c => c.CreatedAt)
+                .Select(MapComment)
+                .ToList()
+        };
+    }
+
+    private static CommentResponseDto MapComment(Comment comment)
+    {
+        return new CommentResponseDto
+        {
+            IdComment = comment.IdComment,
+            Content = comment.Content,
+            CreatedAt = comment.CreatedAt,
+            ParentCommentId = comment.ParentCommentId,
+            TaiKhoan = comment.TaiKhoan != null ? new UserResponseDto
+            {
+                Id = comment.TaiKhoan.Id,
+                TenTaiKhoan = comment.TaiKhoan.TenTaiKhoan,
+                AvatarUrl = comment.TaiKhoan.AvatarUrl
+            } : null,
+            Replies = comment.Replies?.OrderBy(r => r.CreatedAt).Select(MapComment).ToList() ?? new()
+        };
     }
 }

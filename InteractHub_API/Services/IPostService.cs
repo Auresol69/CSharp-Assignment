@@ -7,6 +7,8 @@ public interface IPostService
 {
     Task<List<Post>> GetPostsAsync(DateTime? lastTimestamp, int limit);
 
+    Task<Post> GetPostByIdAsync(string postId);
+
     Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request);
 
     Task DeletePostAsync(string postId);

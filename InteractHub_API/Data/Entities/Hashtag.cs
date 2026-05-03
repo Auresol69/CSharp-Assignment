@@ -9,8 +9,8 @@ public class Hashtag
     /// <summary>Khóa chính (GUID dạng string)</summary>
     public string IdHashtag { get; set; } = Guid.NewGuid().ToString();
 
-    /// <summary>Nội dung hashtag (ví dụ: "#dotnet", "#csharp")</summary>
-    public string? NoiDung { get; set; }
+    /// <summary>Nội dung hashtag đã normalize (chữ thường, không dấu #, ví dụ: "dotnet", "csharp")</summary>
+    public required string NoiDung { get; set; }
 
     // ──────────────── Navigation Properties ────────────────
 
