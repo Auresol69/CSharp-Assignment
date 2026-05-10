@@ -9,7 +9,8 @@ import FriendCard from "../../components/Friends/FriendCard";
 type TabType = "friends" | "requests" | "suggestions";
 
 interface Friend {
-    userId: string;
+    userId?: string;
+    id?: string;
     name: string;
     avatar: string;
 }
@@ -94,8 +95,8 @@ const FriendPage = () => {
                     {tab === "friends" &&
                         friends.map((f) => (
                             <FriendCard
-                                key={f.userId}
-                                id={f.userId}
+                                key={f.userId ?? f.id}
+                                id={f.userId ?? f.id}
                                 name={f.name}
                                 avatar={f.avatar}
                                 type="friend"
@@ -108,8 +109,8 @@ const FriendPage = () => {
                     {tab === "requests" &&
                         requests.map((f) => (
                             <FriendCard
-                                key={f.userId}
-                                id={f.userId}
+                                key={f.userId ?? f.id}
+                                id={f.userId ?? f.id}
                                 name={f.name}
                                 avatar={f.avatar}
                                 type="request"
@@ -122,8 +123,8 @@ const FriendPage = () => {
                     {tab === "suggestions" &&
                         suggestions.map((f) => (
                             <FriendCard
-                                key={f.userId}
-                                id={f.userId}
+                                key={f.userId ?? f.id}
+                                id={f.userId ?? f.id}
                                 name={f.name}
                                 avatar={f.avatar}
                                 type="suggest"

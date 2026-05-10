@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InteractHub_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260501184252_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260510132358_SyncCurrentModelAfterPull")]
+    partial class SyncCurrentModelAfterPull
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,20 @@ namespace InteractHub_API.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiaChi")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -44,11 +56,17 @@ namespace InteractHub_API.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("GioiTinh")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime?>("NgaySinh")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -165,6 +183,7 @@ namespace InteractHub_API.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("NoiDung")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -172,8 +191,7 @@ namespace InteractHub_API.Migrations
 
                     b.HasIndex("NoiDung")
                         .IsUnique()
-                        .HasDatabaseName("UX_Hashtag_NoiDung")
-                        .HasFilter("[NoiDung] IS NOT NULL");
+                        .HasDatabaseName("UX_Hashtag_NoiDung");
 
                     b.ToTable("Hashtag", (string)null);
                 });

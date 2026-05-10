@@ -1,5 +1,6 @@
 export interface IFriend {
-  id: string;
+  id?: string;
+  userId?: string;
   name: string;
   avatar: string;
   type: 'friend' | 'request' | 'suggest';

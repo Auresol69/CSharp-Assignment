@@ -2,16 +2,25 @@ import { X, Save, Camera, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import ConfirmModal from './ConfirmModal';
 import api from '../../../services/api';
-import type { ProfileData } from '../../../pages/Profile';
+import type { IProfileResponseDto } from '../../../types/Profile';
 
-const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => void, initialData: any, onSaved?: (profile: ProfileData) => void }) => {
+type EditableProfile = IProfileResponseDto & {
+  coverImage?: string;
+  avatar?: string;
+  showEmail?: boolean;
+  showPhone?: boolean;
+  showWorkplace?: boolean;
+};
+
+const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => void, initialData: IProfileResponseDto, onSaved?: (profile: IProfileResponseDto) => void }) => {
   const [data, setData] = useState(initialData);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
-  const coverImageSrc = data.coverImage?.trim() ? data.coverImage : undefined;
-  const avatarSrc = data.avatar?.trim() ? data.avatar : undefined;
+  const editData = data as EditableProfile;
+  const coverImageSrc = editData.coverImage?.trim() ? editData.coverImage : undefined;
+  const avatarSrc = editData.avatarUrl?.trim() ? editData.avatarUrl : undefined;
 
   const isDirty = JSON.stringify(data) !== JSON.stringify(initialData);
 
@@ -31,11 +40,11 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
     try {
       setIsSaving(true);
       setError('');
-      const response = await api.put<ProfileData>('/profile/me', {
+      const response = await api.put<IProfileResponseDto>('/profile/me', {
         tenTaiKhoan: data.tenTaiKhoan,
         email: data.email,
         phoneNumber: data.phoneNumber,
-        avatarUrl: data.avatar,
+        avatarUrl: data.avatarUrl,
         bio: data.bio,
         ngaySinh: data.ngaySinh || null,
         gioiTinh: data.gioiTinh,
@@ -84,7 +93,7 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
               <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Ten hien thi</label>
               <input
                 className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                value={data.tenTaiKhoan}
+                value={data.tenTaiKhoan ?? ''}
                 onChange={(e) => setData({...data, tenTaiKhoan: e.target.value})}
               />
             </div>
@@ -93,7 +102,7 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
               <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Tieu su</label>
               <textarea
                 className="w-full p-4 border border-gray-200 rounded-2xl h-24 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
-                value={data.bio}
+                value={data.bio ?? ''}
                 onChange={(e) => setData({...data, bio: e.target.value})}
                 placeholder="Mo ta ngan ve ban"
               />
@@ -102,11 +111,11 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Email</label>
-                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.email} onChange={(e) => setData({...data, email: e.target.value})} />
+                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.email ?? ''} onChange={(e) => setData({...data, email: e.target.value})} />
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">So dien thoai</label>
-                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.phoneNumber} onChange={(e) => setData({...data, phoneNumber: e.target.value})} />
+                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.phoneNumber ?? ''} onChange={(e) => setData({...data, phoneNumber: e.target.value})} />
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Ngay sinh</label>
@@ -114,11 +123,11 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Gioi tinh</label>
-                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.gioiTinh} onChange={(e) => setData({...data, gioiTinh: e.target.value})} />
+                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.gioiTinh ?? ''} onChange={(e) => setData({...data, gioiTinh: e.target.value})} />
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Dia chi</label>
-                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.diaChi} onChange={(e) => setData({...data, diaChi: e.target.value})} />
+                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.diaChi ?? ''} onChange={(e) => setData({...data, diaChi: e.target.value})} />
               </div>
             </div>
 
@@ -126,9 +135,9 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
               <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-4">Thong tin hien thi</label>
               <div className="grid grid-cols-1 gap-2.5">
                 {[
-                  { id: 'showEmail', label: 'Hien thi Email', value: data.showEmail },
-                  { id: 'showPhone', label: 'Hien thi So dien thoai', value: data.showPhone },
-                  { id: 'showWorkplace', label: 'Hien thi Noi lam viec', value: data.showWorkplace }
+                  { id: 'showEmail', label: 'Hien thi Email', value: editData.showEmail ?? true },
+                  { id: 'showPhone', label: 'Hien thi So dien thoai', value: editData.showPhone ?? false },
+                  { id: 'showWorkplace', label: 'Hien thi Noi lam viec', value: editData.showWorkplace ?? true }
                 ].map((item) => (
                   <div
                     key={item.id}

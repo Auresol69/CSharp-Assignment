@@ -9,7 +9,7 @@ public sealed class CloudinaryService : IMediaService
 {
     private const long DefaultMaxUploadBytes = 10 * 1024 * 1024;
 
-    private readonly Cloudinary _cloudinary;
+    private readonly Cloudinary? _cloudinary;
     private readonly ILogger<CloudinaryService> _logger;
     private readonly long _maxUploadBytes;
 
@@ -35,12 +35,22 @@ public sealed class CloudinaryService : IMediaService
 
         _maxUploadBytes = long.TryParse(maxUploadBytesStr, out var bytes) ? bytes : DefaultMaxUploadBytes;
 
+        if (string.IsNullOrWhiteSpace(cloudName)
+            || string.IsNullOrWhiteSpace(apiKey)
+            || string.IsNullOrWhiteSpace(apiSecret))
+        {
+            _logger.LogWarning(
+                "Cloudinary is not configured. Media upload/delete will be unavailable until CLOUDINARY_* values are set.");
+            return;
+        }
+
         _cloudinary = new Cloudinary(new Account(cloudName, apiKey, apiSecret));
         _cloudinary.Api.Secure = true;
     }
 
     public async Task<MediaUploadResultDto> UploadMediaAsync(IFormFile file, string folder)
     {
+        var cloudinary = GetConfiguredCloudinary();
         var mediaType = ValidateAndDetectMediaType(file);
 
         await using var stream = file.OpenReadStream();
@@ -54,7 +64,7 @@ public sealed class CloudinaryService : IMediaService
                 Transformation = BuildTransformation(folder, mediaType)
             };
 
-            var videoUploadResult = await _cloudinary.UploadAsync(videoUploadParams);
+            var videoUploadResult = await cloudinary.UploadAsync(videoUploadParams);
             return BuildUploadResponse(videoUploadResult);
         }
 
@@ -65,7 +75,7 @@ public sealed class CloudinaryService : IMediaService
             Transformation = BuildTransformation(folder, mediaType)
         };
 
-        var imageUploadResult = await _cloudinary.UploadAsync(imageUploadParams);
+        var imageUploadResult = await cloudinary.UploadAsync(imageUploadParams);
         return BuildUploadResponse(imageUploadResult);
     }
 
@@ -95,6 +105,12 @@ public sealed class CloudinaryService : IMediaService
         if (string.IsNullOrWhiteSpace(publicId))
         {
             throw new InvalidOperationException("PublicId không được để trống.");
+        }
+
+        if (_cloudinary is null)
+        {
+            _logger.LogWarning("Cloudinary is not configured. Skipped deleting media {PublicId}.", publicId);
+            return;
         }
 
         var deleteResult = await _cloudinary.DestroyAsync(new DeletionParams(publicId));
@@ -159,6 +175,13 @@ public sealed class CloudinaryService : IMediaService
     private static bool IsVideoExtension(string extension)
     {
         return extension is ".mp4" or ".mov" or ".avi" or ".wmv" or ".mkv" or ".webm" or ".m4v";
+    }
+
+    private Cloudinary GetConfiguredCloudinary()
+    {
+        return _cloudinary
+            ?? throw new InvalidOperationException(
+                "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
     }
 
     private static Transformation BuildTransformation(string folder, MediaType mediaType)

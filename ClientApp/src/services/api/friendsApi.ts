@@ -1,41 +1,36 @@
-import axios from "axios";
+import api from "../api";
+import type { IFriend } from "../../types/Friends";
 
-const API_URL = "http://localhost:5000/api/friends"; // sửa theo backend bạn
-
-const getToken = () => localStorage.getItem("token");
-
-const config = {
-    headers: {
-        Authorization: `Bearer ${getToken()}`
-    }
-};
-
-// Gửi lời mời
 export const sendFriendRequest = (userId: string) => {
-    return axios.post(`${API_URL}/request/${userId}`, {}, config);
+  return api.post(`/friends/request/${userId}`);
 };
 
-// Chấp nhận
 export const acceptFriendRequest = (senderId: string) => {
-    return axios.post(`${API_URL}/accept/${senderId}`, {}, config);
+  return api.post(`/friends/accept/${senderId}`);
 };
 
-// Từ chối
 export const rejectFriendRequest = (senderId: string) => {
-    return axios.post(`${API_URL}/reject/${senderId}`, {}, config);
+  return api.post(`/friends/reject/${senderId}`);
 };
 
-// Danh sách bạn bè
+export const cancelFriendRequest = (userId: string) => {
+  return api.post(`/friends/cancel/${userId}`);
+};
+
+export const unfriend = (userId: string) => {
+  return api.post(`/friends/unfriend/${userId}`);
+};
+
 export const getFriends = () => {
-    return axios.get(`${API_URL}/list`, config);
+  return api.get<IFriend[]>(`/friends/list`);
 };
 
-// Lời mời
 export const getFriendRequests = () => {
-    return axios.get(`${API_URL}/requests`, config);
+  return api.get<IFriend[]>(`/friends/requests`);
 };
 
-// Gợi ý
+export const getRequests = getFriendRequests;
+
 export const getSuggestions = () => {
-    return axios.get(`${API_URL}/suggestions`, config);
+  return api.get<IFriend[]>(`/friends/suggestions`);
 };

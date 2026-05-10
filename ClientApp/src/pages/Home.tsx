@@ -1,7 +1,6 @@
 import useFeed from '../hooks/useFeed';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../services/api';
 import PostCard from '../components/Post/PostCard';
 import PostSkeleton from '../components/Post/PostSkeleton';
 import PostCreated from '../components/Post/PostCreated';
@@ -11,6 +10,7 @@ import StoryBar from '../components/Story/StoryBar';
 import PostDetailModal from '../components/Post/PostDetailModal';
 // import type { IPost } from '../types/Post';
 import { useTheme } from '../context/ThemeContext';
+import { MOCK_STORIES } from '../services/MockedData/mockStories';
 
 function Home() {
   const { theme } = useTheme(); 
@@ -47,7 +47,8 @@ function Home() {
   };
 
   const handlePostDeleted = (deletedPostId: string) => {
-    setAllPosts(prev => prev.filter(post => post.id !== deletedPostId));
+    void deletedPostId;
+    refresh();
   };
   
   const filteredPosts = filterTag 

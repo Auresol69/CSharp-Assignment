@@ -180,6 +180,7 @@ namespace InteractHub_API.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("NoiDung")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -187,8 +188,7 @@ namespace InteractHub_API.Migrations
 
                     b.HasIndex("NoiDung")
                         .IsUnique()
-                        .HasDatabaseName("UX_Hashtag_NoiDung")
-                        .HasFilter("[NoiDung] IS NOT NULL");
+                        .HasDatabaseName("UX_Hashtag_NoiDung");
 
                     b.ToTable("Hashtag", (string)null);
                 });

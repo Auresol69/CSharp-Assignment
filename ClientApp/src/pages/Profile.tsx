@@ -15,6 +15,7 @@ const Profile = () => {
   const [profile, setProfile] = useState<IProfileResponseDto | null>(null);
   const [followers, setFollowers] = useState<IProfileResponseDto[]>([]);
   const [userPosts, setUserPosts] = useState<IPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -27,7 +28,7 @@ const Profile = () => {
         const feed = await getFeed(null, 30);
         setUserPosts(feed.posts.filter(post => post.authorId === currentProfile.id).slice(0, 3));
       } catch (error) {
-        void error;
+        setError(error instanceof Error ? error.message : 'Khong tai duoc profile.');
       }
     };
 
@@ -38,7 +39,7 @@ const Profile = () => {
     <div className={`w-full min-h-screen transition-colors duration-300
       ${isDark ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-900'}`}>
       
-      <ProfileHeader profile={profile} />
+      <ProfileHeader profile={profile} onProfileUpdated={setProfile} />
 
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 self-start">
         {error && (

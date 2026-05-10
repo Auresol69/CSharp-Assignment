@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Home } from 'lucide-react';
+import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Lock, X, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getMyProfile, updateMyProfile } from '../../services/profileApi';
+import { changePassword, getMyProfile, updateMyProfile } from '../../services/profileApi';
 
 const EditAccount = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState('');
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -57,7 +65,7 @@ const EditAccount = () => {
         diaChi: formData.currentAddress,
         ngaySinh: formData.birthday || undefined,
       });
-      alert('Đã lưu tất cả thay đổi!');
+      setStatus('Đã lưu tất cả thay đổi!');
     } finally {
       setSaving(false);
     }
@@ -71,10 +79,10 @@ const EditAccount = () => {
     }
 
     try {
-      // Thay doi endpoint theo API thuc te cua ban (vi du: /auth/change-password)
-      await api.post('/auth/change-password', {
-        oldPassword: passwordData.oldPassword,
-        newPassword: passwordData.newPassword
+      await changePassword({
+        currentPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
       });
       setPasswordStatus({ type: 'success', message: 'Doi mat khau thanh cong!' });
       setTimeout(() => {

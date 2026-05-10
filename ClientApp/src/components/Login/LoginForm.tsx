@@ -16,7 +16,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
     const [passwordError, setPasswordError] = useState("");
     const [serverError, setServerError] = useState("");
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,7 +24,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
         const pErr = validatePassword(password);
         setEmailError(eErr);
         setPasswordError(pErr);
-        setSubmitError("");
 
         if (eErr || pErr) return;
 
@@ -66,7 +64,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
                 <button disabled={loading} type="submit" className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg">
                     {loading ? "Đang xử lý..." : "Đăng nhập ngay"}
                 </button>
-                {submitError && <p className="text-red-400 text-sm text-center font-medium">{submitError}</p>}
             </form>
 
             <p className="text-center text-slate-500 text-[10px] sm:text-xs mt-8 uppercase tracking-widest font-medium">SGU Student Portal</p>
