@@ -1,54 +1,44 @@
 import { useEffect, useState } from 'react';
-import { MOCK_POSTS } from '../services/MockedData/mockPost';
 import PostCard from '../components/Post/PostCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
 import FriendsGrid from '../components/Profile/FriendsGrid';
 import { useTheme } from '../context/ThemeContext';
-import api from '../services/api';
-
-export interface ProfileData {
-  id: string;
-  tenTaiKhoan: string;
-  email: string;
-  phoneNumber?: string | null;
-  avatarUrl?: string | null;
-  bio?: string | null;
-  ngaySinh?: string | null;
-  gioiTinh?: string | null;
-  diaChi?: string | null;
-  createdAt: string;
-  soLuongFollower: number;
-  soLuongFollowing: number;
-  soLuongPost: number;
-  isFollowing: boolean;
-  isOwnProfile: boolean;
-}
+import type { IProfileResponseDto } from '../types/Profile';
+import type { IPost } from '../types/Post';
+import { getMyProfile, getFollowers } from '../services/profileApi';
+import { getFeed } from '../services/postsApi';
 
 const Profile = () => {
-  const userPosts = MOCK_POSTS.slice(0, 3);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [error, setError] = useState('');
+  const [profile, setProfile] = useState<IProfileResponseDto | null>(null);
+  const [followers, setFollowers] = useState<IProfileResponseDto[]>([]);
+  const [userPosts, setUserPosts] = useState<IPost[]>([]);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await api.get<ProfileData>('/profile/me');
-        setProfile(response.data);
-      } catch {
-        setError('Khong tai duoc profile tu backend.');
+        const currentProfile = await getMyProfile();
+        setProfile(currentProfile);
+        const followerList = await getFollowers(currentProfile.id, 1, 10);
+        setFollowers(followerList);
+
+        const feed = await getFeed(null, 30);
+        setUserPosts(feed.posts.filter(post => post.authorId === currentProfile.id).slice(0, 3));
+      } catch (error) {
+        void error;
       }
     };
 
-    loadProfile();
+    void loadProfile();
   }, []);
 
   return (
     <div className={`w-full min-h-screen transition-colors duration-300
       ${isDark ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-900'}`}>
-      <ProfileHeader profile={profile} onProfileUpdated={setProfile} />
+      
+      <ProfileHeader profile={profile} />
 
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 self-start">
         {error && (
@@ -59,7 +49,7 @@ const Profile = () => {
 
         <div className="lg:col-span-5 space-y-6 order-2 lg:order-1 md:sticky md:top-20 h-fit">
           <ProfileSidebar profile={profile} />
-          <FriendsGrid />
+          <FriendsGrid friends={followers} subtitle={profile ? `${profile.soLuongFollower} người theo dõi` : undefined} />
         </div>
 
         <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">

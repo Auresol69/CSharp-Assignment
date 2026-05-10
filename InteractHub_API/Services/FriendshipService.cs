@@ -139,6 +139,9 @@ public class FriendshipService : IFriendshipService
         _context.Friendships.Update(friendship);
         await _context.SaveChangesAsync();
 
+        // Xóa thông báo lời mời pending ở người nhận vì đã xử lý xong
+        await _notificationService.DeleteByCriteriaAsync(userId, requestSenderId, "FriendRequest");
+
         _logger.LogInformation("Friend request accepted by {UserId} from {SenderId}.", userId, requestSenderId);
 
         // Gửi thông báo realtime qua SignalR
@@ -193,6 +196,9 @@ public class FriendshipService : IFriendshipService
 
         _context.Friendships.Remove(friendship);
         await _context.SaveChangesAsync();
+
+        // Lời mời bị từ chối thì xóa notification pending ở người nhận
+        await _notificationService.DeleteByCriteriaAsync(userId, requestSenderId, "FriendRequest");
 
         _logger.LogInformation("Friend request rejected by {UserId} from {SenderId}.", userId, requestSenderId);
         return true;

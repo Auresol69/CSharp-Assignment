@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using InteractHub_API.DTOs.Stories;
 using InteractHub_API.Services;
+using InteractHub_API.Data.Entities;
+using InteractHub_API.DTOs.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +21,30 @@ public class StoryController : ControllerBase
     {
         _storyService = storyService;
         _logger = logger;
+    }
+
+    [HttpGet("global")]
+    public async Task<IActionResult> GetGlobal([FromQuery] int take = 20)
+    {
+        var stories = await _storyService.GetGlobalStoriesAsync(take);
+        return Ok(new
+        {
+            data = stories.Select(MapStoryDto).ToList(),
+            hasMore = stories.Count == take
+        });
+    }
+
+    [HttpGet("local")]
+    public async Task<IActionResult> GetLocal([FromQuery] int take = 20)
+    {
+        var userId = User.FindFirstValue("uid") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var stories = await _storyService.GetLocalStoriesAsync(userId ?? string.Empty, take);
+
+        return Ok(new
+        {
+            data = stories.Select(MapStoryDto).ToList(),
+            hasMore = stories.Count == take
+        });
     }
 
     [HttpPost]
@@ -66,5 +92,24 @@ public class StoryController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
+    }
+
+    private static StoryResponseDto MapStoryDto(Story story)
+    {
+        return new StoryResponseDto
+        {
+            IdStory = story.IdStory,
+            Caption = story.Caption,
+            MediaUrl = story.MediaUrl,
+            MediaType = story.MediaType.ToString(),
+            CreatedAt = story.CreatedAt,
+            ExpiresAt = story.ExpiresAt,
+            TaiKhoan = story.TaiKhoan != null ? new UserResponseDto
+            {
+                Id = story.TaiKhoan.Id,
+                TenTaiKhoan = story.TaiKhoan.TenTaiKhoan,
+                AvatarUrl = story.TaiKhoan.AvatarUrl
+            } : null
+        };
     }
 }

@@ -3,6 +3,7 @@ using InteractHub_API.Data.Entities;
 using InteractHub_API.DTOs.Posts;
 using InteractHub_API.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace InteractHub_API.Services;
 
@@ -12,12 +13,14 @@ public sealed class PostService : IPostService
     private readonly AppDbContext _dbContext;
     private readonly IMediaService _mediaService;
     private readonly InteractHub_API.Data.Repositories.IPostRepository _postRepository;
+    private readonly IHashtagService _hashtagService;
 
-    public PostService(AppDbContext dbContext, IMediaService mediaService, InteractHub_API.Data.Repositories.IPostRepository postRepository)
+    public PostService(AppDbContext dbContext, IMediaService mediaService, InteractHub_API.Data.Repositories.IPostRepository postRepository, IHashtagService hashtagService)
     {
         _dbContext = dbContext;
         _mediaService = mediaService;
         _postRepository = postRepository;
+        _hashtagService = hashtagService;
     }
 
     public async Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request)
@@ -46,6 +49,12 @@ public sealed class PostService : IPostService
         _dbContext.Posts.Add(post);
         await _dbContext.SaveChangesAsync();
 
+        // Extract and link hashtags
+        if (!string.IsNullOrWhiteSpace(post.Content))
+        {
+            await ExtractAndLinkHashtagsAsync(post.IdPost, post.Content);
+        }
+
         // Re-fetch with relations for response
         var createdPost = await _dbContext.Posts
             .Include(p => p.PostMedias)
@@ -57,6 +66,28 @@ public sealed class PostService : IPostService
             ?? throw new KeyNotFoundException($"Không tìm thấy post vừa tạo '{post.IdPost}'.");
 
         return createdPost;
+    }
+
+    public async Task<Post> GetPostByIdAsync(string postId)
+    {
+        if (string.IsNullOrWhiteSpace(postId))
+        {
+            throw new ArgumentException("PostId không hợp lệ.", nameof(postId));
+        }
+
+        return await _dbContext.Posts
+            .AsNoTracking()
+            .Include(p => p.PostMedias)
+            .Include(p => p.TaiKhoan)
+            .Include(p => p.Likes)
+            .Include(p => p.Reposts)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.TaiKhoan)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.Replies)
+                    .ThenInclude(r => r.TaiKhoan)
+            .FirstOrDefaultAsync(p => p.IdPost == postId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy post '{postId}'.");
     }
 
     public async Task DeletePostAsync(string postId)
@@ -106,6 +137,12 @@ public sealed class PostService : IPostService
         _dbContext.Posts.Add(repost);
         await _dbContext.SaveChangesAsync();
 
+        // Extract and link hashtags
+        if (!string.IsNullOrWhiteSpace(repost.Content))
+        {
+            await ExtractAndLinkHashtagsAsync(repost.IdPost, repost.Content);
+        }
+
         // Re-fetch with relations for response
         var createdRepost = await _dbContext.Posts
             .Include(p => p.PostMedias)
@@ -139,5 +176,70 @@ public sealed class PostService : IPostService
     public async Task<List<Post>> GetPostsAsync(DateTime? lastTimestamp, int limit)
     {
         return await _postRepository.GetPostsAsync(lastTimestamp, limit);
+    }
+
+    private async Task ExtractAndLinkHashtagsAsync(string postId, string content)
+    {
+        var hashtags = ExtractHashtagsFromContent(content);
+        if (hashtags.Count == 0)
+        {
+            return;
+        }
+
+        var postHashtags = new List<PostHashtag>();
+        foreach (var hashtagContent in hashtags)
+        {
+            try
+            {
+                var hashtagId = await _hashtagService.GetOrCreateHashtagAsync(hashtagContent);
+                postHashtags.Add(new PostHashtag
+                {
+                    IdPost = postId,
+                    IdHashtag = hashtagId
+                });
+
+                // Increment trending score
+                await _hashtagService.IncrementHashtagAsync(hashtagContent);
+            }
+            catch (Exception ex)
+            {
+                // Log error but continue processing other hashtags
+                System.Diagnostics.Debug.WriteLine($"Error processing hashtag '{hashtagContent}': {ex.Message}");
+            }
+        }
+
+        if (postHashtags.Count > 0)
+        {
+            _dbContext.PostHashtags.AddRange(postHashtags);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+
+    private static List<string> ExtractHashtagsFromContent(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return [];
+        }
+
+        // Regex pattern: (?:^|\s)#([a-zA-Z0-9_]+)
+        // Matches hashtags that are preceded by start of string or whitespace
+        var pattern = @"(?:^|\s)#([a-zA-Z0-9_]+)";
+        var matches = Regex.Matches(content, pattern, RegexOptions.IgnoreCase);
+
+        var hashtags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in matches)
+        {
+            if (match.Groups.Count > 1)
+            {
+                var hashtagName = match.Groups[1].Value;
+                if (!string.IsNullOrWhiteSpace(hashtagName))
+                {
+                    hashtags.Add(hashtagName);
+                }
+            }
+        }
+
+        return hashtags.ToList();
     }
 }

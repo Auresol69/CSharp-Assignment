@@ -34,7 +34,11 @@ const StoryBar = () => {
           <img src={user.stories[0].url} className="w-full h-full object-cover group-hover:scale-105 transition" alt="story" />
           <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/20" />
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3 p-0.5 bg-blue-500 rounded-full border-2 border-white">
-            <img src={user.userAvatar} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white" alt="avatar" />
+            {user.userAvatar?.trim() ? (
+              <img src={user.userAvatar} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white" alt="avatar" />
+            ) : (
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-300 border border-white" />
+            )}
           </div>
           <span className="absolute bottom-2 left-2 right-2 text-white text-[10px] sm:text-[11px] font-bold truncate">
             {user.userName}

@@ -1,3 +1,4 @@
+import useFeed from '../hooks/useFeed';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
@@ -8,8 +9,7 @@ import TrendingSidebar from '../components/Trending/TrendingSidebar';
 import StoryViewer from '../components/Story/StoryViewer';
 import StoryBar from '../components/Story/StoryBar';
 import PostDetailModal from '../components/Post/PostDetailModal';
-import { MOCK_STORIES } from '../services/MockedData/mockStories';
-import type { IPost } from '../types/Post';
+// import type { IPost } from '../types/Post';
 import { useTheme } from '../context/ThemeContext';
 
 function Home() {
@@ -24,54 +24,26 @@ function Home() {
   }>();
   
   const [filterTag, setFilterTag] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [allPosts, setAllPosts] = useState<IPost[]>([]); 
-
-  const mapBackendToPost = (bePost: any): IPost => {
-    return {
-      id: bePost.idPost,
-      authorId: bePost.taiKhoan?.id,
-      authorName: bePost.taiKhoan?.tenTaiKhoan || 'Người dùng SGU',
-      authorAvatar: bePost.taiKhoan?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
-      createdAt: bePost.createdAt,
-      content: bePost.content || '',
-      mediaUrl: bePost.media && bePost.media.length > 0 ? bePost.media[0].url : undefined,
-      likesCount: bePost.likesCount || 0,
-      commentsCount: bePost.commentsCount || 0,
-      sharesCount: bePost.repostsCount || 0,
-    };
-  };
-
-  const fetchFeed = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/Post/feed'); 
-      // Theo PostController.cs: dữ liệu nằm trong response.data.data
-      const formattedPosts = response.data.data.map((p: any) => mapBackendToPost(p));
-      setAllPosts(formattedPosts);
-    } catch (error) {
-      console.error("Lỗi khi tải bảng tin SGU:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { posts, loading: isLoading, refresh } = useFeed(true, 10);
 
   useEffect(() => {
-    fetchFeed(); // Gọi khi mount component
-
     const handleReload = () => {
+      setFilterTag(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      fetchFeed();
+      refresh();
     };
 
     window.addEventListener('reload-dashboard', handleReload);
-    return () => window.removeEventListener('reload-dashboard', handleReload);
-  }, []);
+    return () => {
+      window.removeEventListener('reload-dashboard', handleReload);
+    };
+  }, [refresh]);
 
   // Xử lý sau khi tạo bài viết mới (Map dữ liệu từ phản hồi của API Create)
   const handleNewPost = (newPostData: any) => {
-    const newPost = mapBackendToPost(newPostData);
-    setAllPosts(prev => [newPost, ...prev]);
+    void newPostData;
+    // Refresh feed after new post created
+    refresh();
   };
 
   const handlePostDeleted = (deletedPostId: string) => {
@@ -79,8 +51,8 @@ function Home() {
   };
   
   const filteredPosts = filterTag 
-    ? allPosts.filter(p => p.content.includes(filterTag))
-    : allPosts;
+    ? posts.filter(p => p.content.includes(filterTag) || p.sharedPost?.content.includes(filterTag))
+    : posts;
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-[#020617] text-white' : 'bg-gray-50 text-gray-900'}`}>

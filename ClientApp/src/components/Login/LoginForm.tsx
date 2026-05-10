@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import CustomInput from "../Login/CustomInput";
 import { validateEmail, validatePassword } from "../../utils/validation";
-import api from "../../services/api";
+import authService from "../../services/authService";
 
 interface LoginFormProps {
     onOpenRegister: () => void;
@@ -15,35 +14,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [submitError, setSubmitError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [serverError, setServerError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        setServerError("");
         const eErr = validateEmail(email);
         const pErr = validatePassword(password);
         setEmailError(eErr);
         setPasswordError(pErr);
         setSubmitError("");
 
-        if (eErr || pErr) {
-            return;
-        }
+        if (eErr || pErr) return;
 
+        setLoading(true);
         try {
-            setIsSubmitting(true);
-            const response = await api.post("/auth/login", { email, password });
-
-            localStorage.setItem("accessToken", response.data.accessToken);
-            localStorage.setItem("authUser", JSON.stringify(response.data.user));
-
-            navigate("/Home");
-        } catch (error) {
-            const axiosError = error as AxiosError<{ message?: string }>;
-            setSubmitError(axiosError.response?.data?.message ?? "Dang nhap that bai. Vui long thu lai.");
+            const resp = await authService.login({ email, password });
+            authService.saveAuth(resp);
+            setPassword("");
+            navigate("/");
+        } catch (err: any) {
+            if (err?.response?.data?.message) setServerError(err.response.data.message);
+            else setServerError("Đăng nhập thất bại. Vui lòng thử lại.");
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
@@ -54,21 +50,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
                 <h2 className="text-lg sm:text-xl font-semibold text-slate-200">Chao mung tro lai!</h2>
             </div>
 
+
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <CustomInput label="Email sinh vien" value={email} error={emailError} onChange={(v) => { setEmail(v); setEmailError(""); }} />
                 <CustomInput label="Mat khau" type="password" value={password} error={passwordError} onChange={(v) => { setPassword(v); setPasswordError(""); }} />
 
+                {serverError && <div className="text-sm text-red-400">{serverError}</div>}
+
+                {/* Chuyển sang dạng cột trên mobile cực nhỏ để tránh đè chữ */}
                 <div className="flex flex-col sm:flex-row items-center justify-between text-sm gap-3 sm:gap-0 px-1">
                     <button type="button" className="text-slate-400 hover:text-blue-400 transition-colors">Quen mat khau?</button>
                     <button type="button" onClick={onOpenRegister} className="text-blue-400 font-bold hover:text-blue-300 transition-all">Tao tai khoan moi</button>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg"
-                >
-                    {isSubmitting ? "Dang dang nhap..." : "Dang nhap ngay"}
+                <button disabled={loading} type="submit" className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-blue-900/30 transition-all mt-6 active:scale-[0.98] text-base sm:text-lg">
+                    {loading ? "Đang xử lý..." : "Đăng nhập ngay"}
                 </button>
                 {submitError && <p className="text-red-400 text-sm text-center font-medium">{submitError}</p>}
             </form>

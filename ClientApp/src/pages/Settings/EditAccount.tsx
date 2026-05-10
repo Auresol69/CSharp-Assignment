@@ -1,72 +1,65 @@
 import { useEffect, useState } from 'react';
-import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Key, X, Lock } from 'lucide-react';
+import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { getMyProfile, updateMyProfile } from '../../services/profileApi';
 
 const EditAccount = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
-    gender: '',
+    gender: 'Nam',
     birthday: '',
     phone: '',
     email: '',
-    job: 'Sinh vien',
-    workplace: 'Dai hoc Sai Gon (SGU)',
+    job: 'Sinh viên',
+    workplace: '',
     hometown: '',
     currentAddress: '',
-    website: ''
+    website: 'https://interacthub.id.vn'
   });
-
-  // State cho đổi mật khẩu
-  const [passwordData, setPasswordData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await api.get('/profile/me');
-        setFormData(prev => ({
-          ...prev,
-          fullName: response.data.tenTaiKhoan || '',
-          gender: response.data.gioiTinh || '',
-          birthday: response.data.ngaySinh ? response.data.ngaySinh.slice(0, 10) : '',
-          phone: response.data.phoneNumber || '',
-          email: response.data.email || '',
-          currentAddress: response.data.diaChi || ''
-        }));
-      } catch {
-        setStatus('Khong tai duoc thong tin tai khoan tu backend.');
+        const profile = await getMyProfile();
+        setFormData({
+          fullName: profile.tenTaiKhoan ?? '',
+          gender: profile.gioiTinh ?? 'Nam',
+          birthday: profile.ngaySinh ? profile.ngaySinh.slice(0, 10) : '',
+          phone: profile.phoneNumber ?? '',
+          email: profile.email ?? '',
+          job: 'Sinh viên',
+          workplace: profile.diaChi ?? '',
+          hometown: '',
+          currentAddress: profile.diaChi ?? '',
+          website: 'https://interacthub.id.vn'
+        });
+      } finally {
+        setLoading(false);
       }
     };
-    loadProfile();
+
+    void loadProfile();
   }, []);
 
   const handleSave = async () => {
+    setSaving(true);
     try {
-      setIsSaving(true);
-      setStatus('');
-      await api.put('/profile/me', {
+      await updateMyProfile({
         tenTaiKhoan: formData.fullName,
         email: formData.email,
         phoneNumber: formData.phone,
-        ngaySinh: formData.birthday || null,
+        bio: formData.job,
         gioiTinh: formData.gender,
-        diaChi: formData.currentAddress
+        diaChi: formData.currentAddress,
+        ngaySinh: formData.birthday || undefined,
       });
-      setStatus('Da luu thay doi vao backend.');
-    } catch {
-      setStatus('Luu that bai. Vui long kiem tra du lieu hoac dang nhap lai.');
+      alert('Đã lưu tất cả thay đổi!');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
@@ -104,6 +97,8 @@ const EditAccount = () => {
           disabled={disabled}
           className="bg-transparent w-full outline-none text-sm font-bold text-gray-800 placeholder-gray-400 disabled:text-gray-400"
           value={value}
+          aria-label={label}
+          placeholder={label}
           onChange={onChange}
         />
       </div>
@@ -115,7 +110,7 @@ const EditAccount = () => {
       {/* Header & Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl shadow-sm transition-all active:scale-90">
+          <button onClick={() => navigate(-1)} className="p-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-2xl shadow-sm transition-all active:scale-90" aria-label="Quay lại" title="Quay lại">
             <ArrowLeft size={20} className="text-gray-700" />
           </button>
           <div>
@@ -123,23 +118,15 @@ const EditAccount = () => {
             <p className="text-xs sm:text-sm text-gray-500 font-medium">Quan ly thong tin va bao mat tai khoan</p>
           </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => setIsPasswordModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-6 py-3.5 rounded-2xl font-black hover:bg-gray-50 transition-all active:scale-95 text-sm"
-          >
-            <Key size={20} /> Doi mat khau
-          </button>
-          
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black hover:bg-blue-700 disabled:bg-blue-800 shadow-xl shadow-blue-100 transition-all active:scale-95 text-sm"
-          >
-            <Save size={20} /> {isSaving ? 'Dang luu...' : 'Luu thay doi'}
-          </button>
-        </div>
+        
+        {/* Nút lưu luôn hiển thị dễ thấy */}
+        <button 
+          onClick={handleSave}
+          disabled={loading || saving}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95 text-sm"
+        >
+          <Save size={20} /> {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+        </button>
       </div>
 
       {status && (
@@ -169,6 +156,8 @@ const EditAccount = () => {
                 className="p-3.5 bg-gray-50 border border-gray-200 rounded-2xl outline-none text-sm font-bold text-gray-800 appearance-none focus:border-blue-500"
                 value={formData.gender}
                 onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                aria-label="Giới tính"
+                title="Giới tính"
               >
                 <option value="">Chua cap nhat</option>
                 <option value="Nam">Nam</option>

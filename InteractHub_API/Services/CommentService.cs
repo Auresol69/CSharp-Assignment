@@ -71,4 +71,27 @@ public class CommentService : ICommentService
 
         return reply;
     }
+
+    public async Task<IReadOnlyList<Comment>> GetCommentsByPostAsync(string postId)
+    {
+        if (string.IsNullOrWhiteSpace(postId))
+        {
+            throw new ArgumentException("PostId không hợp lệ.", nameof(postId));
+        }
+
+        var postExists = await _dbContext.Posts.AnyAsync(p => p.IdPost == postId);
+        if (!postExists)
+        {
+            throw new KeyNotFoundException($"Không tìm thấy post '{postId}'.");
+        }
+
+        return await _dbContext.Comments
+            .AsNoTracking()
+            .Where(c => c.IdPost == postId)
+            .Include(c => c.TaiKhoan)
+            .Include(c => c.Replies)
+                .ThenInclude(r => r.TaiKhoan)
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync();
+    }
 }

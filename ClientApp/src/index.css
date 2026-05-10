@@ -35,3 +35,24 @@ body {
 .dark .border-gray-300 {
   border-color: #374151 !important;
 }
+
+.story-progress {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
+.story-progress::-webkit-progress-bar {
+  background: transparent;
+}
+
+.story-progress::-webkit-progress-value {
+  background: #ffffff;
+}
+
+.story-progress::-moz-progress-bar {
+  background: #ffffff;
+}
