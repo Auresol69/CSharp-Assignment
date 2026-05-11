@@ -1,9 +1,14 @@
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_STORIES } from '../../services/MockedData/mockStories';
 import { useTheme } from '../../context/ThemeContext';
+import type { UserStory } from '../../hooks/useStories';
 
-const StoryBar = () => {
+interface StoryBarProps {
+  userStories: UserStory[];
+  loading?: boolean;
+}
+
+const StoryBar = ({ userStories, loading = false }: StoryBarProps) => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -25,9 +30,16 @@ const StoryBar = () => {
         </div>
       </div>
 
-      {MOCK_STORIES.map((user) => (
-        <div 
-          key={user.userId} 
+      {/* Skeleton loading */}
+      {loading && Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className={`relative shrink-0 w-24 h-40 sm:w-28 sm:h-48 rounded-xl animate-pulse
+          ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`} />
+      ))}
+
+      {/* Stories từ API */}
+      {!loading && userStories.map((user) => (
+        <div
+          key={user.userId}
           className="relative shrink-0 w-24 h-40 sm:w-28 sm:h-48 rounded-xl overflow-hidden cursor-pointer group"
           onClick={() => navigate(`/Home/stories/${user.userId}/${user.stories[0].id}`)}
         >
@@ -49,4 +61,4 @@ const StoryBar = () => {
   );
 };
 
-export default StoryBar;
+export default StoryBar;

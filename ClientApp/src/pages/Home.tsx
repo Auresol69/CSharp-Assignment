@@ -1,4 +1,5 @@
 import useFeed from '../hooks/useFeed';
+import useStories from '../hooks/useStories';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostCard from '../components/Post/PostCard';
@@ -8,9 +9,7 @@ import TrendingSidebar from '../components/Trending/TrendingSidebar';
 import StoryViewer from '../components/Story/StoryViewer';
 import StoryBar from '../components/Story/StoryBar';
 import PostDetailModal from '../components/Post/PostDetailModal';
-// import type { IPost } from '../types/Post';
 import { useTheme } from '../context/ThemeContext';
-import { MOCK_STORIES } from '../services/MockedData/mockStories';
 
 function Home() {
   const { theme } = useTheme(); 
@@ -25,6 +24,7 @@ function Home() {
   
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const { posts, loading: isLoading, refresh } = useFeed(true, 10);
+  const { userStories, loading: storiesLoading } = useStories(20);
 
   useEffect(() => {
     const handleReload = () => {
@@ -64,7 +64,7 @@ function Home() {
           
           <section className={`border transition-all duration-300 rounded-4xl p-2 overflow-hidden shadow-sm
             ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-gray-200'}`}>
-            <StoryBar />
+            <StoryBar userStories={userStories} loading={storiesLoading} />
           </section>
 
           {filterTag && !isLoading && (
@@ -98,10 +98,10 @@ function Home() {
           </div>
         </aside>
 
-        {userId && storyId && (
+        {userId && storyId && userStories.length > 0 && (
           <StoryViewer 
-            userStories={MOCK_STORIES} 
-            initialUserIndex={MOCK_STORIES.findIndex(u => u.userId === userId)}
+            userStories={userStories} 
+            initialUserIndex={Math.max(0, userStories.findIndex(u => u.userId === userId))}
             initialStoryId={storyId}
             onClose={() => navigate('/Home')} 
           />

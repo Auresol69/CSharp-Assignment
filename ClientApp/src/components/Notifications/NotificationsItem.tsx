@@ -1,20 +1,38 @@
-import { Heart, MessageCircle, UserPlus, MoreHorizontal, Circle, ShieldAlert } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Heart, MessageCircle, UserPlus, MoreHorizontal, Circle, ShieldAlert, Check, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import type { INotification } from '../../types/Notifications';
 
-const NotificationItem = ({ data, onRead }: { data: INotification, onRead: (id: string) => void }) => {
+interface NotificationItemProps {
+  data: INotification;
+  onRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+const NotificationItem = ({ data, onRead, onDelete }: NotificationItemProps) => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Đóng menu khi click ra ngoài
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleClick = () => {
-    onRead(data.id); // Cập nhật trạng thái đã đọc (đổi màu nền)
-    
+    if (showMenu) return;
+    onRead(data.id);
     if (data.targetUrl) {
-      navigate(data.targetUrl); // Điều hướng tới bài viết/bình luận
-      
-      // Logic cuộn tới phần tử cụ thể nếu có Hash ID
+      navigate(data.targetUrl);
       if (data.targetUrl.includes('#')) {
         const elementId = data.targetUrl.split('#')[1];
         setTimeout(() => {
@@ -36,13 +54,13 @@ const NotificationItem = ({ data, onRead }: { data: INotification, onRead: (id: 
   };
 
   return (
-    <div 
+    <div
       onClick={handleClick}
       className={`p-4 flex items-start gap-4 cursor-pointer transition-colors relative border-b ${
         isDark ? 'border-gray-800/80' : 'border-gray-200'
-      } ${!data.isRead 
-        ? (isDark ? 'bg-blue-900/20' : 'bg-blue-50/40') 
-        : (isDark ? 'bg-gray-900' : 'bg-white') // Đã đọc thì về màu nền chuẩn
+      } ${!data.isRead
+        ? (isDark ? 'bg-blue-900/20' : 'bg-blue-50/40')
+        : (isDark ? 'bg-gray-900' : 'bg-white')
       } hover:${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
     >
       <div className="relative shrink-0">
@@ -63,19 +81,45 @@ const NotificationItem = ({ data, onRead }: { data: INotification, onRead: (id: 
       </div>
 
       {data.targetImage?.trim() ? <img src={data.targetImage} className={`w-10 h-10 rounded-md object-cover shrink-0 border ${isDark ? 'border-gray-700' : 'border-gray-200'}`} alt="target" /> : null}
-      
-      <div className="flex flex-col items-center justify-between self-stretch">
+
+      {/* Menu button + dropdown */}
+      <div ref={menuRef} className="flex flex-col items-center justify-between self-stretch relative">
         <button
-          className={isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}
+          onClick={e => { e.stopPropagation(); setShowMenu(v => !v); }}
+          className={`p-1 rounded-full transition-colors ${isDark ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
           aria-label="Tùy chọn thông báo"
-          title="Tùy chọn thông báo"
         >
           <MoreHorizontal size={16} />
         </button>
+
+        {showMenu && (
+          <div className={`absolute top-7 right-0 z-30 w-48 rounded-xl shadow-lg border overflow-hidden
+            ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            {!data.isRead && (
+              <button
+                onClick={e => { e.stopPropagation(); onRead(data.id); setShowMenu(false); }}
+                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors
+                  ${isDark ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-50 text-gray-700'}`}
+              >
+                <Check size={14} className="text-blue-500" />
+                Đánh dấu đã đọc
+              </button>
+            )}
+            <button
+              onClick={e => { e.stopPropagation(); onDelete(data.id); setShowMenu(false); }}
+              className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors
+                ${isDark ? 'hover:bg-red-900/40 text-red-400' : 'hover:bg-red-50 text-red-500'}`}
+            >
+              <Trash2 size={14} />
+              Xóa thông báo
+            </button>
+          </div>
+        )}
+
         {!data.isRead && <Circle size={10} fill={isDark ? "#60a5fa" : "#2563eb"} className={isDark ? "text-blue-400" : "text-blue-600"} />}
       </div>
     </div>
   );
 };
 
-export default NotificationItem;
+export default NotificationItem;

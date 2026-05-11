@@ -4,11 +4,10 @@ import NotificationTabs from "../components/Notifications/NotificationsTab";
 import NotificationItem from "../components/Notifications/NotificationsItem";
 import { useTheme } from "../context/ThemeContext";
 import type { INotification } from "../types/Notifications";
-import { MOCK_NOTIFICATIONS } from "../services/MockedData/mockNotifications";
 
 const Notifications = () => {
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread' | 'moderation'>('all');
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -40,14 +39,40 @@ const Notifications = () => {
     };
 
     void loadNotifications();
-  }, []); 
+  }, []);
 
-  const handleMarkAsRead = (id: string) => {
+  const handleMarkAsRead = async (id: string) => {
+    // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    try {
+      const { markAsRead } = await import('../services/notificationApi');
+      await markAsRead(id);
+    } catch {
+      // Rollback nếu API fail
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: false } : n));
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  const handleMarkAllAsRead = async () => {
+    const snapshot = notifications;
+    setNotifications(p => p.map(n => ({ ...n, isRead: true })));
+    try {
+      const { markAllAsRead } = await import('../services/notificationApi');
+      await markAllAsRead();
+    } catch {
+      setNotifications(snapshot);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const snapshot = notifications;
+    setNotifications(p => p.filter(n => n.id !== id));
+    try {
+      const { deleteNotification } = await import('../services/notificationApi');
+      await deleteNotification(id);
+    } catch {
+      setNotifications(snapshot);
+    }
   };
 
   const filteredData = filter === 'all'
@@ -84,7 +109,7 @@ const Notifications = () => {
         ) : (
           filteredData.length > 0 ? (
             filteredData.map(noti => (
-              <NotificationItem key={noti.id} data={noti} onRead={handleMarkAsRead} />
+              <NotificationItem key={noti.id} data={noti} onRead={handleMarkAsRead} onDelete={handleDelete} />
             ))
           ) : (
             <div className="flex flex-col items-center justify-center pt-20 text-gray-500 opacity-60">

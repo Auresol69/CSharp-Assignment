@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
-import { Image as ImageIcon, Send, X, Smile, BarChart2, MapPin } from 'lucide-react';
+import { Image as ImageIcon, Send, X, Smile, BarChart2, MapPin, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import api from '../../services/api';
+import { createPost } from '../../services/postsApi';
 
 const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) => {
   const { theme } = useTheme();
@@ -9,9 +9,19 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [content, setContent] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Lấy thông tin user từ auth đã lưu
+  const getAuthUser = () => {
+    try {
+      const auth = localStorage.getItem('auth');
+      if (auth) return JSON.parse(auth)?.user ?? {};
+    } catch { /* silent */ }
+    return {};
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,10 +29,11 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setSelectedImage(reader.result as string);
       reader.readAsDataURL(file);
-      setError('Backend tao post co media dang phu thuoc Cloudinary, nen hien chi noi text-only.');
+      setError('');
     }
   };
 
@@ -35,31 +46,33 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
 
       const formData = new FormData();
       formData.append('Content', content);
+      if (selectedFile) {
+        formData.append('Media', selectedFile);
+      }
 
-      const response = await api.post('/post', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await createPost(formData);
+      const authUser = getAuthUser();
 
-      const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
       onPostCreated({
-        id: response.data.idPost,
+        id: response.idPost,
         user: {
           id: authUser.id || 'me',
-          name: authUser.tenTaiKhoan || 'Ban',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=me'
+          name: authUser.tenTaiKhoan || 'Bạn',
+          avatar: authUser.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser.id ?? 'me'}`
         },
-        content: response.data.content || content,
-        image: response.data.mediaUrls?.[0],
-        time: 'Vua xong',
+        content: response.content || content,
+        image: response.media?.[0]?.url,
+        time: 'Vừa xong',
         likes: 0,
         comments: 0
       });
 
       setContent('');
       setSelectedImage(null);
+      setSelectedFile(null);
       setIsExpanded(false);
     } catch {
-      setError('Khong tao duoc bai viet. Hay dang nhap lai hoac kiem tra backend.');
+      setError('Không tạo được bài viết. Vui lòng đăng nhập lại hoặc kiểm tra kết nối.');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,8 +100,8 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
     >
       <div className="flex gap-3 sm:gap-4">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=me"
-          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-transform ${isExpanded ? 'scale-105 sm:scale-110' : ''}`}
+          src={getAuthUser()?.avatarUrl ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${getAuthUser()?.id ?? 'me'}`}
+          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover transition-transform ${isExpanded ? 'scale-105 sm:scale-110' : ''}`}
           alt="avatar"
         />
 
@@ -109,6 +122,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
               <button
                 onClick={() => {
                   setSelectedImage(null);
+                  setSelectedFile(null);
                   setError('');
                 }}
                 className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80"
@@ -154,8 +168,8 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'}`}
           >
-            <span>{isSubmitting ? 'Dang dang...' : 'Dang'}</span>
-            <Send size={14} />
+            {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            <span>{isSubmitting ? 'Đang đăng...' : 'Đăng'}</span>
           </button>
         </div>
       </div>

@@ -1,20 +1,22 @@
 import { useState } from 'react';
-import { Search, X } from 'lucide-react';
-import { MOCK_TRENDING } from '../../services/MockedData/mockTrending';
-import { useTheme } from '../../context/ThemeContext'; // Import để sử dụng isDark[cite: 8]
+import { Search, X, TrendingUp } from 'lucide-react';
+import useTrendingHashtags from '../../hooks/useTrendingHashtags';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TrendingSidebarProps {
   setFilterTag: (tag: string) => void;
 }
 
 const TrendingSidebar = ({ setFilterTag }: TrendingSidebarProps) => {
-  const { theme } = useTheme(); // Lấy trạng thái theme[cite: 8]
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredTrending = MOCK_TRENDING.filter(item => 
-    item.tag.toLowerCase().includes(searchTerm.toLowerCase())
+  const { data: trendingTags, loading } = useTrendingHashtags('daily', 10);
+
+  const filteredTrending = trendingTags.filter(tag =>
+    tag.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -71,25 +73,33 @@ const TrendingSidebar = ({ setFilterTag }: TrendingSidebarProps) => {
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
-        {filteredTrending.length > 0 ? (
-          filteredTrending.map((item, index) => (
-            <div 
-              key={item.tag}
-              onClick={() => setFilterTag(item.tag)}
-              // SỬA TẠI ĐÂY: Thay đổi màu hover động dựa trên isDark
+        {loading ? (
+          // Skeleton loading
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className={`p-3 rounded-xl animate-pulse ${isDark ? 'bg-gray-700/40' : 'bg-gray-100'}`}>
+              <div className={`h-2 w-10 rounded mb-2 ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`} />
+              <div className={`h-3 w-28 rounded ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`} />
+            </div>
+          ))
+        ) : filteredTrending.length > 0 ? (
+          filteredTrending.map((tag, index) => (
+            <div
+              key={tag}
+              onClick={() => setFilterTag(tag)}
               className={`group flex flex-col p-3 rounded-xl cursor-pointer transition-all duration-200
                 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
             >
-              <div className="flex justify-between items-start">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp size={10} className={`${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                   Top {index + 1}
                 </span>
               </div>
               <p className={`font-bold group-hover:underline mt-0.5 ${isDark ? 'text-gray-100' : 'text-black'}`}>
-                {item.tag}
+                {tag}
               </p>
               <p className={`text-[11px] font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                {item.postCount.toLocaleString()} bài đăng
+                Đang thịnh hành
               </p>
             </div>
           ))
