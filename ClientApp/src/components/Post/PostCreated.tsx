@@ -47,7 +47,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
       const formData = new FormData();
       formData.append('Content', content);
       if (selectedFile) {
-        formData.append('Media', selectedFile);
+        formData.append('MediaFile', selectedFile);
       }
 
       const response = await createPost(formData);
