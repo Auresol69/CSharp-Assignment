@@ -2,14 +2,13 @@
 
 namespace InteractHub_Shared.DTOs.Auth;
 
-/// <summary>Request body cho API ÄÄƒng nháº­p</summary>
+/// <summary>Request body cho API Đăng nhập</summary>
 public class LoginRequestDto
 {
-    [Required(ErrorMessage = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [EmailAddress(ErrorMessage = "Äá»‹nh dáº¡ng email khÃ´ng há»£p lá»‡.")]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+    [Required(ErrorMessage = "Mật khẩu không được để trống.")]
     public string Password { get; set; } = string.Empty;
 }
-

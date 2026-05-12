@@ -2,28 +2,27 @@
 
 namespace InteractHub_Shared.DTOs.Auth;
 
-/// <summary>Request body cho API ÄÄƒng kÃ½ tÃ i khoáº£n</summary>
+/// <summary>Request body cho API Đăng ký tài khoản</summary>
 public class RegisterRequestDto
 {
-    [Required(ErrorMessage = "TÃªn tÃ i khoáº£n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+    [Required(ErrorMessage = "Tên tài khoản không được để trống.")]
     [MaxLength(100)]
     public string TenTaiKhoan { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [EmailAddress(ErrorMessage = "Äá»‹nh dáº¡ng email khÃ´ng há»£p lá»‡.")]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
     [MaxLength(256)]
     public string Email { get; set; } = string.Empty;
 
-    [Phone(ErrorMessage = "Äá»‹nh dáº¡ng sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡.")]
+    [Phone(ErrorMessage = "Định dạng số điện thoại không hợp lệ.")]
     [MaxLength(15)]
     public string? PhoneNumber { get; set; }
 
-    [Required(ErrorMessage = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [MinLength(6, ErrorMessage = "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±.")]
+    [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+    [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự.")]
     public string Password { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "XÃ¡c nháº­n máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [Compare(nameof(Password), ErrorMessage = "Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p.")]
+    [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống.")]
+    [Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận không khớp.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
-
