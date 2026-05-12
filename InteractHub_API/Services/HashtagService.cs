@@ -1,6 +1,6 @@
-using System.Globalization;
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using System.Globalization;
+using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using StackExchange.Redis;
 using Microsoft.EntityFrameworkCore;
 

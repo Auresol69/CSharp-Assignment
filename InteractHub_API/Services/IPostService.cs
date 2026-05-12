@@ -1,5 +1,5 @@
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Posts;
+﻿using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Posts;
 
 namespace InteractHub_API.Services;
 
@@ -15,3 +15,4 @@ public interface IPostService
 
     Task<Post> RepostAsync(string userId, string parentPostId, string? content);
 }
+

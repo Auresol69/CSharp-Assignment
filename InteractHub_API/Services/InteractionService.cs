@@ -1,6 +1,6 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Interactions;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Interactions;
 using Microsoft.EntityFrameworkCore;
 
 namespace InteractHub_API.Services;
@@ -64,3 +64,4 @@ public class InteractionService : IInteractionService
         };
     }
 }
+

@@ -1,5 +1,5 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -214,3 +214,4 @@ public class FriendshipService : IFriendshipService
             .ToListAsync();
     }
 }
+

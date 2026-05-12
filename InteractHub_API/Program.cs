@@ -1,6 +1,6 @@
-using System.Text;
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using System.Text;
+using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using InteractHub_API.Services;
 using InteractHub_API.Hubs;
 using InteractHub_API.Services.Friends;

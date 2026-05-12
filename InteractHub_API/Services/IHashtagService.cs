@@ -1,4 +1,4 @@
-public interface IHashtagService
+﻿public interface IHashtagService
 {
     /// <summary>
     /// Tăng score của hashtag lên
@@ -23,5 +23,5 @@ public interface IHashtagService
     /// <summary>
     /// Lấy các bài viết theo hashtag.
     /// </summary>
-    Task<IReadOnlyList<InteractHub_API.Data.Entities.Post>> GetPostsByHashtagAsync(string hashtagContent, DateTime? lastTimestamp = null, int take = 10);
+    Task<IReadOnlyList<InteractHub_Shared.Data.Entities.Post>> GetPostsByHashtagAsync(string hashtagContent, DateTime? lastTimestamp = null, int take = 10);
 }

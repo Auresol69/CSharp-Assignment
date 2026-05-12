@@ -1,11 +1,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 
-COPY InteractHub_API.csproj ./
-RUN dotnet restore ./InteractHub_API.csproj
+COPY InteractHub_API/InteractHub_API.csproj InteractHub_API/
+COPY InteractHub_Shared/InteractHub_Shared.csproj InteractHub_Shared/
+RUN dotnet restore ./InteractHub_API/InteractHub_API.csproj
 
-COPY . ./
-RUN dotnet publish ./InteractHub_API.csproj -c Release -o /app/publish /p:UseAppHost=false
+COPY . .
+RUN dotnet publish ./InteractHub_API/InteractHub_API.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview
 WORKDIR /app

@@ -1,7 +1,7 @@
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Media;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Media;
 
 namespace InteractHub_API.Services;
 
@@ -208,3 +208,4 @@ public sealed class CloudinaryService : IMediaService
             : postTransformation;
     }
 }
+

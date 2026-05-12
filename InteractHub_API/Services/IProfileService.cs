@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Identity;
-using InteractHub_API.DTOs.Profiles;
+﻿using Microsoft.AspNetCore.Identity;
+using InteractHub_Shared.DTOs.Profiles;
 
 namespace InteractHub_API.Services;
 
@@ -13,3 +13,4 @@ public interface IProfileService
     Task<IEnumerable<ProfileResponseDto>> GetFollowersAsync(string userId, string currentUserId, int page, int size);
     Task<IEnumerable<ProfileResponseDto>> GetFollowingAsync(string userId, string currentUserId, int page, int size);
 }
+

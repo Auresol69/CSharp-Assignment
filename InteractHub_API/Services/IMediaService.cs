@@ -1,4 +1,4 @@
-using InteractHub_API.DTOs.Media;
+﻿using InteractHub_Shared.DTOs.Media;
 
 namespace InteractHub_API.Services;
 
@@ -8,3 +8,4 @@ public interface IMediaService
 
     Task DeleteMediaAsync(string publicId);
 }
+

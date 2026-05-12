@@ -21,4 +21,8 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0-preview.3.25172.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\InteractHub_Shared\InteractHub_Shared.csproj" />
+  </ItemGroup>
+
 </Project>

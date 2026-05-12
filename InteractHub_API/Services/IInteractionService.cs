@@ -1,4 +1,4 @@
-using InteractHub_API.DTOs.Interactions;
+﻿using InteractHub_Shared.DTOs.Interactions;
 
 namespace InteractHub_API.Services;
 
@@ -22,3 +22,4 @@ public interface IInteractionService
     /// <returns>AuthResponseDto chứa JWT token nếu thành công</returns>
     Task<InteractionResponseDto> LikeAsync(LikeRequest request);
 }
+

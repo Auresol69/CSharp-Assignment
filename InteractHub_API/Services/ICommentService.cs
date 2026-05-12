@@ -1,4 +1,4 @@
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data.Entities;
 
 namespace InteractHub_API.Services;
 
@@ -10,3 +10,4 @@ public interface ICommentService
 
     Task<IReadOnlyList<Comment>> GetCommentsByPostAsync(string postId);
 }
+

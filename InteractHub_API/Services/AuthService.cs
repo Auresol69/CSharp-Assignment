@@ -1,8 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Auth;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
@@ -185,3 +185,4 @@ public class AuthService : IAuthService
             await _roleManager.CreateAsync(new IdentityRole(roleName));
     }
 }
+

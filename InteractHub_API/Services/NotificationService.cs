@@ -1,6 +1,6 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Notifications;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Notifications;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -198,3 +198,4 @@ public class NotificationService : INotificationService
         };
     }
 }
+

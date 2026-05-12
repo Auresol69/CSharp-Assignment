@@ -1,7 +1,7 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Notifications;
-using InteractHub_API.DTOs.Moderation;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Notifications;
+using InteractHub_Shared.DTOs.Moderation;
 using InteractHub_API.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;

@@ -1,5 +1,5 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,3 +34,4 @@ public interface IFriendshipService
     /// </summary>
     Task<List<Friendship>> GetPendingRequestsAsync(string userId);
 }
+

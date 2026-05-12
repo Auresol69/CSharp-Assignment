@@ -1,5 +1,5 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace InteractHub_API.Services.Friends;

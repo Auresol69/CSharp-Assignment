@@ -1,4 +1,4 @@
-namespace InteractHub_API.Hubs;
+﻿namespace InteractHub_API.Hubs;
 
 public interface INotificationClient
 {
@@ -15,5 +15,5 @@ public interface INotificationClient
 
     // Chấp nhận yêu cầu kết bạn
     Task FriendRequestAccepted(string accepterId, string accepterName, string accepterAvatarUrl);
-    Task ReceiveNotification(InteractHub_API.DTOs.Notifications.NotificationResponseDto notification);
+    Task ReceiveNotification(InteractHub_Shared.DTOs.Notifications.NotificationResponseDto notification);
 }

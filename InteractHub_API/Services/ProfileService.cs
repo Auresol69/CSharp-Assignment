@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Profiles;
+using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Profiles;
 using InteractHub_API.Hubs;
 
 namespace InteractHub_API.Services;
@@ -203,3 +203,4 @@ public class ProfileService : IProfileService
         return profiles;
     }
 }
+
