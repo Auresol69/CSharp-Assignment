@@ -1,4 +1,4 @@
-import api from "./api";
+﻿import api from "./api";
 
 export interface LoginRequest {
   email: string;
@@ -18,7 +18,7 @@ export interface AuthResponse {
     id: string;
     tenTaiKhoan: string;
     email: string;
-    phoneNumber?: string;
+    phoneNữmber?: string;
     roles: string[];
   };
 }
@@ -47,3 +47,4 @@ export function clearAuth() {
 }
 
 export default { login, register, saveAuth, clearAuth };
+

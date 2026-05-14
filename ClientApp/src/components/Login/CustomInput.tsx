@@ -35,7 +35,6 @@ const CustomInput: React.FC<CustomInputProps> = ({ label, value, onChange, type 
                     className="w-full bg-transparent text-white text-base sm:text-lg outline-none z-10 px-4 py-3 pr-12"
                     value={value}
                     aria-label={label}
-                    placeholder={label}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => { 
                         setIsFocused(false); 

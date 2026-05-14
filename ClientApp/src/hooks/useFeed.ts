@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import type { IPost } from '../types/Post';
 import * as postsApi from '../services/api/postsApi';
 
@@ -14,7 +14,7 @@ export default function useFeed(initialLoad = true, pageSize = 10) {
     setLoading(true);
     try {
       const { posts: fetched, nextTimestamp: next, hasMore: more } = await postsApi.getFeed(refresh ? null : nextTimestamp, pageSize);
-      setPosts(prev => refresh ? fetched : [...prev, ...fetched]);
+      setPosts((prev) => refresh ? fetched : [...prev, ...fetched]);
       setNextTimestamp(next ?? null);
       setHasMore(!!more);
       setError(null);
@@ -40,4 +40,3 @@ export default function useFeed(initialLoad = true, pageSize = 10) {
     refresh: () => load(true),
   };
 }
-

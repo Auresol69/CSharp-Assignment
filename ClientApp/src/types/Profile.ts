@@ -1,8 +1,8 @@
-export interface IProfileResponseDto {
+﻿export interface IProfileResponseDto {
   id: string;
   tenTaiKhoan: string;
   email: string;
-  phoneNumber?: string | null;
+  phoneNữmber?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
   ngaySinh?: string | null;
@@ -19,7 +19,7 @@ export interface IProfileResponseDto {
 export interface IUpdateProfileRequest {
   tenTaiKhoan?: string;
   email?: string;
-  phoneNumber?: string;
+  phoneNữmber?: string;
   avatarUrl?: string;
   bio?: string;
   ngaySinh?: string | null;
@@ -32,3 +32,4 @@ export interface IChangePasswordRequest {
   newPassword: string;
   confirmPassword: string;
 }
+

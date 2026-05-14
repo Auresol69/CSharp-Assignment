@@ -1,4 +1,4 @@
-import { Camera, Edit3 } from 'lucide-react';
+﻿import { Camera, Edit3 } from 'lucide-react';
 import { useState } from 'react';
 import EditProfileModal from './EditProfileModal/EditProfileModal';
 import type { IProfileResponseDto } from '../../types/Profile';
@@ -17,7 +17,7 @@ const ProfileHeader = ({ profile, onProfileUpdated }: Props) => {
       <div className="h-48 sm:h-64 md:h-80 bg-linear-to-r from-blue-400 to-indigo-500 relative">
         <button className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-black/50 text-white p-2 rounded-lg flex items-center space-x-2 hover:bg-black/70 transition-all active:scale-95">
           <Camera size={18} />
-          <span className="hidden sm:inline text-sm">Chinh sua anh bia</span>
+          <span className="hidden sm:inline text-sm">Chỉnh sửa ảnh bìa</span>
         </button>
       </div>
 
@@ -35,8 +35,8 @@ const ProfileHeader = ({ profile, onProfileUpdated }: Props) => {
             )}
             <button
               className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-gray-200 p-1.5 sm:p-2 rounded-full hover:bg-gray-300 border-2 border-white shadow-sm"
-              aria-label="Chá»‰nh sá»­a áº£nh Ä‘áº¡i diá»‡n"
-              title="Chá»‰nh sá»­a áº£nh Ä‘áº¡i diá»‡n"
+              aria-label="Chỉnh sửa ảnh đại diện"
+              title="Chỉnh sửa ảnh đại diện"
             >
               <Camera size={16} />
             </button>
@@ -44,10 +44,10 @@ const ProfileHeader = ({ profile, onProfileUpdated }: Props) => {
 
           <div className="mt-3 md:mt-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 leading-tight">
-              {profile?.tenTaiKhoan ?? 'TÃªn cá»§a Ã´ng nÃ¨'}
+              {profile?.tenTaiKhoan ?? 'Tên của bạn'}
             </h1>
             <p className="text-gray-500 text-sm sm:text-base font-medium">
-              {profile ? `${profile.soLuongFollower} báº¡n bÃ¨ â€¢ ${profile.soLuongPost} bÃ i viáº¿t` : '500 báº¡n bÃ¨ â€¢ 20 bÃ i viáº¿t'}
+              {profile ? `${profile.soLuongFollower} bạn bè • ${profile.soLuongPost} bài viết` : '500 bạn bè • 20 bài viết'}
             </p>
           </div>
 
@@ -58,7 +58,7 @@ const ProfileHeader = ({ profile, onProfileUpdated }: Props) => {
               disabled={!profile}
             >
               <Edit3 size={18} />
-              <span className="text-sm">Chinh sua trang ca nhan</span>
+              <span className="text-sm">Chỉnh sửa trang cá nhân</span>
             </button>
           </div>
 
