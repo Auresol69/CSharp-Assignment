@@ -13,7 +13,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  expiresAt: string; // ISO string
+  expiresAt: string;
   user: {
     id: string;
     tenTaiKhoan: string;
@@ -38,7 +38,6 @@ export function saveAuth(data: AuthResponse) {
     localStorage.setItem("auth", JSON.stringify(data));
     api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
   } catch (e) {
-    // silent
   }
 }
 

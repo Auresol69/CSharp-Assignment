@@ -1,4 +1,4 @@
-import api from './api';
+import api from './index';
 
 export async function getTrendingHashtags(filterType = 'daily', take = 10) {
   const res = await api.get('/hashtag/trending', { params: { filterType, take } });
@@ -11,3 +11,4 @@ export async function getPostsByHashtag(hashtag: string, lastTimestamp?: string 
   const res = await api.get(`/hashtag/${encodeURIComponent(hashtag)}/posts`, { params });
   return res.data;
 }
+

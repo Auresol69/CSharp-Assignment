@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getLocalStories } from '../services/storyApi';
+import { getLocalStories } from '../services/api/storyApi';
 import type { IStoryResponseDto } from '../types/Post';
 
 export interface UserStory {
@@ -53,3 +53,4 @@ export default function useStories(take = 20) {
 
   return { userStories, loading };
 }
+

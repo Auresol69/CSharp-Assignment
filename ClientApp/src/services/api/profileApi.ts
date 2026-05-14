@@ -1,9 +1,9 @@
-import api from './api';
+import api from './index';
 import type {
   IChangePasswordRequest,
   IProfileResponseDto,
   IUpdateProfileRequest,
-} from '../types/Profile';
+} from '../../types/Profile';
 
 export async function getMyProfile() {
   const res = await api.get<IProfileResponseDto>('/profile/me');
@@ -54,3 +54,4 @@ export async function getFollowing(userId: string, page = 1, size = 20) {
   });
   return res.data;
 }
+

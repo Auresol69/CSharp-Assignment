@@ -1,5 +1,5 @@
-import api from './api';
-import type { IStoryResponseDto } from '../types/Post';
+import api from './index';
+import type { IStoryResponseDto } from '../../types/Post';
 
 export async function getGlobalStories(take = 20) {
   const res = await api.get('/story/global', { params: { take } });
@@ -21,3 +21,4 @@ export async function createStory(formData: FormData) {
 export async function deleteStory(storyId: string) {
   await api.delete(`/story/${storyId}`);
 }
+

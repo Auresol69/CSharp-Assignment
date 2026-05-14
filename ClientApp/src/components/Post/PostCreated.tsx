@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Image as ImageIcon, Send, X, Smile, BarChart2, MapPin, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { createPost } from '../../services/postsApi';
+import { createPost } from '../../services/api/postsApi';
 
 const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) => {
   const { theme } = useTheme();
@@ -178,3 +178,4 @@ const CreatePost = ({ onPostCreated }: { onPostCreated: (post: any) => void }) =
 };
 
 export default CreatePost;
+

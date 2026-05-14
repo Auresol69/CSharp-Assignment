@@ -6,8 +6,8 @@ import FriendsGrid from '../components/Profile/FriendsGrid';
 import { useTheme } from '../context/ThemeContext';
 import type { IProfileResponseDto } from '../types/Profile';
 import type { IPost } from '../types/Post';
-import { getMyProfile, getFollowers } from '../services/profileApi';
-import { getFeed } from '../services/postsApi';
+import { getMyProfile, getFollowers } from '../services/api/profileApi';
+import { getFeed } from '../services/api/postsApi';
 
 const Profile = () => {
   const { theme } = useTheme();
@@ -71,3 +71,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as commentsApi from '../services/commentsApi';
+import * as commentsApi from '../services/api/commentsApi';
 import type { ICommentResponseDto } from '../types/Post';
 
 export default function useCommentsByPost(postId?: string) {
@@ -20,3 +20,4 @@ export default function useCommentsByPost(postId?: string) {
 
   return { comments, loading, error };
 }
+

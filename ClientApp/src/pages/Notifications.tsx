@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getNotifications } from "../services/notificationApi";
+import { getNotifications } from "../services/api/notificationApi";
 import NotificationTabs from "../components/Notifications/NotificationsTab";
 import NotificationItem from "../components/Notifications/NotificationsItem";
 import { useTheme } from "../context/ThemeContext";
@@ -45,7 +45,7 @@ const Notifications = () => {
     // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     try {
-      const { markAsRead } = await import('../services/notificationApi');
+      const { markAsRead } = await import('../services/api/notificationApi');
       await markAsRead(id);
     } catch {
       // Rollback nếu API fail
@@ -57,7 +57,7 @@ const Notifications = () => {
     const snapshot = notifications;
     setNotifications(p => p.map(n => ({ ...n, isRead: true })));
     try {
-      const { markAllAsRead } = await import('../services/notificationApi');
+      const { markAllAsRead } = await import('../services/api/notificationApi');
       await markAllAsRead();
     } catch {
       setNotifications(snapshot);
@@ -68,7 +68,7 @@ const Notifications = () => {
     const snapshot = notifications;
     setNotifications(p => p.filter(n => n.id !== id));
     try {
-      const { deleteNotification } = await import('../services/notificationApi');
+      const { deleteNotification } = await import('../services/api/notificationApi');
       await deleteNotification(id);
     } catch {
       setNotifications(snapshot);

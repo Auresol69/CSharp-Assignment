@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserCheck, UserPlus, UserX, UserMinus, Loader2 } from 'lucide-react';
+import { UserPlus, UserX, UserMinus, Loader2 } from 'lucide-react';
 import {
   sendFriendRequest,
   acceptFriendRequest,

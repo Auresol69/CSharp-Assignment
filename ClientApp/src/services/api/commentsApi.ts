@@ -1,5 +1,5 @@
-import api from './api';
-import type { ICommentResponseDto } from '../types/Post';
+import api from './index';
+import type { ICommentResponseDto } from '../../types/Post';
 
 export async function getCommentsByPost(postId: string) {
   const res = await api.get(`/comments/post/${postId}`);
@@ -16,3 +16,4 @@ export async function replyToComment(parentCommentId: string, postId: string, co
   const res = await api.post(`/comments/${parentCommentId}/reply`, { idPost: postId, content });
   return res.data as { idComment: string; content: string; parentCommentId: string };
 }
+

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Ban, Loader2, ShieldAlert, Undo2, Users } from "lucide-react";
-import { getReportedPosts, getReportsByPost, removeFromBlacklist } from "../../services/moderationApi";
+import { getReportedPosts, getReportsByPost, removeFromBlacklist } from "../../services/api/moderationApi";
 import type { IPostReportDetail, IReportedPostSummary } from "../../types/Moderation";
 import { useTheme } from "../../context/ThemeContext";
 

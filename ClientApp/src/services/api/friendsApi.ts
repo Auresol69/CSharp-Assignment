@@ -34,3 +34,4 @@ export const getRequests = getFriendRequests;
 export const getSuggestions = () => {
   return api.get<IFriend[]>(`/friends/suggestions`);
 };
+

@@ -20,7 +20,7 @@ public static class IdentitySeeder
             return;
         }
 
-        var roles = new[] { "Admin", "Moderator", "User" };
+        var roles = new[] { "Admin", "User" };
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -40,14 +40,7 @@ public static class IdentitySeeder
             password: GetRequiredSeedValue(configuration, "SeedUsers:Admin:Password"),
             displayName: GetRequiredSeedValue(configuration, "SeedUsers:Admin:TenTaiKhoan"));
 
-        await EnsureUserWithRoleAsync(
-            userManager,
-            roleName: "Moderator",
-            email: GetRequiredSeedValue(configuration, "SeedUsers:Moderator:Email"),
-            password: GetRequiredSeedValue(configuration, "SeedUsers:Moderator:Password"),
-            displayName: GetRequiredSeedValue(configuration, "SeedUsers:Moderator:TenTaiKhoan"));
-
-        logger.LogInformation("Identity seed complete. Admin and Moderator accounts are ready.");
+        logger.LogInformation("Identity seed complete. Admin account is ready.");
     }
 
     private static string GetRequiredSeedValue(IConfiguration configuration, string key)

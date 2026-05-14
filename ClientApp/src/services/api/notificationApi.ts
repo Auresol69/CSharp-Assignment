@@ -1,4 +1,4 @@
-import api from './api';
+import api from './index';
 
 export interface INotificationResponseDto {
   idNotification: string;
@@ -33,3 +33,4 @@ export async function deleteNotification(notificationId: string) {
   const res = await api.delete<{ message: string }>(`/notification/${notificationId}`);
   return res.data;
 }
+
