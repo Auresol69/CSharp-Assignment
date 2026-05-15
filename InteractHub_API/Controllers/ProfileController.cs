@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Profiles;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Profiles;
 using InteractHub_API.Services;
 
 namespace InteractHub_API.Controllers;
@@ -152,3 +152,4 @@ public class ProfileController : ControllerBase
         return Ok(following);
     }
 }
+

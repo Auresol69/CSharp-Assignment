@@ -1,9 +1,11 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using InteractHub_API.Hubs;
+using InteractHub_Shared.Hubs;
+using InteractHub_Shared.Services;
+using StackExchange.Redis;
 
 namespace InteractHub_API.Services;
 
@@ -15,24 +17,21 @@ public class FriendshipService : IFriendshipService
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IPresenceService _presenceService;
-    private readonly IHubContext<NotificationHub, INotificationClient> _hubContext;
     private readonly ILogger<FriendshipService> _logger;
-    private readonly INotificationService _notificationService;
+    private readonly IConnectionMultiplexer _redis;
 
     public FriendshipService(
         AppDbContext context,
         UserManager<ApplicationUser> userManager,
         IPresenceService presenceService,
-        IHubContext<NotificationHub, INotificationClient> hubContext,
         ILogger<FriendshipService> logger,
-        INotificationService notificationService)
+        IConnectionMultiplexer redis)
     {
         _context = context;
         _userManager = userManager;
         _presenceService = presenceService;
-        _hubContext = hubContext;
         _logger = logger;
-        _notificationService = notificationService;
+        _redis = redis;
     }
 
     /// <summary>
@@ -86,30 +85,21 @@ public class FriendshipService : IFriendshipService
         // Gửi thông báo realtime qua SignalR
         try
         {
-            var connections = await _presenceService.GetConnectionsAsync(recipientId);
-            if (connections.Length > 0)
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
             {
-                await _hubContext.Clients
-                    .Clients(connections)
-                    .ReceiveFriendRequest(senderId, sender.TenTaiKhoan ?? "Unknown", sender.AvatarUrl ?? "");
+                new("toUserId", recipientId),
+                new("senderId", senderId),
+                new("notificationType", "FriendRequest"),
+            });
 
-                _logger.LogInformation("Friend request notification sent to {RecipientId}.", recipientId);
-            }
+            _logger.LogInformation("Event FriendRequest pushed to Redis Stream for {RecipientId}.", recipientId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending friend request notification to {RecipientId}.", recipientId);
-            // Notification lỗi không nên gây fail toàn bộ request
-        }
-
-        // Persist notification
-        try
-        {
-            await _notificationService.CreateAndSendNotificationAsync(recipientId, senderId, null, "FriendRequest");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error persisting/sending friend request notification to {RecipientId}.", recipientId);
+            // Nếu Redis có sập, Friendship vẫn đã lưu vào SQL, 
+            // có thể log lỗi để xử lý bù sau.
+            _logger.LogError(ex, "Lỗi khi đẩy sự kiện vào Redis Stream.");
         }
 
         return true;
@@ -117,7 +107,7 @@ public class FriendshipService : IFriendshipService
 
     /// <summary>
     /// Chấp nhận yêu cầu kết bạn: Update status từ "Pending" thành "Accepted".
-    /// Sau đó gửi thông báo FriendRequestAccepted tới người gửi yêu cầu ban đầu.
+    /// Sau đó push event FriendshipAccepted vào Redis Stream để Worker xử lý.
     /// </summary>
     public async Task<bool> AcceptFriendRequestAsync(string userId, string requestSenderId)
     {
@@ -139,39 +129,24 @@ public class FriendshipService : IFriendshipService
         _context.Friendships.Update(friendship);
         await _context.SaveChangesAsync();
 
-        // Xóa thông báo lời mời pending ở người nhận vì đã xử lý xong
-        await _notificationService.DeleteByCriteriaAsync(userId, requestSenderId, "FriendRequest");
-
         _logger.LogInformation("Friend request accepted by {UserId} from {SenderId}.", userId, requestSenderId);
 
-        // Gửi thông báo realtime qua SignalR
+        // Push event vào Redis Stream
         try
         {
-            var accepter = await _userManager.FindByIdAsync(userId);
-            var connections = await _presenceService.GetConnectionsAsync(requestSenderId);
-
-            if (connections.Length > 0 && accepter != null)
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
             {
-                await _hubContext.Clients
-                    .Clients(connections)
-                    .FriendRequestAccepted(userId, accepter.TenTaiKhoan ?? "Unknown", accepter.AvatarUrl ?? "");
+                new("toUserId", requestSenderId),
+                new("senderId", userId),
+                new("notificationType", "FriendshipAccepted"),
+            });
 
-                _logger.LogInformation("Friend request acceptance notification sent to {SenderId}.", requestSenderId);
-            }
+            _logger.LogInformation("Event FriendshipAccepted pushed to Redis Stream for {SenderId}.", requestSenderId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending acceptance notification to {SenderId}.", requestSenderId);
-        }
-
-        // Persist notification to sender
-        try
-        {
-            await _notificationService.CreateAndSendNotificationAsync(requestSenderId, userId, null, "FriendRequestAccepted");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error persisting/sending acceptance notification to {SenderId}.", requestSenderId);
+            _logger.LogError(ex, "Error pushing FriendshipAccepted event to Redis Stream.");
         }
 
         return true;
@@ -179,6 +154,7 @@ public class FriendshipService : IFriendshipService
 
     /// <summary>
     /// Từ chối yêu cầu kết bạn: Xóa record từ DB.
+    /// Push event FriendshipRejected vào Redis Stream để Worker xử lý cleanup.
     /// </summary>
     public async Task<bool> RejectFriendRequestAsync(string userId, string requestSenderId)
     {
@@ -197,10 +173,26 @@ public class FriendshipService : IFriendshipService
         _context.Friendships.Remove(friendship);
         await _context.SaveChangesAsync();
 
-        // Lời mời bị từ chối thì xóa notification pending ở người nhận
-        await _notificationService.DeleteByCriteriaAsync(userId, requestSenderId, "FriendRequest");
-
         _logger.LogInformation("Friend request rejected by {UserId} from {SenderId}.", userId, requestSenderId);
+
+        // Push event vào Redis Stream
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+            {
+                new("toUserId", requestSenderId),
+                new("senderId", userId),
+                new("notificationType", "FriendshipRejected"),
+            });
+
+            _logger.LogInformation("Event FriendshipRejected pushed to Redis Stream for {SenderId}.", requestSenderId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pushing FriendshipRejected event to Redis Stream.");
+        }
+
         return true;
     }
 
@@ -214,3 +206,4 @@ public class FriendshipService : IFriendshipService
             .ToListAsync();
     }
 }
+

@@ -1,8 +1,9 @@
-using System.Text;
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
+﻿using System.Text;
+using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
 using InteractHub_API.Services;
-using InteractHub_API.Hubs;
+using InteractHub_Shared.Hubs;
+using InteractHub_Shared.Services;
 using InteractHub_API.Services.Friends;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -49,8 +50,6 @@ builder.Services
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
-
-builder.Services.AddSignalR();
 
 // ═══════════════════════════════════════════════════════════════════
 // 3. AUTHENTICATION – JWT Bearer
@@ -143,17 +142,27 @@ var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRIN
     ?? builder.Configuration.GetConnectionString("Redis")
     ?? "localhost:6379";
 
+// Đăng ký kết nối gốc trước (IConnectionMultiplexer)
+
+// app có thể sẽ mở 3 connection riêng biệt tới Redis. 
+// Để tối ưu, có thể bắt chúng "dùng chung" một kết nối duy nhất
+var connection = ConnectionMultiplexer.Connect(redisConnection);
+
 // 1. Đăng ký ConnectionMultiplexer (Cái mà PresenceService đang cần)
 // Quản lý kết nối Redis: Nó chịu trách nhiệm thiết lập, duy trì và quản lý kết nối giữa ứng dụng .NET và máy chủ Redis.
 // Chia sẻ kết nối (Multiplexing): Nó cho phép nhiều phần của ứng dụng (nhiều luồng - threads) chia sẻ chung một kết nối vật lý duy nhất tới Redis.
 // Điều này giúp tối ưu hóa hiệu suất và giảm bớt gánh nặng tạo/đóng kết nối liên tục
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-    ConnectionMultiplexer.Connect(redisConnection));
+
+// Kết nối gốc, dùng để thao tác trực tiếp với Redis (như xử lý Redis Streams bằng lệnh XADD, XREAD).
+builder.Services.AddSingleton<IConnectionMultiplexer>(connection);
 
 // 2. Vẫn giữ cái này nếu có dùng IDistributedCache ở ngay tác vụ cache trong extensions
+
+// Cung cấp dịch vụ IDistributedCache. Dùng để lưu các cặp Key-Value có thời hạn 
+// (như lưu Session, lưu Cache dữ liệu bài viết để giảm tải cho MySQL).
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = redisConnection;
+    options.ConnectionMultiplexerFactory = () => Task.FromResult<IConnectionMultiplexer>(connection);
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -184,7 +193,12 @@ builder.Services.AddHostedService<StoryCleanupService>();
 // ═══════════════════════════════════════════════════════════════════
 builder.Services.AddControllers();
 
-builder.Services.AddSignalR();
+// Sử dụng tính năng Pub/Sub của Redis để làm "cầu nối" cho SignalR.
+builder.Services.AddSignalR()
+    .AddStackExchangeRedis(options =>
+    {
+        options.ConnectionFactory = _ => Task.FromResult<IConnectionMultiplexer>(connection);
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -287,6 +301,7 @@ app.UseMiddleware<RateLimitingMiddleware>();
 
 app.MapControllers();
 
+// Mở cổng WebSocket
 app.MapHub<NotificationHub>("/hubs/notification");
 
 app.Run();

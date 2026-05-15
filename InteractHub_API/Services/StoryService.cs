@@ -1,6 +1,6 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Stories;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Stories;
 using InteractHub_API.Helpers;
 using Microsoft.EntityFrameworkCore;
 
@@ -116,3 +116,4 @@ public sealed class StoryService : IStoryService
         return MediaType.Image;
     }
 }
+

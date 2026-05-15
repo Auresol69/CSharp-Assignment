@@ -1,8 +1,8 @@
 services:
   api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: InteractHub_API/Dockerfile
     container_name: interacthub_api
     depends_on:
       sqlserver:
@@ -12,7 +12,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=YourStrongP@ssw0rd;TrustServerCertificate=True;MultipleActiveResultSets=True
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
       ConnectionStrings__Redis: redis:6379
       Jwt__SecretKey: ${Jwt__SecretKey}
       REDIS_CONNECTION_STRING: redis:6379
@@ -31,12 +31,39 @@ services:
           - sqlserver
     restart: unless-stopped
 
+  worker:
+    build:
+      context: ..
+      dockerfile: InteractHub_Worker/Dockerfile
+    # container_name: interacthub_worker
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
+      ConnectionStrings__Redis: redis:6379
+      REDIS_CONNECTION_STRING: redis:6379
+      # StreamKey ~ Topic (Kafka)
+      # GroupName ~ Consumer Group (Kafka)
+      # ConsumerName ~ Consumer (Kafka)
+      RedisStreams__Notifications__StreamKey: interacthub:notifications:stream
+      RedisStreams__Notifications__GroupName: interacthub-workers
+      RedisStreams__Notifications__ConsumerName: worker-container
+      RedisStreams__Notifications__BatchSize: 20
+      RedisStreams__Notifications__IdleDelayMs: 1500
+    networks:
+      - interacthub_net
+    restart: unless-stopped
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: interacthub_sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: YourStrongP@ssw0rd
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
       MSSQL_PID: Developer
     ports:
       - "1433:1433"

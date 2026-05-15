@@ -1,4 +1,5 @@
-using InteractHub_API.Data.Entities;
+﻿using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -45,3 +46,4 @@ public class PostRepository : IPostRepository
         return await query.ToListAsync();
     }
 }
+

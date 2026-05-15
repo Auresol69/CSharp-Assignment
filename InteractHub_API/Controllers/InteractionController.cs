@@ -1,6 +1,6 @@
-using InteractHub_API.DTOs.Interactions;
+﻿using InteractHub_Shared.DTOs.Interactions;
 using InteractHub_API.Services;
-using InteractHub_API.Data;
+using InteractHub_Shared.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InteractHub_API.Controllers;

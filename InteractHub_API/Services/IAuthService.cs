@@ -1,4 +1,4 @@
-using InteractHub_API.DTOs.Auth;
+﻿using InteractHub_Shared.DTOs.Auth;
 
 namespace InteractHub_API.Services;
 
@@ -22,3 +22,4 @@ public interface IAuthService
     /// <returns>AuthResponseDto chứa JWT token nếu thành công</returns>
     Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
 }
+

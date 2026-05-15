@@ -1,8 +1,8 @@
-using System.Security.Claims;
-using InteractHub_API.DTOs.Stories;
+﻿using System.Security.Claims;
+using InteractHub_Shared.DTOs.Stories;
 using InteractHub_API.Services;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Posts;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -113,3 +113,4 @@ public class StoryController : ControllerBase
         };
     }
 }
+

@@ -1,8 +1,8 @@
-using System.Security.Claims;
-using InteractHub_API.DTOs.Posts;
+﻿using System.Security.Claims;
+using InteractHub_Shared.DTOs.Posts;
 using InteractHub_API.Services;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Interactions;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Interactions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -108,7 +108,7 @@ public class PostController : ControllerBase
     [HttpPost("{postId}/repost")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Repost(string postId, [FromBody] DTOs.Posts.RepostRequestDto request)
+    public async Task<IActionResult> Repost(string postId, [FromBody] RepostRequestDto request)
     {
         try
         {
@@ -269,3 +269,4 @@ public class PostController : ControllerBase
         };
     }
 }
+

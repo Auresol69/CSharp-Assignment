@@ -1,13 +1,13 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Posts;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Posts;
 using InteractHub_API.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
 namespace InteractHub_API.Services;
 
-// sealed class thì không thể bị kế thừa bởi bất kỳ class nào khác
+// sealed: không cho class nào kế thừa
 public sealed class PostService : IPostService
 {
     private readonly AppDbContext _dbContext;
@@ -243,3 +243,4 @@ public sealed class PostService : IPostService
         return hashtags.ToList();
     }
 }
+

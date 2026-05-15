@@ -1,7 +1,8 @@
-using System.Security.Claims;
-using InteractHub_API.DTOs.Interactions;
+﻿using System.Security.Claims;
+using InteractHub_Shared.DTOs.Interactions;
+using InteractHub_Shared.Data.Entities;
 using InteractHub_API.Services;
-using InteractHub_API.DTOs.Posts;
+using InteractHub_Shared.DTOs.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -94,7 +95,7 @@ public class CommentsController : ControllerBase
         }
     }
 
-    private static CommentResponseDto MapComment(Data.Entities.Comment comment)
+    private static CommentResponseDto MapComment(Comment comment)
     {
         return new CommentResponseDto
         {
@@ -112,3 +113,4 @@ public class CommentsController : ControllerBase
         };
     }
 }
+

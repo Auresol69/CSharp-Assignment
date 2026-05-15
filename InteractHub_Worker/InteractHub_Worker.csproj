@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-InteractHub_Worker-9ea2b5a0-8de5-436f-817f-2a5057047292</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-preview.3.25172.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InteractHub_Shared\InteractHub_Shared.csproj" />
+  </ItemGroup>
+</Project>

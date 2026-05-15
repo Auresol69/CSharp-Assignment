@@ -1,5 +1,5 @@
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Stories;
+﻿using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Stories;
 
 namespace InteractHub_API.Services;
 
@@ -13,3 +13,4 @@ public interface IStoryService
 
     Task<IReadOnlyList<Story>> GetLocalStoriesAsync(string userId, int take = 20);
 }
+

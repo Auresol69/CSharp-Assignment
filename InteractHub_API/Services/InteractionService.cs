@@ -1,20 +1,25 @@
-using InteractHub_API.Data;
-using InteractHub_API.Data.Entities;
-using InteractHub_API.DTOs.Interactions;
+﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.DTOs.Interactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace InteractHub_API.Services;
 
 public class InteractionService : IInteractionService
 {
     private readonly AppDbContext _context;
-    private readonly INotificationService _notificationService;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly ILogger<InteractionService> _logger;
 
-    public InteractionService(AppDbContext context, INotificationService notificationService)
+    public InteractionService(AppDbContext context, IConnectionMultiplexer redis, ILogger<InteractionService> logger)
     {
         _context = context;
-        _notificationService = notificationService;
+        _redis = redis;
+        _logger = logger;
     }
+
     public async Task<InteractionResponseDto> CommentAsync(CommentRequest request)
     {
         var newComment = new Comment
@@ -28,12 +33,29 @@ public class InteractionService : IInteractionService
         _context.Comments.Add(newComment);
         await _context.SaveChangesAsync();
 
-        // Create and send notification to post owner
+        // Push event vào Redis Stream để Worker xử lý notification
         var post = await _context.Posts.AsNoTracking().FirstOrDefaultAsync(p => p.IdPost == request.IdPost);
         if (post?.IdTaiKhoan != null && post.IdTaiKhoan != request.IdTaiKhoan)
         {
-            await _notificationService.CreateAndSendNotificationAsync(post.IdTaiKhoan, request.IdTaiKhoan, request.IdPost, "Comment");
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+                {
+                    new("toUserId", post.IdTaiKhoan),
+                    new("senderId", request.IdTaiKhoan),
+                    new("postId", request.IdPost),
+                    new("notificationType", "Comment"),
+                });
+
+                _logger.LogInformation("Event Comment pushed to Redis Stream for post owner {PostOwnerId}.", post.IdTaiKhoan);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error pushing Comment event to Redis Stream.");
+            }
         }
+
         return new InteractionResponseDto
         {
             isSuccess = true,
@@ -51,12 +73,29 @@ public class InteractionService : IInteractionService
         _context.Likes.Add(newLike);
         await _context.SaveChangesAsync();
 
-        // Notify post owner
+        // Push event vào Redis Stream để Worker xử lý notification
         var post = await _context.Posts.AsNoTracking().FirstOrDefaultAsync(p => p.IdPost == request.IdPost);
         if (post?.IdTaiKhoan != null && post.IdTaiKhoan != request.IdTaiKhoan)
         {
-            await _notificationService.CreateAndSendNotificationAsync(post.IdTaiKhoan, request.IdTaiKhoan, request.IdPost, "Like");
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+                {
+                    new("toUserId", post.IdTaiKhoan),
+                    new("senderId", request.IdTaiKhoan),
+                    new("postId", request.IdPost),
+                    new("notificationType", "Like"),
+                });
+
+                _logger.LogInformation("Event Like pushed to Redis Stream for post owner {PostOwnerId}.", post.IdTaiKhoan);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error pushing Like event to Redis Stream.");
+            }
         }
+
         return new InteractionResponseDto
         {
             isSuccess = true,
@@ -64,3 +103,4 @@ public class InteractionService : IInteractionService
         };
     }
 }
+
