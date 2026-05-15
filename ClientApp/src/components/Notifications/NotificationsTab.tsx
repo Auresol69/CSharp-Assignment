@@ -1,18 +1,16 @@
 import { useTheme } from "../../context/ThemeContext";
 import type { ITabsProps } from "../../types/Notifications";
 
-const NotificationTabs = ({ filter, setFilter, showModeration }: ITabsProps) => {
+const NotificationTabs = ({ filter, setFilter }: ITabsProps) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const tabs = [
     { id: "all", label: "Tất cả" },
     { id: "unread", label: "Chưa đọc" },
-    ...(showModeration ? [{ id: "moderation", label: "Kiểm duyệt" } as const] : []),
-  ] as const;
+  ] as const; 
 
   return (
-    /* Thêm overflow-x-auto và whitespace-nowrap để hỗ trợ vuốt ngang trên mobile */
     <div className={`flex px-2 sm:px-4 border-b overflow-x-auto no-scrollbar ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
       {tabs.map((t) => (
         <button

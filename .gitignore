@@ -29,3 +29,4 @@ packages
 
 .env
 appsettings.Development.json
+.aider*

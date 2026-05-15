@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
 export interface SidebarProps {
-  onDashboardClick: () => void; // Thêm dòng này vào interface của Sidebar
+  onDashboardClick: () => void;
 }
 
 export interface ISidebarItem {
@@ -10,6 +10,8 @@ export interface ISidebarItem {
   path: string;
   subitems?: ISubItem[];
   onClick?: () => void;
+  // Thêm dòng này: Danh sách các quyền được phép xem mục này
+  roles?: string[]; 
 }
 
 export interface ISubItem {
