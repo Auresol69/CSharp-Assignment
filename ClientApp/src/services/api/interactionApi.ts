@@ -1,4 +1,4 @@
-import api from './api';
+import api from './index';
 
 export interface AddCommentRequest {
   idPost: string;
@@ -18,3 +18,4 @@ export async function addLike(request: AddLikeRequest) {
   const res = await api.post('/interaction/AddLike', request);
   return res.data;
 }
+

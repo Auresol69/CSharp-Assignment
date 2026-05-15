@@ -1,4 +1,4 @@
-import api from "./api";
+﻿import api from "./api";
 
 export interface LoginRequest {
   email: string;
@@ -13,12 +13,12 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  expiresAt: string; // ISO string
+  expiresAt: string;
   user: {
     id: string;
     tenTaiKhoan: string;
     email: string;
-    phoneNumber?: string;
+    phoneNữmber?: string;
     roles: string[];
   };
 }
@@ -38,7 +38,6 @@ export function saveAuth(data: AuthResponse) {
     localStorage.setItem("auth", JSON.stringify(data));
     api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
   } catch (e) {
-    // silent
   }
 }
 
@@ -48,3 +47,4 @@ export function clearAuth() {
 }
 
 export default { login, register, saveAuth, clearAuth };
+

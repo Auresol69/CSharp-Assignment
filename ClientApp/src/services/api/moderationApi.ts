@@ -1,5 +1,5 @@
-import api from "./api";
-import type { IPostReportDetail, IReportedPostSummary } from "../types/Moderation";
+import api from "./index";
+import type { IPostReportDetail, IReportedPostSummary } from "../../types/Moderation";
 
 export const getReportedPosts = async () => {
   const response = await api.get<IReportedPostSummary[]>("/admin/moderation/reported-posts");

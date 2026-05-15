@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="InteractHub_API.IntegrationTests/InteractHub_API.IntegrationTests.csproj" />
+  <Project Path="InteractHub_API.UnitTests/InteractHub_API.UnitTests.csproj" />
+  <Project Path="InteractHub_API/InteractHub_API.csproj" />
+</Solution>

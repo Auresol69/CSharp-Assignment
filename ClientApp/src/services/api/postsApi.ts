@@ -1,6 +1,6 @@
-import api from './api';
-import type { IPostResponseDto } from '../types/Post';
-import type { IPost } from '../types/Post';
+import api from './index';
+import type { IPostResponseDto } from '../../types/Post';
+import type { IPost } from '../../types/Post';
 
 function mapPostDtoToIPost(dto: IPostResponseDto): IPost {
   return {
@@ -57,3 +57,4 @@ export async function reportPost(postId: string, reason: string) {
   const res = await api.post(`/post/${postId}/report`, { reason });
   return res.data;
 }
+

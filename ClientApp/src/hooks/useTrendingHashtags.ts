@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as hashtagApi from '../services/hashtagApi';
+import * as hashtagApi from '../services/api/hashtagApi';
 
 export default function useTrendingHashtags(filterType = 'daily', take = 10) {
   const [data, setData] = useState<string[]>([]);
@@ -18,3 +18,4 @@ export default function useTrendingHashtags(filterType = 'daily', take = 10) {
 
   return { data, loading, error };
 }
+

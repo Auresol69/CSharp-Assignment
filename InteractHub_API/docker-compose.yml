@@ -23,9 +23,6 @@ services:
       SeedUsers__Admin__Email: ${SeedUsers__Admin__Email}
       SeedUsers__Admin__Password: ${SeedUsers__Admin__Password}
       SeedUsers__Admin__TenTaiKhoan: ${SeedUsers__Admin__TenTaiKhoan}
-      SeedUsers__Moderator__Email: ${SeedUsers__Moderator__Email}
-      SeedUsers__Moderator__Password: ${SeedUsers__Moderator__Password}
-      SeedUsers__Moderator__TenTaiKhoan: ${SeedUsers__Moderator__TenTaiKhoan}
     ports:
       - "5153:8080"
     networks:

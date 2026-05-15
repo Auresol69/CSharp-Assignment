@@ -1,4 +1,4 @@
-import api from './api';
+import api from './index';
 
 export async function sendFriendRequest(recipientId: string) {
   const res = await api.post(`/friendship/${recipientId}/request`);
@@ -9,3 +9,4 @@ export async function acceptFriendRequest(senderId: string) {
   const res = await api.post(`/friendship/${senderId}/accept`);
   return res.data as { success: boolean; message: string };
 }
+

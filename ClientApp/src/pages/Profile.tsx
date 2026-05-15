@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import PostCard from '../components/Post/PostCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
@@ -6,8 +6,8 @@ import FriendsGrid from '../components/Profile/FriendsGrid';
 import { useTheme } from '../context/ThemeContext';
 import type { IProfileResponseDto } from '../types/Profile';
 import type { IPost } from '../types/Post';
-import { getMyProfile, getFollowers } from '../services/profileApi';
-import { getFeed } from '../services/postsApi';
+import { getMyProfile, getFollowers } from '../services/api/profileApi';
+import { getFeed } from '../services/api/postsApi';
 
 const Profile = () => {
   const { theme } = useTheme();
@@ -28,7 +28,7 @@ const Profile = () => {
         const feed = await getFeed(null, 30);
         setUserPosts(feed.posts.filter(post => post.authorId === currentProfile.id).slice(0, 3));
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'Khong tai duoc profile.');
+        setError(error instanceof Error ? error.message : 'Không tải được profile.');
       }
     };
 
@@ -55,8 +55,8 @@ const Profile = () => {
 
         <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
           <div className={`p-4 rounded-xl shadow-sm border ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
-            <h2 className="text-xl font-bold">Bai viet cua ban</h2>
-            <p className="mt-1 text-xs text-gray-500">Backend hien chua co API lay danh sach bai viet, nen khu vuc nay van dung du lieu mau.</p>
+            <h2 className="text-xl font-bold">Bài viết của bạn</h2>
+            <p className="mt-1 text-xs text-gray-500">Backend hiện chưa có API lấy danh sách bài viết, nên khu vực này vẫn dùng dữ liệu mẫu.</p>
           </div>
 
           <div className="space-y-4">
@@ -71,3 +71,6 @@ const Profile = () => {
 };
 
 export default Profile;
+
+
+

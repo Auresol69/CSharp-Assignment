@@ -1,4 +1,4 @@
-import { X, Save, Camera, CheckCircle2 } from 'lucide-react';
+﻿import { X, Save, Camera, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import ConfirmModal from './ConfirmModal';
 import api from '../../../services/api';
@@ -43,7 +43,7 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
       const response = await api.put<IProfileResponseDto>('/profile/me', {
         tenTaiKhoan: data.tenTaiKhoan,
         email: data.email,
-        phoneNumber: data.phoneNumber,
+        phoneNữmber: data.phoneNữmber,
         avatarUrl: data.avatarUrl,
         bio: data.bio,
         ngaySinh: data.ngaySinh || null,
@@ -53,7 +53,7 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
       onSaved?.(response.data);
       onClose();
     } catch {
-      setError('Khong luu duoc profile. Vui long kiem tra lai du lieu.');
+      setError('Không lưu được profile. Vui lòng kiểm tra lại dữ liệu.');
     } finally {
       setIsSaving(false);
     }
@@ -90,7 +90,7 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
             </div>
 
             <div className="pt-4">
-              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Ten hien thi</label>
+              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Tên hiển thị</label>
               <input
                 className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 value={data.tenTaiKhoan ?? ''}
@@ -99,12 +99,12 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Tieu su</label>
+              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Tiểu sử</label>
               <textarea
                 className="w-full p-4 border border-gray-200 rounded-2xl h-24 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
                 value={data.bio ?? ''}
                 onChange={(e) => setData({...data, bio: e.target.value})}
-                placeholder="Mo ta ngan ve ban"
+                placeholder="Mô tả ngắn về bạn"
               />
             </div>
 
@@ -114,30 +114,30 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
                 <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.email ?? ''} onChange={(e) => setData({...data, email: e.target.value})} />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">So dien thoai</label>
-                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.phoneNumber ?? ''} onChange={(e) => setData({...data, phoneNumber: e.target.value})} />
+                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Số điện thoại</label>
+                <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.phoneNữmber ?? ''} onChange={(e) => setData({...data, phoneNữmber: e.target.value})} />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Ngay sinh</label>
+                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Ngày sinh</label>
                 <input type="date" className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.ngaySinh ? data.ngaySinh.slice(0, 10) : ''} onChange={(e) => setData({...data, ngaySinh: e.target.value})} />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Gioi tinh</label>
+                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Giới tính</label>
                 <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.gioiTinh ?? ''} onChange={(e) => setData({...data, gioiTinh: e.target.value})} />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Dia chi</label>
+                <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-2">Địa chỉ</label>
                 <input className="w-full p-4 border border-gray-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={data.diaChi ?? ''} onChange={(e) => setData({...data, diaChi: e.target.value})} />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-4">Thong tin hien thi</label>
+              <label className="block text-xs sm:text-sm font-black text-gray-500 uppercase mb-4">Thông tin hiển thị</label>
               <div className="grid grid-cols-1 gap-2.5">
                 {[
-                  { id: 'showEmail', label: 'Hien thi Email', value: editData.showEmail ?? true },
-                  { id: 'showPhone', label: 'Hien thi So dien thoai', value: editData.showPhone ?? false },
-                  { id: 'showWorkplace', label: 'Hien thi Noi lam viec', value: editData.showWorkplace ?? true }
+                  { id: 'showEmail', label: 'Hiển thị Email', value: editData.showEmail ?? true },
+                  { id: 'showPhone', label: 'Hien thi Số điện thoại', value: editData.showPhone ?? false },
+                  { id: 'showWorkplace', label: 'Hiển thị Nơi làm việc', value: editData.showWorkplace ?? true }
                 ].map((item) => (
                   <div
                     key={item.id}
@@ -155,9 +155,9 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
           </div>
 
           <div className="p-4 border-t bg-gray-50 flex gap-3 sticky bottom-0">
-            <button onClick={handleAttemptClose} className="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300 active:scale-95 transition-all text-sm sm:text-base">Huy</button>
+            <button onClick={handleAttemptClose} className="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-300 active:scale-95 transition-all text-sm sm:text-base">Hủy</button>
             <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:bg-blue-800 shadow-lg shadow-blue-100 active:scale-95 transition-all text-sm sm:text-base">
-              <Save size={18} /> {isSaving ? 'Dang luu...' : 'Luu lai'}
+              <Save size={18} /> {isSaving ? 'Đang lưu...' : 'Lưu lại'}
             </button>
           </div>
         </div>
@@ -169,3 +169,5 @@ const EditProfileModal = ({ onClose, initialData, onSaved }: { onClose: () => vo
 };
 
 export default EditProfileModal;
+
+
