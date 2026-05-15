@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace InteractHub_API.Migrations
+namespace InteractHub_Shared.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -804,4 +804,3 @@ namespace InteractHub_API.Migrations
         }
     }
 }
-

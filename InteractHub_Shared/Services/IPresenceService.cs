@@ -1,4 +1,4 @@
-namespace InteractHub_API.Services;
+namespace InteractHub_Shared.Services;
 
 /// <summary>
 /// Service quản lý tình trạng online của người dùng.

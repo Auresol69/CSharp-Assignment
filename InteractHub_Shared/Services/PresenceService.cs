@@ -1,6 +1,6 @@
 using StackExchange.Redis;
 
-namespace InteractHub_API.Services;
+namespace InteractHub_Shared.Services;
 
 /// <summary>
 /// Triển khai IPresenceService dùng StackExchange.Redis trực tiếp.

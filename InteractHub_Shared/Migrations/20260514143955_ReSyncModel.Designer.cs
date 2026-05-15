@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace InteractHub_API.Migrations
+namespace InteractHub_Shared.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260510132358_SyncCurrentModelAfterPull")]
-    partial class SyncCurrentModelAfterPull
+    [Migration("20260514143955_ReSyncModel")]
+    partial class ReSyncModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -807,4 +807,3 @@ namespace InteractHub_API.Migrations
         }
     }
 }
-

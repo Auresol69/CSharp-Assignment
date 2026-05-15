@@ -1,4 +1,4 @@
-using InteractHub_API.DTOs.Auth;
+using InteractHub_Shared.DTOs.Auth;
 using InteractHub_API.Services;
 using Microsoft.AspNetCore.Mvc;
 

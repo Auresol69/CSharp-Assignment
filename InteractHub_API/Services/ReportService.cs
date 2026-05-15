@@ -2,11 +2,12 @@
 using InteractHub_Shared.Data.Entities;
 using InteractHub_Shared.DTOs.Notifications;
 using InteractHub_Shared.DTOs.Moderation;
-using InteractHub_API.Hubs;
+using InteractHub_Shared.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using InteractHub_Shared.Services;
 
 namespace InteractHub_API.Services;
 

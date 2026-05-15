@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using InteractHub_Shared.Data;
 using InteractHub_Shared.Data.Entities;
 using InteractHub_Shared.DTOs.Profiles;
-using InteractHub_API.Hubs;
+using InteractHub_Shared.Hubs;
 
 namespace InteractHub_API.Services;
 

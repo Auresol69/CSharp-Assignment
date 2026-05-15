@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using InteractHub_API.Services;
+using InteractHub_Shared.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

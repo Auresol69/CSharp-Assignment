@@ -1,4 +1,4 @@
-﻿namespace InteractHub_API.Hubs;
+﻿namespace InteractHub_Shared.Hubs;
 
 public interface INotificationClient
 {

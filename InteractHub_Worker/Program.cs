@@ -2,6 +2,7 @@ using InteractHub_Shared.Data;
 using InteractHub_Worker;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using InteractHub_Shared.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -19,6 +20,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     ConnectionMultiplexer.Connect(redisConnection));
 
 builder.Services.AddHostedService<RedisStreamWorker>();
+
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var host = builder.Build();
 host.Run();

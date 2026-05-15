@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace InteractHub_API.Services;
 
-// sealed class thÃ¬ khÃ´ng thá»ƒ bá»‹ káº¿ thá»«a bá»Ÿi báº¥t ká»³ class nÃ o khÃ¡c
+// sealed: không cho class nào kế thừa
 public sealed class PostService : IPostService
 {
     private readonly AppDbContext _dbContext;

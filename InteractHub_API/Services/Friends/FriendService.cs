@@ -1,19 +1,22 @@
 ﻿using InteractHub_Shared.Data;
 using InteractHub_Shared.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace InteractHub_API.Services.Friends;
 
 public class FriendService
 {
     private readonly AppDbContext _context;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly ILogger<FriendService> _logger;
 
-    private readonly INotificationService _notificationService;
-
-    public FriendService(AppDbContext context, INotificationService notificationService)
+    public FriendService(AppDbContext context, IConnectionMultiplexer redis, ILogger<FriendService> logger)
     {
         _context = context;
-        _notificationService = notificationService;
+        _redis = redis;
+        _logger = logger;
     }
 
     // Gửi lời mời
@@ -45,7 +48,23 @@ public class FriendService
 
         await _context.SaveChangesAsync();
 
-        await _notificationService.CreateAndSendNotificationAsync(targetUserId, currentUserId, null, "FriendRequest");
+        // Push event vào Redis Stream
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+            {
+                new("toUserId", targetUserId),
+                new("senderId", currentUserId),
+                new("notificationType", "FriendRequest"),
+            });
+
+            _logger.LogInformation("Event FriendRequest pushed to Redis Stream for {TargetUserId}.", targetUserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pushing FriendRequest event to Redis Stream.");
+        }
     }
 
     // Chấp nhận lời mời
@@ -63,10 +82,25 @@ public class FriendService
         request.TrangThai = FriendshipStatus.Accepted;
         await _context.SaveChangesAsync();
 
-        // Xóa thông báo lời mời cũ ở phía người nhận vì request đã được xử lý
-        await _notificationService.DeleteByCriteriaAsync(currentUserId, senderId, "FriendRequest");
+        _logger.LogInformation("Friend request accepted by {CurrentUserId} from {SenderId}.", currentUserId, senderId);
 
-        await _notificationService.CreateAndSendNotificationAsync(senderId, currentUserId, null, "AcceptRequest");
+        // Push event vào Redis Stream
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+            {
+                new("toUserId", senderId),
+                new("senderId", currentUserId),
+                new("notificationType", "AcceptRequest"),
+            });
+
+            _logger.LogInformation("Event AcceptRequest pushed to Redis Stream for {SenderId}.", senderId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pushing AcceptRequest event to Redis Stream.");
+        }
     }
 
     // Từ chối lời mời
@@ -84,8 +118,25 @@ public class FriendService
         _context.Friendships.Remove(request);
         await _context.SaveChangesAsync();
 
-        // Lời mời bị từ chối thì xóa notification pending ở người nhận
-        await _notificationService.DeleteByCriteriaAsync(currentUserId, senderId, "FriendRequest");
+        _logger.LogInformation("Friend request rejected by {CurrentUserId} from {SenderId}.", currentUserId, senderId);
+
+        // Push event vào Redis Stream
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+            {
+                new("toUserId", senderId),
+                new("senderId", currentUserId),
+                new("notificationType", "RejectRequest"),
+            });
+
+            _logger.LogInformation("Event RejectRequest pushed to Redis Stream for {SenderId}.", senderId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pushing RejectRequest event to Redis Stream.");
+        }
     }
 
     // Hủy lời mời đã gửi
@@ -103,8 +154,25 @@ public class FriendService
         _context.Friendships.Remove(request);
         await _context.SaveChangesAsync();
 
-        // Người gửi hủy lời mời: xóa notification đã gửi sang người nhận
-        await _notificationService.DeleteByCriteriaAsync(targetUserId, currentUserId, "FriendRequest");
+        _logger.LogInformation("Friend request canceled by {CurrentUserId} to {TargetUserId}.", currentUserId, targetUserId);
+
+        // Push event vào Redis Stream
+        try
+        {
+            var db = _redis.GetDatabase();
+            await db.StreamAddAsync("interacthub:notifications:stream", new NameValueEntry[]
+            {
+                new("toUserId", targetUserId),
+                new("senderId", currentUserId),
+                new("notificationType", "CancelRequest"),
+            });
+
+            _logger.LogInformation("Event CancelRequest pushed to Redis Stream for {TargetUserId}.", targetUserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error pushing CancelRequest event to Redis Stream.");
+        }
     }
 
     // Hủy kết bạn

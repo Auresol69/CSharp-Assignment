@@ -1,9 +1,10 @@
-using InteractHub_API.Services;
+using InteractHub_Shared.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
-namespace InteractHub_API.Hubs;
+namespace InteractHub_Shared.Hubs;
 
 // NotificationHub: Là lớp kế thừa từ Hub, đóng vai trò trung tâm giao tiếp giữa Server và các Client (trình duyệt, ứng dụng di động).
 // : Hub<INotificationClient>: Đây là kỹ thuật Strongly-Typed Hub (Hub định kiểu mạnh).

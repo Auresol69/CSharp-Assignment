@@ -4,9 +4,10 @@ using InteractHub_Shared.DTOs.Notifications;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using InteractHub_API.Hubs;
+using Microsoft.Extensions.Logging;
+using InteractHub_Shared.Hubs;
 
-namespace InteractHub_API.Services;
+namespace InteractHub_Shared.Services;
 
 public interface INotificationService
 {
@@ -76,6 +77,7 @@ public class NotificationService : INotificationService
             var connections = await _presenceService.GetConnectionsAsync(receiverId);
             if (connections.Length > 0)
             {
+                // BROADCAST NGẦM
                 await _hubContext.Clients.Clients(connections).ReceiveNotification(dto);
             }
         }
