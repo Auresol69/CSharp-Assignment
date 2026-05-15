@@ -3,6 +3,8 @@ using InteractHub_Worker;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using InteractHub_Shared.Services;
+using Microsoft.AspNetCore.Identity;
+using InteractHub_Shared.Data.Entities;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -19,7 +21,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     ConnectionMultiplexer.Connect(redisConnection));
 
+builder.Services.AddSignalR().AddStackExchangeRedis(redisConnection);
+
+builder.Services.AddLogging();
+builder.Services.AddOptions();
+
+builder.Services.AddDataProtection();
+
+// Đăng ký Identity (Để dùng được UserManager trong NotificationService)
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddHostedService<RedisStreamWorker>();
+
+builder.Services.AddScoped<IPresenceService, PresenceService>();
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
 

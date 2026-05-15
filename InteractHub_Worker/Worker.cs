@@ -14,7 +14,9 @@ public sealed class RedisStreamWorker(
 {
     private readonly string _streamKey = configuration["RedisStreams:Notifications:StreamKey"] ?? "interacthub:notifications:stream";
     private readonly string _groupName = configuration["RedisStreams:Notifications:GroupName"] ?? "interacthub-workers";
-    private readonly string _consumerName = configuration["RedisStreams:Notifications:ConsumerName"] ?? Environment.MachineName;
+    private readonly string _consumerName = configuration["RedisStreams:Notifications:ConsumerName"] 
+    ?? Environment.GetEnvironmentVariable("HOSTNAME")
+    ?? Environment.MachineName;
     private readonly int _batchSize = configuration.GetValue("RedisStreams:Notifications:BatchSize", 20);
     private readonly int _idleDelayMs = configuration.GetValue("RedisStreams:Notifications:IdleDelayMs", 1500);
 
@@ -42,12 +44,9 @@ public sealed class RedisStreamWorker(
                     continue;
                 }
 
-                await using var scope = scopeFactory.CreateAsyncScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
                 foreach (var entry in entries)
                 {
-                    await ProcessEntryAsync(dbContext, entry, stoppingToken);
+                    await ProcessEntryAsync(entry, stoppingToken);
                     // StreamAcknowledgeAsync (XACK)
                     // Lệnh này chính thức đưa tin nhắn ra khỏi danh sách PEL (Pending Entries List) của Group.
                     await redis.GetDatabase().StreamAcknowledgeAsync(_streamKey, _groupName, entry.Id);
@@ -85,7 +84,7 @@ public sealed class RedisStreamWorker(
         }
     }
 
-    private async Task ProcessEntryAsync(AppDbContext dbContext, StreamEntry entry, CancellationToken cancellationToken)
+    private async Task ProcessEntryAsync(StreamEntry entry, CancellationToken cancellationToken)
     {
         // 1. Trích xuất dữ liệu từ Redis Stream (được đẩy lên từ API qua lệnh XADD)
         var toUserId = GetField(entry, "toUserId");
@@ -100,7 +99,7 @@ public sealed class RedisStreamWorker(
         var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
         // 3. Thực thi logic: Lưu vào DB và Gửi Realtime (SignalR)
-        // Phương thức này của bạn nên đảm nhiệm cả 2 việc: 
+        // Phương thức này nên đảm nhiệm cả 2 việc: 
         // - Lưu bản ghi vào bảng Notifications trong SQL Server.
         // - Gọi HubContext để bắn SignalR nếu User đang online.
         await notificationService.CreateAndSendNotificationAsync(toUserId, senderId, postId, type);
