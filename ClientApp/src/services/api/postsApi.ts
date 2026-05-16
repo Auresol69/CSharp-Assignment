@@ -11,7 +11,7 @@ function mapPostDtoToIPost(dto: IPostResponseDto): IPost {
     createdAt: dto.createdAt,
     content: dto.content,
     mediaUrl: dto.media && dto.media.length > 0 ? dto.media[0].url : undefined,
-    sharedPost: undefined,
+    sharedPost: dto.parentPost ? mapPostDtoToIPost(dto.parentPost) : undefined,
     likesCount: dto.likesCount,
     commentsCount: dto.commentsCount,
     sharesCount: dto.repostsCount ?? 0,

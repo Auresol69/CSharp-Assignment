@@ -13,7 +13,7 @@ export const createSignalRConnection = async (token: string): Promise<HubConnect
   }
 
   connection = new HubConnectionBuilder()
-    .withUrl("http://192.168.1.7:5153/hubs/notification", {
+    .withUrl("http://10.218.174.93:5153/hubs/notification", {
       accessTokenFactory: () => token,
       skipNegotiation: false,
       transport: undefined,

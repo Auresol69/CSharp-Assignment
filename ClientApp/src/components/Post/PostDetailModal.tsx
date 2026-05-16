@@ -185,6 +185,7 @@ const PostDetailModal = ({ postId, post: initialPost, onClose }: Props) => {
                   key={comment.id}
                   comment={comment}
                   isReply={false}
+                  postId={post?.id ?? postId ?? ''}
                 />
               ))
             ) : (

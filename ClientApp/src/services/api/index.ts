@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://192.168.1.7:5153/api",
+  baseURL: "http://10.218.174.93:5153/api",
 });
 
 // Load token from localStorage on startup

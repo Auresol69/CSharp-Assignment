@@ -21,6 +21,7 @@ export interface IPostResponseDto {
   likesCount: number;
   commentsCount: number;
   repostsCount: number;
+  parentPost?: IPostResponseDto | null;
 }
 
 export interface ICommentResponseDto {

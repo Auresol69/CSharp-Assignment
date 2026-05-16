@@ -32,6 +32,10 @@ public class PostRepository : IPostRepository
             .Include(p => p.Likes)
             .Include(p => p.Comments)
             .Include(p => p.Reposts)
+            .Include(p => p.ParentPost)
+                .ThenInclude(parent => parent.PostMedias)
+            .Include(p => p.ParentPost)
+                .ThenInclude(parent => parent.TaiKhoan)
             .Where(p => p.CreatedAt < cursor);
 
         if (blacklistedPostIds.Length > 0)

@@ -9,4 +9,5 @@ export interface IComment {
 export interface CommentItemProps {
   comment: IComment;
   isReply?: boolean;
+  postId: string;
 }

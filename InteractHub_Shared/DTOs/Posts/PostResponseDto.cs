@@ -12,7 +12,8 @@ public class PostResponseDto
 
     // Danh sÃ¡ch media (Url + loáº¡i: Image hoáº·c Video)
     public List<PostMediaDto> Media { get; set; } = new();
-
+    // Bài viết gốc (khi là repost)
+    public PostResponseDto? ParentPost { get; set; }
     // Counts
     public int LikesCount { get; set; }
     public int CommentsCount { get; set; }

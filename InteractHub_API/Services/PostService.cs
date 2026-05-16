@@ -150,6 +150,10 @@ public sealed class PostService : IPostService
             .Include(p => p.Likes)
             .Include(p => p.Comments)
             .Include(p => p.Reposts)
+            .Include(p => p.ParentPost)
+                .ThenInclude(parent => parent.PostMedias)
+            .Include(p => p.ParentPost)
+                .ThenInclude(parent => parent.TaiKhoan)
             .FirstOrDefaultAsync(p => p.IdPost == repost.IdPost)
             ?? throw new KeyNotFoundException($"Không tìm thấy repost vừa tạo '{repost.IdPost}'.");
 

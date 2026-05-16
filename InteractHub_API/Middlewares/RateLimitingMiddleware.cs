@@ -29,7 +29,7 @@ public class RateLimitingMiddleware
         // Set TTL only when key is created first time
         if (currentRequest == 1)
         {
-            await db.KeyExpireAsync(key, TimeSpan.FromSeconds(60));
+            await db.KeyExpireAsync(key, TimeSpan.FromSeconds(5));
         }
 
         // Check threshold every request

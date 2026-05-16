@@ -53,28 +53,7 @@ public class PostController : ControllerBase
             var userId = User.FindFirstValue("uid") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
             var post = await _postService.CreatePostAsync(userId ?? string.Empty, request);
 
-            var postDto = new PostResponseDto
-            {
-                IdPost = post.IdPost,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt,
-                ParentPostId = post.ParentPostId,
-                TaiKhoan = post.TaiKhoan != null ? new UserResponseDto
-                {
-                    Id = post.TaiKhoan.Id,
-                    TenTaiKhoan = post.TaiKhoan.TenTaiKhoan,
-                    AvatarUrl = post.TaiKhoan.AvatarUrl
-                } : null,
-                Media = post.PostMedias?.Select(m => new PostMediaDto
-                {
-                    Id = m.Id,
-                    Url = m.Url ?? string.Empty,
-                    MediaType = m.MediaType.ToString()
-                }).ToList() ?? new(),
-                LikesCount = post.Likes?.Count ?? 0,
-                CommentsCount = post.Comments?.Count ?? 0,
-                RepostsCount = post.Reposts?.Count ?? 0
-            };
+            var postDto = MapPostToResponse(post);
 
             return Created($"/api/posts/{post.IdPost}", postDto);
         }
@@ -115,28 +94,7 @@ public class PostController : ControllerBase
             var userId = User.FindFirstValue("uid") ?? User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
             var repost = await _postService.RepostAsync(userId ?? string.Empty, postId, request.Content);
 
-            var repostDto = new PostResponseDto
-            {
-                IdPost = repost.IdPost,
-                Content = repost.Content,
-                CreatedAt = repost.CreatedAt,
-                ParentPostId = repost.ParentPostId,
-                TaiKhoan = repost.TaiKhoan != null ? new UserResponseDto
-                {
-                    Id = repost.TaiKhoan.Id,
-                    TenTaiKhoan = repost.TaiKhoan.TenTaiKhoan,
-                    AvatarUrl = repost.TaiKhoan.AvatarUrl
-                } : null,
-                Media = repost.PostMedias?.Select(m => new PostMediaDto
-                {
-                    Id = m.Id,
-                    Url = m.Url ?? string.Empty,
-                    MediaType = m.MediaType.ToString()
-                }).ToList() ?? new(),
-                LikesCount = repost.Likes?.Count ?? 0,
-                CommentsCount = repost.Comments?.Count ?? 0,
-                RepostsCount = repost.Reposts?.Count ?? 0
-            };
+            var repostDto = MapPostToResponse(repost);
 
             return Created($"/api/posts/{repost.IdPost}", repostDto);
         }
@@ -185,28 +143,7 @@ public class PostController : ControllerBase
         var posts = await _postService.GetPostsAsync(lastTimestamp, limit);
 
         // Map entities to DTOs to avoid Object Cycle
-        var postDtos = posts.Select(p => new PostResponseDto
-        {
-            IdPost = p.IdPost,
-            Content = p.Content,
-            CreatedAt = p.CreatedAt,
-            ParentPostId = p.ParentPostId,
-            TaiKhoan = p.TaiKhoan != null ? new UserResponseDto
-            {
-                Id = p.TaiKhoan.Id,
-                TenTaiKhoan = p.TaiKhoan.TenTaiKhoan,
-                AvatarUrl = p.TaiKhoan.AvatarUrl
-            } : null,
-            Media = p.PostMedias?.Select(m => new PostMediaDto
-            {
-                Id = m.Id,
-                Url = m.Url ?? string.Empty,
-                MediaType = m.MediaType.ToString()
-            }).ToList() ?? new(),
-            LikesCount = p.Likes?.Count ?? 0,
-            CommentsCount = p.Comments?.Count ?? 0,
-            RepostsCount = p.Reposts?.Count ?? 0
-        }).ToList();
+        var postDtos = posts.Select(MapPostToResponse).ToList();
 
         var nextTimestamp = posts.Any()
             ? posts.Last().CreatedAt
@@ -218,6 +155,33 @@ public class PostController : ControllerBase
             nextTimestamp = nextTimestamp,
             hasMore = posts.Count == limit
         });
+    }
+
+    private static PostResponseDto MapPostToResponse(Post post)
+    {
+        return new PostResponseDto
+        {
+            IdPost = post.IdPost,
+            Content = post.Content,
+            CreatedAt = post.CreatedAt,
+            ParentPostId = post.ParentPostId,
+            TaiKhoan = post.TaiKhoan != null ? new UserResponseDto
+            {
+                Id = post.TaiKhoan.Id,
+                TenTaiKhoan = post.TaiKhoan.TenTaiKhoan,
+                AvatarUrl = post.TaiKhoan.AvatarUrl
+            } : null,
+            Media = post.PostMedias?.Select(m => new PostMediaDto
+            {
+                Id = m.Id,
+                Url = m.Url ?? string.Empty,
+                MediaType = m.MediaType.ToString()
+            }).ToList() ?? new(),
+            ParentPost = post.ParentPost != null ? MapPostToResponse(post.ParentPost) : null,
+            LikesCount = post.Likes?.Count ?? 0,
+            CommentsCount = post.Comments?.Count ?? 0,
+            RepostsCount = post.Reposts?.Count ?? 0
+        };
     }
 
     private static PostDetailResponseDto MapPostDetail(Post post)
