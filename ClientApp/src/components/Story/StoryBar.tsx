@@ -20,7 +20,7 @@ const StoryBar = ({ userStories, loading = false }: StoryBarProps) => {
     const file = e.target.files?.[0];
     if (file) {
       const formData = new FormData();
-      formData.append('File', file);
+      formData.append('MediaFile', file);
       try {
         await createStory(formData);
         window.location.reload(); // Tải lại để hook fetch lại dữ liệu mới
