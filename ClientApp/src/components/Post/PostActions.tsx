@@ -27,19 +27,29 @@ const PostActions = ({
     e.stopPropagation();
     if (isLiked || isBusy) return;
 
-    const authUser = JSON.parse(localStorage.getItem('authUser') || '{}');
-    if (!authUser.id) return;
+    const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+    const userId = auth?.user?.id;
+    
+    if (!userId) {
+      console.error('❌ Like: User not authenticated', { auth });
+      return;
+    }
 
     try {
       setIsBusy(true);
-      await api.post('/interaction/addlike', {
-        idTaiKhoan: authUser.id,
-        idPost: postId
+      console.log('📤 Like: Sending request', { userId, postId });
+      
+      const response = await api.post('/interaction/AddLike', {
+        IdTaiKhoan: userId,
+        IdPost: postId
       });
+      
+      console.log('✅ Like: Success', response);
       setIsLiked(true);
       setCurrentLikes(prev => prev + 1);
-    } catch {
-      // Mock posts do not exist in DB, so backend may reject them.
+    } catch (error) {
+      console.error('❌ Like: Error', error);
+      console.error('Error details:', error instanceof Error ? error.message : String(error));
     } finally {
       setIsBusy(false);
     }
