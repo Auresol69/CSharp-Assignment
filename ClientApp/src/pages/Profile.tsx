@@ -38,7 +38,7 @@ const Profile = () => {
   return (
     <div className={`w-full min-h-screen transition-colors duration-300
       ${isDark ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-900'}`}>
-      
+
       <ProfileHeader profile={profile} onProfileUpdated={setProfile} />
 
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 self-start">
