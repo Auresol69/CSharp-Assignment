@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using Microsoft.Identity.Client.AppConfig;
 
 LoadDotEnv();
 
@@ -239,12 +240,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
-        policy.WithOrigins(
-                "http://localhost:5173",  // Vite dev server
-                "http://127.0.0.1:5173",  // Vite dev server
-                "http://localhost:3000",  // CRA dev server
-                "http://127.0.0.1:3000",  // CRA dev server
-                "http://localhost:5153")  // Swagger UI
+        policy.SetIsOriginAllowed(origin => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
@@ -254,6 +250,8 @@ builder.Services.AddCors(options =>
 // BUILD APP
 // ═══════════════════════════════════════════════════════════════════
 var app = builder.Build();
+
+app.UseCors("AllowReactApp");
 
 // Tự động tạo DB và chạy Migration khi khởi động
 using (var scope = app.Services.CreateScope())

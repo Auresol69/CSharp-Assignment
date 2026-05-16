@@ -1,4 +1,5 @@
 ﻿import api from "./api";
+import { createSignalRConnection, disconnectSignalR } from "./signalRService";
 
 export interface LoginRequest {
   email: string;
@@ -33,17 +34,29 @@ export async function register(req: RegisterRequest): Promise<AuthResponse> {
   return res.data;
 }
 
-export function saveAuth(data: AuthResponse) {
+export async function saveAuth(data: AuthResponse) {
   try {
     localStorage.setItem("auth", JSON.stringify(data));
     api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
+    
+    // ✅ Tự động kết nối SignalR sau khi lưu auth
+    try {
+      await createSignalRConnection(data.accessToken);
+    } catch (err) {
+      console.error("Không thể kết nối SignalR:", err);
+      // Không throw - để cho login vẫn thành công ngay cả khi SignalR thất bại
+    }
   } catch (e) {
+    console.error("Lỗi khi lưu auth:", e);
   }
 }
 
-export function clearAuth() {
+export async function clearAuth() {
   localStorage.removeItem("auth");
   delete api.defaults.headers.common["Authorization"];
+  
+  // ✅ Ngắt kết nối SignalR khi logout
+  await disconnectSignalR();
 }
 
 export default { login, register, saveAuth, clearAuth };
