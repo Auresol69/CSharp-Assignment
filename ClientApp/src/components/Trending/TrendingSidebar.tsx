@@ -12,8 +12,9 @@ const TrendingSidebar = ({ setFilterTag }: TrendingSidebarProps) => {
   const isDark = theme === 'dark';
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  const { data: trendingTags, loading } = useTrendingHashtags('daily', 10);
+  const { data: trendingTags, loading } = useTrendingHashtags(filterType, 10);
 
   const filteredTrending = trendingTags.filter(tag =>
     tag.toLowerCase().includes(searchTerm.toLowerCase())
@@ -70,6 +71,26 @@ const TrendingSidebar = ({ setFilterTag }: TrendingSidebarProps) => {
             )}
           </div>
         </div>
+      </div>
+
+      <div className={`flex gap-2 mb-3 pb-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+        {(['daily', 'weekly', 'monthly'] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => setFilterType(type)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+              filterType === type
+                ? isDark
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-500 text-white'
+                : isDark
+                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {type === 'daily' ? 'Hôm nay' : type === 'weekly' ? 'Tuần' : 'Tháng'}
+          </button>
+        ))}
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
