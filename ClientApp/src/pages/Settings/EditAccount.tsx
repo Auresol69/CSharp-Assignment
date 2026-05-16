@@ -1,7 +1,25 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { Save, ArrowLeft, User, Phone, MapPin, Briefcase, Calendar, Globe, Lock, X, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { changePassword, getMyProfile, updateMyProfile } from '../../services/api/profileApi';
+
+const InputGroup = ({ label, icon: Icon, value, onChange, type = 'text', disabled = false }: any) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider">{label}</label>
+    <div className="flex items-center gap-3 p-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition-all">
+      <Icon size={18} className="text-gray-400" />
+      <input
+        type={type}
+        disabled={disabled}
+        className="bg-transparent w-full outline-none text-sm font-bold text-gray-800 placeholder-gray-400 disabled:text-gray-400"
+        value={value}
+        aria-label={label}
+        placeholder={label}
+        onChange={onChange}
+      />
+    </div>
+  </div>
+);
 
 const EditAccount = () => {
   const navigate = useNavigate();
@@ -94,24 +112,6 @@ const EditAccount = () => {
       setPasswordStatus({ type: 'error', message: 'Sai mat khau cu hoac loi he thong.' });
     }
   };
-
-  const InputGroup = ({ label, icon: Icon, value, onChange, type = 'text', disabled = false }: any) => (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-black text-gray-400 uppercase ml-1 tracking-wider">{label}</label>
-      <div className="flex items-center gap-3 p-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition-all">
-        <Icon size={18} className="text-gray-400" />
-        <input
-          type={type}
-          disabled={disabled}
-          className="bg-transparent w-full outline-none text-sm font-bold text-gray-800 placeholder-gray-400 disabled:text-gray-400"
-          value={value}
-          aria-label={label}
-          placeholder={label}
-          onChange={onChange}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 pt-4 sm:pt-6">
@@ -207,6 +207,18 @@ const EditAccount = () => {
               label="Địa chỉ hien tai" icon={MapPin} value={formData.currentAddress}
               onChange={(e:any) => setFormData({...formData, currentAddress: e.target.value})}
             />
+          </div>
+
+          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5">
+            <h2 className="font-black text-blue-600 flex items-center gap-2 text-sm uppercase tracking-widest mb-4">
+              <Lock size={18} /> Bảo mật
+            </h2>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="w-full px-6 py-3.5 rounded-2xl font-black text-white bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-100 transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
+            >
+              <Lock size={18} /> Đổi mật khẩu
+            </button>
           </div>
         </div>
       </div>

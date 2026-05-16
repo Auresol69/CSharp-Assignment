@@ -1,6 +1,6 @@
 ﻿import useFeed from '../hooks/useFeed';
 import useStories from '../hooks/useStories';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostCard from '../components/Post/PostCard';
 import PostSkeleton from '../components/Post/PostSkeleton';
@@ -10,6 +10,7 @@ import StoryViewer from '../components/Story/StoryViewer';
 import StoryBar from '../components/Story/StoryBar';
 import PostDetailModal from '../components/Post/PostDetailModal';
 import { useTheme } from '../context/ThemeContext';
+import { Loader2 } from 'lucide-react';
 
 function Home() {
   const { theme } = useTheme();
@@ -23,8 +24,35 @@ function Home() {
   }>();
 
   const [filterTag, setFilterTag] = useState<string | null>(null);
-  const { posts, loading: isLoading, refresh } = useFeed(true, 10);
+  const { posts, loading: isLoading, refresh, hasMore, load } = useFeed(true, 10);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const { userStories, loading: storiesLoading } = useStories(20);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          load(false);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(sentinelRef.current);
+
+    return () => {
+      if (sentinelRef.current) {
+        observer.unobserve(sentinelRef.current);
+      }
+    };
+  }, [hasMore, isLoading, load]);
 
   useEffect(() => {
     const handleReload = () => {
@@ -74,14 +102,39 @@ function Home() {
           )}
 
           <div className="flex flex-col gap-5">
-            {isLoading ? (
+            {posts.length === 0 && isLoading ? (
               <div className="space-y-5">
                 {[1, 2, 3].map((i) => <PostSkeleton key={i} />)}
               </div>
             ) : (
-              filteredPosts.map((post) => (
-                <PostCard key={post.id} post={post} onTagClick={setFilterTag} onDeleted={handlePostDeleted} />
-              ))
+              <>
+                {filteredPosts.map((post) => (
+                  <PostCard key={post.id} post={post} onTagClick={setFilterTag} onDeleted={handlePostDeleted} />
+                ))}
+                
+                {/* Sentinel element for infinite scroll */}
+                <div ref={sentinelRef} className="h-10" />
+                
+                {/* Loading indicator for pagination */}
+                {!isLoading && hasMore && filteredPosts.length > 0 && (
+                  <div className={`py-6 flex justify-center ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <div className="text-xs font-medium">Cuộn xuống để xem thêm...</div>
+                  </div>
+                )}
+                
+                {isLoading && posts.length > 0 && (
+                  <div className={`py-6 flex justify-center items-center gap-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span className="text-xs font-medium">Đang tải thêm bài viết...</span>
+                  </div>
+                )}
+                
+                {!hasMore && filteredPosts.length > 0 && (
+                  <div className={`py-6 text-center text-xs font-medium ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                    Đã hết bài viết
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>

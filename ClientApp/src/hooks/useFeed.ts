@@ -14,7 +14,22 @@ export default function useFeed(initialLoad = true, pageSize = 10) {
     setLoading(true);
     try {
       const { posts: fetched, nextTimestamp: next, hasMore: more } = await postsApi.getFeed(refresh ? null : nextTimestamp, pageSize);
-      setPosts((prev) => refresh ? fetched : [...prev, ...fetched]);
+      setPosts((prev) => {
+        if (refresh) {
+          return fetched;
+        }
+        // Deduplicate posts by ID to avoid key conflicts
+        const combined = [...prev, ...fetched];
+        const seen = new Set<string>();
+        const deduplicated: typeof combined = [];
+        for (const post of combined) {
+          if (!seen.has(post.id)) {
+            seen.add(post.id);
+            deduplicated.push(post);
+          }
+        }
+        return deduplicated;
+      });
       setNextTimestamp(next ?? null);
       setHasMore(!!more);
       setError(null);
