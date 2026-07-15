@@ -50,6 +50,7 @@ function AppContent() {
             <Route path="stories/:userId/:storyId" element={<Home />} />
           </Route>
           <Route path="/Profile" element={<Profile />} />
+          <Route path="/Profile/:userId" element={<Profile />} />
           <Route path="/settings/edit-information" element={<EditAccount />} />
           <Route path="/Notifications" element={<Notifications />} />
           <Route path="/admin/moderation" element={<Moderation />} />

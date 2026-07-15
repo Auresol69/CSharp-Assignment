@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using InteractHub_Shared.Data;
 using InteractHub_Shared.Data.Entities;
 using InteractHub_API.Services;
@@ -182,6 +182,10 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IInteractionService, InteractionService>();
 builder.Services.AddScoped<IHashtagService, HashtagService>();
+
+// Neo4j Graph Service: Singleton vì IDriver là thread-safe và được tái dùng toàn bộ app lifetime
+// (tương tự IConnectionMultiplexer của Redis)
+builder.Services.AddSingleton<IAdvancedGraphService, AdvancedGraphService>();
 
 //Thêm để FriendService có thể inject
 builder.Services.AddScoped<FriendService>();

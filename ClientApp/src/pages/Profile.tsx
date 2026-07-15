@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import PostCard from '../components/Post/PostCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
@@ -6,21 +7,27 @@ import FriendsGrid from '../components/Profile/FriendsGrid';
 import { useTheme } from '../context/ThemeContext';
 import type { IProfileResponseDto } from '../types/Profile';
 import type { IPost } from '../types/Post';
-import { getMyProfile, getFollowers } from '../services/api/profileApi';
+import { getMyProfile, getUserProfile, getFollowers } from '../services/api/profileApi';
 import { getFeed } from '../services/api/postsApi';
 
 const Profile = () => {
   const { theme } = useTheme();
+  const { userId } = useParams<{ userId?: string }>();
   const isDark = theme === 'dark';
   const [profile, setProfile] = useState<IProfileResponseDto | null>(null);
   const [followers, setFollowers] = useState<IProfileResponseDto[]>([]);
   const [userPosts, setUserPosts] = useState<IPost[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const currentProfile = await getMyProfile();
+        setIsLoading(true);
+        console.log('Loading profile with userId:', userId);
+        // Nếu có userId trong URL, fetch profile của user đó; ngược lại fetch profile của mình
+        const currentProfile = userId ? await getUserProfile(userId) : await getMyProfile();
+        console.log('Profile loaded:', currentProfile);
         setProfile(currentProfile);
         const followerList = await getFollowers(currentProfile.id, 1, 10);
         setFollowers(followerList);
@@ -28,12 +35,15 @@ const Profile = () => {
         const feed = await getFeed(null, 30);
         setUserPosts(feed.posts.filter(post => post.authorId === currentProfile.id).slice(0, 3));
       } catch (error) {
+        console.error('Error loading profile:', error);
         setError(error instanceof Error ? error.message : 'Không tải được profile.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     void loadProfile();
-  }, []);
+  }, [userId]);
 
   return (
     <div className={`w-full min-h-screen transition-colors duration-300

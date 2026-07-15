@@ -1,4 +1,5 @@
 import type { IProfileResponseDto } from '../../types/Profile';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   friends?: IProfileResponseDto[];
@@ -8,6 +9,12 @@ interface Props {
 }
 
 const FriendsGrid = ({ friends = [], title = 'Bạn bè', subtitle, onViewAll }: Props) => {
+  const navigate = useNavigate();
+
+  const handleFriendClick = (friendId: string) => {
+    navigate(`/Profile/${friendId}`);
+  };
+
   return (
     <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-4 sm:mb-5">
@@ -22,7 +29,7 @@ const FriendsGrid = ({ friends = [], title = 'Bạn bè', subtitle, onViewAll }:
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-2 sm:gap-3">
         {friends.length > 0 ? (
           friends.map(friend => (
-            <div key={friend.id} className="flex flex-col items-center group cursor-pointer">
+            <div key={friend.id} className="flex flex-col items-center group cursor-pointer" onClick={() => handleFriendClick(friend.id)}>
               <div className="w-full aspect-square bg-gray-100 rounded-xl mb-1.5 overflow-hidden border border-gray-100">
                 {friend.avatarUrl?.trim() ? (
                   <img src={friend.avatarUrl} alt={friend.tenTaiKhoan} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />

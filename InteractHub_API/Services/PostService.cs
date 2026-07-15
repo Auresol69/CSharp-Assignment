@@ -1,8 +1,9 @@
-﻿using InteractHub_Shared.Data;
+using InteractHub_Shared.Data;
 using InteractHub_Shared.Data.Entities;
 using InteractHub_Shared.DTOs.Posts;
 using InteractHub_API.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
 namespace InteractHub_API.Services;
@@ -14,13 +15,23 @@ public sealed class PostService : IPostService
     private readonly IMediaService _mediaService;
     private readonly InteractHub_API.Data.Repositories.IPostRepository _postRepository;
     private readonly IHashtagService _hashtagService;
+    private readonly IAdvancedGraphService _graphService;
+    private readonly ILogger<PostService> _logger;
 
-    public PostService(AppDbContext dbContext, IMediaService mediaService, InteractHub_API.Data.Repositories.IPostRepository postRepository, IHashtagService hashtagService)
+    public PostService(
+        AppDbContext dbContext,
+        IMediaService mediaService,
+        InteractHub_API.Data.Repositories.IPostRepository postRepository,
+        IHashtagService hashtagService,
+        IAdvancedGraphService graphService,
+        ILogger<PostService> logger)
     {
         _dbContext = dbContext;
         _mediaService = mediaService;
         _postRepository = postRepository;
         _hashtagService = hashtagService;
+        _graphService = graphService;
+        _logger = logger;
     }
 
     public async Task<Post> CreatePostAsync(string userId, CreatePostRequestDto request)
@@ -50,9 +61,11 @@ public sealed class PostService : IPostService
         await _dbContext.SaveChangesAsync();
 
         // Extract and link hashtags
+        var hashtags = new List<string>();
         if (!string.IsNullOrWhiteSpace(post.Content))
         {
             await ExtractAndLinkHashtagsAsync(post.IdPost, post.Content);
+            hashtags = ExtractHashtagsFromContent(post.Content);
         }
 
         // Re-fetch with relations for response
@@ -64,6 +77,23 @@ public sealed class PostService : IPostService
             .Include(p => p.Reposts)
             .FirstOrDefaultAsync(p => p.IdPost == post.IdPost)
             ?? throw new KeyNotFoundException($"Không tìm thấy post vừa tạo '{post.IdPost}'.");
+
+        // Sync sang Neo4j (fire-and-forget với error handling)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _graphService.SyncPostNodeAsync(post.IdPost, userId);
+                if (hashtags.Count > 0)
+                {
+                    await _graphService.SyncHashtagsForPostAsync(post.IdPost, hashtags);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Neo4j sync thất bại cho Post '{PostId}'", post.IdPost);
+            }
+        });
 
         return createdPost;
     }
@@ -138,9 +168,11 @@ public sealed class PostService : IPostService
         await _dbContext.SaveChangesAsync();
 
         // Extract and link hashtags
+        var repostHashtags = new List<string>();
         if (!string.IsNullOrWhiteSpace(repost.Content))
         {
             await ExtractAndLinkHashtagsAsync(repost.IdPost, repost.Content);
+            repostHashtags = ExtractHashtagsFromContent(repost.Content);
         }
 
         // Re-fetch with relations for response
@@ -156,6 +188,23 @@ public sealed class PostService : IPostService
                 .ThenInclude(parent => parent.TaiKhoan)
             .FirstOrDefaultAsync(p => p.IdPost == repost.IdPost)
             ?? throw new KeyNotFoundException($"Không tìm thấy repost vừa tạo '{repost.IdPost}'.");
+
+        // Sync sang Neo4j (fire-and-forget với error handling)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _graphService.SyncPostNodeAsync(repost.IdPost, userId);
+                if (repostHashtags.Count > 0)
+                {
+                    await _graphService.SyncHashtagsForPostAsync(repost.IdPost, repostHashtags);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Neo4j sync thất bại cho Repost '{PostId}'", repost.IdPost);
+            }
+        });
 
         return createdRepost;
     }

@@ -138,10 +138,11 @@ const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
         <div className="flex justify-between items-start">
           <div onClick={handleOpenDetail} className='cursor-pointer flex-1 min-w-0'>
             <PostHeader
+              postId={post.id}
+              authorId={post.authorId}
               authorName={post.authorName}
               authorAvatar={post.authorAvatar}
               createdAt={post.createdAt}
-              postId={post.id}
               onTimeClick={handleOpenDetail}
             />
           </div>
