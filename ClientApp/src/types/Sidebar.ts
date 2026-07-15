@@ -10,8 +10,10 @@ export interface ISidebarItem {
   path: string;
   subitems?: ISubItem[];
   onClick?: () => void;
-  // Thêm dòng này: Danh sách các quyền được phép xem mục này
-  roles?: string[]; 
+  // Danh sách các quyền được phép xem mục này
+  roles?: string[];
+  // Badge số (ví dụ: số tin nhắn chưa đọc)
+  badge?: number;
 }
 
 export interface ISubItem {

@@ -1,4 +1,4 @@
-﻿using InteractHub_Shared.Data.Entities;
+using InteractHub_Shared.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +28,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
   public DbSet<PostHashtag> PostHashtags { get; set; } = null!;
   public DbSet<PostReport> PostReports { get; set; } = null!;
   public DbSet<PostMedia> PostMedias { get; set; } = null!;
+
+  // ── Chat ────────────────────────────────────────────────────────────
+  public DbSet<Conversation> Conversations { get; set; } = null!;
+  public DbSet<Message> Messages { get; set; } = null!;
 
   // ─────────────────────────── Constructor ───────────────────────────
 
@@ -475,6 +479,107 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole, str
       // ── Non-Clustered Index trên FK ──
       entity.HasIndex(m => m.PostId)
                 .HasDatabaseName("IX_PostMedia_PostId");
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // 12. Conversation (Cuộc hội thoại 1-1)
+    //     - Composite unique index (User1Id, User2Id) tránh tạo duplicate
+    //     - Index trên LastMessageAt để sort inbox hiệu quả
+    //     - Restrict delete để tránh multiple cascade paths
+    // ══════════════════════════════════════════════════════════════
+    builder.Entity<Conversation>(entity =>
+    {
+      entity.ToTable("Conversation");
+      entity.HasKey(c => c.IdConversation);
+
+      entity.Property(c => c.IdConversation)
+                .HasMaxLength(450)
+                .ValueGeneratedNever();
+
+      entity.Property(c => c.User1Id).HasMaxLength(450).IsRequired();
+      entity.Property(c => c.User2Id).HasMaxLength(450).IsRequired();
+
+      entity.Property(c => c.CreatedAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+      entity.Property(c => c.LastMessageAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+      // ── Quan hệ: Conversation → User1 ──
+      entity.HasOne(c => c.User1)
+                .WithMany()
+                .HasForeignKey(c => c.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+      // ── Quan hệ: Conversation → User2 ──
+      entity.HasOne(c => c.User2)
+                .WithMany()
+                .HasForeignKey(c => c.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+      // ── Unique Index: chỉ tồn tại 1 conversation giữa 2 user ──
+      entity.HasIndex(c => new { c.User1Id, c.User2Id })
+                .IsUnique()
+                .HasDatabaseName("UX_Conversation_User1_User2");
+
+      // ── Index để sort inbox theo tin nhắn mới nhất ──
+      entity.HasIndex(c => c.LastMessageAt)
+                .HasDatabaseName("IX_Conversation_LastMessageAt");
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // 13. Message (Tin nhắn trong cuộc hội thoại)
+    //     - Index trên ConversationId + SentAt để phân trang hiệu quả
+    //     - Index trên SenderId để query tin nhắn của một user
+    //     - Index composite (ConversationId, IsRead, SenderId) cho unread count
+    // ══════════════════════════════════════════════════════════════
+    builder.Entity<Message>(entity =>
+    {
+      entity.ToTable("Message");
+      entity.HasKey(m => m.IdMessage);
+
+      entity.Property(m => m.IdMessage)
+                .HasMaxLength(450)
+                .ValueGeneratedNever();
+
+      entity.Property(m => m.ConversationId).HasMaxLength(450).IsRequired();
+      entity.Property(m => m.SenderId).HasMaxLength(450).IsRequired();
+
+      entity.Property(m => m.Content)
+                .HasColumnType("nvarchar(max)")
+                .IsRequired();
+
+      entity.Property(m => m.SentAt)
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+
+      entity.Property(m => m.IsRead)
+                .HasDefaultValue(false);
+
+      entity.Property(m => m.IsDeletedBySender)
+                .HasDefaultValue(false);
+
+      // ── Quan hệ: Message (n) → Conversation (1) ──
+      entity.HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+      // ── Quan hệ: Message (n) → Sender (1) ──
+      entity.HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+      // ── Index cho cursor-based pagination ──
+      entity.HasIndex(m => new { m.ConversationId, m.SentAt })
+                .HasDatabaseName("IX_Message_ConversationId_SentAt");
+
+      // ── Index để đếm unread nhanh ──
+      entity.HasIndex(m => new { m.ConversationId, m.IsRead, m.SenderId })
+                .HasDatabaseName("IX_Message_ConversationId_IsRead_SenderId");
     });
   }
 }

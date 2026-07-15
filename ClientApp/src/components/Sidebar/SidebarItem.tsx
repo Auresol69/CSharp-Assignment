@@ -8,7 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 const SidebarItem = ({ item, onClick }: { item: ISidebarItem, onClick?: () => void}) => {
   const { theme } = useTheme(); 
   const isDark = theme === 'dark';
-  const { name, icon: Icon, path, subitems } = item;
+  const { name, icon: Icon, path, subitems, badge } = item;
   const [expanded, setExpanded] = useState(false);
 
   const getDynamicClasses = (isActive: boolean) => {
@@ -47,8 +47,15 @@ const SidebarItem = ({ item, onClick }: { item: ISidebarItem, onClick?: () => vo
       className={({ isActive }) => getDynamicClasses(isActive)}
       onClick={onClick}
     >
-      <div className='flex items-center space-x-3'>
-          <Icon size={22}/>
+      <div className='flex items-center space-x-3 relative'>
+          <div className="relative">
+            <Icon size={22}/>
+            {badge !== undefined && badge > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
+          </div>
           <p className='text-[15px]'>{name}</p>
       </div>
     </NavLink>

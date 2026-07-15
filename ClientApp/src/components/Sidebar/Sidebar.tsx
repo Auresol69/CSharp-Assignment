@@ -1,19 +1,22 @@
 import Logo from '../Logo.tsx';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert, MessageCircle } from "lucide-react";
 import type { ISidebarItem } from '../../types/Sidebar';
 import SidebarItem from './SidebarItem';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../hooks/useAuth'; 
+import { useAuth } from '../../hooks/useAuth';
+import { useChat } from '../../context/ChatContext';
 
 const Sidebar = ({ onClick }: { onClick?: () => void }) => {
-  const { roles: userRoles = [] } = useAuth(); // Default là mảng rỗng để tránh lỗi undefined
+  const { roles: userRoles = [] } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { totalUnread } = useChat();
 
   const menuItems: ISidebarItem[] = [
     { name: 'Dashboard', path: '/home', icon: LayoutDashboard },
     { name: 'Notifications', path: '/notifications', icon: Bell },
+    { name: 'Chat', path: '/chat', icon: MessageCircle, badge: totalUnread > 0 ? totalUnread : undefined },
     { name: 'Friends', path: '/friends', icon: Users },
     { name: 'Profile', path: '/profile', icon: SquareUserRound },
     { 

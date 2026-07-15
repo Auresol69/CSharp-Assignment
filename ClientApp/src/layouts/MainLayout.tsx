@@ -3,15 +3,18 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
 import MobileNav from "../components/Navigation/MobileNav";
 import { useTheme } from "../context/ThemeContext";
-import { LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert } from "lucide-react";
+import { useChat } from "../context/ChatContext";
+import { LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert, MessageCircle } from "lucide-react";
 
 const MainLayout: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { totalUnread } = useChat();
 
   const navItems = [
     { name: 'Dashboard', path: '/home', icon: LayoutDashboard },
     { name: 'Notifications', path: '/notifications', icon: Bell },
+    { name: 'Chat', path: '/chat', icon: MessageCircle, badge: totalUnread > 0 ? totalUnread : undefined },
     { name: 'Friends', path: '/friends', icon: Users },
     { name: 'Profile', path: '/profile', icon: SquareUserRound },
     { name: 'Moderation', path: '/admin/moderation', icon: ShieldAlert },

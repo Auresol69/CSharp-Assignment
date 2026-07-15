@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import MainLayout from "./layouts/MainLayout";
 import { LoginPages, Home, Profile, Notifications, Friends, Moderation} from "./pages";
+import ChatPage from "./pages/Chat";
 import FriendsList from "./pages/Friends/FriendsList";
 import FriendRequests from "./pages/Friends/FriendsRequest";
 import PeopleYouMayKnow from "./pages/Friends/PeopleYouMayKnow";
@@ -59,6 +60,7 @@ function AppContent() {
           <Route path="/friends/requests" element={<FriendRequests />} />
           <Route path="/friends/suggest" element={<PeopleYouMayKnow />} />
           <Route path="/edit" element={<EditAccount />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/Home" />} />
         <Route path="*" element={<div className="p-10 text-center">404 - Không tìm thấy trang này</div>} />
