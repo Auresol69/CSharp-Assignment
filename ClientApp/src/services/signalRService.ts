@@ -1,9 +1,21 @@
-import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from "@microsoft/signalr";
 
 let connection: HubConnection | null = null;
+let connectingPromise: Promise<HubConnection> | null = null;
 
 export const createSignalRConnection = async (token: string): Promise<HubConnection> => {
-  if (connection) {
+  // ── Nếu đang Connected, return luôn ──────────────────────────
+  if (connection?.state === HubConnectionState.Connected) {
+    return connection;
+  }
+
+  // ── Nếu đang có promise connecting, chờ nó (tránh double-init từ StrictMode) ──
+  if (connectingPromise) {
+    return connectingPromise;
+  }
+
+  // ── Dừng connection cũ (chỉ khi không đang negotiate) ────────
+  if (connection && connection.state !== HubConnectionState.Connecting) {
     try {
       await connection.stop();
     } catch {
@@ -12,13 +24,13 @@ export const createSignalRConnection = async (token: string): Promise<HubConnect
   }
 
   connection = new HubConnectionBuilder()
-    .withUrl("http://10.218.174.93:5153/hubs/notification", {
+    .withUrl(import.meta.env.VITE_HUB_URL || "http://localhost:5153/hubs/notification", {
       accessTokenFactory: () => token,
       skipNegotiation: false,
       transport: undefined,
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-    .configureLogging(LogLevel.Information)
+    .configureLogging(LogLevel.Warning) // Giảm log noise
     .build();
 
   connection.onreconnecting(() => {
@@ -31,23 +43,35 @@ export const createSignalRConnection = async (token: string): Promise<HubConnect
 
   connection.onclose(() => {
     console.log("❌ SignalR: Kết nối đã đóng");
+    connectingPromise = null;
   });
 
-  try {
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("SignalR connection timeout")), 10000)
-    );
-    await Promise.race([connection.start(), timeoutPromise]);
-    console.log("✅ SignalR: Kết nối thành công");
-    return connection;
-  } catch (err) {
-    console.error("❌ SignalR: Lỗi kết nối", err);
-    connection = null;
-    throw err;
-  }
+  connectingPromise = connection.start()
+    .then(() => {
+      console.log("✅ SignalR: Kết nối thành công");
+      connectingPromise = null;
+      return connection!;
+    })
+    .catch((err) => {
+      console.error("❌ SignalR: Lỗi kết nối", err);
+      connection = null;
+      connectingPromise = null;
+      throw err;
+    });
+
+  return connectingPromise;
 };
 
+
 export const getSignalRConnection = (): HubConnection | null => connection;
+
+/** Kiểm tra connection có sẵn sàng để gửi không */
+const isConnected = () => connection?.state === HubConnectionState.Connected;
+
+/** Đăng ký callback khi SignalR reconnect thành công (để rejoin groups) */
+export const onSignalRReconnected = (callback: () => void) => {
+  connection?.onreconnected(callback);
+};
 
 export const disconnectSignalR = async (): Promise<void> => {
   if (connection) {
@@ -185,35 +209,39 @@ export const offTypingListeners = () => {
 // ═══════════════════════════════════════════════════════
 
 export const joinConversation = async (conversationId: string) => {
+  if (!isConnected()) return; // Bỏ qua nếu chưa connected
   try {
-    await connection?.invoke("JoinConversation", conversationId);
+    await connection!.invoke("JoinConversation", conversationId);
   } catch (err) {
     console.error("SignalR: Lỗi JoinConversation", err);
   }
 };
 
 export const leaveConversation = async (conversationId: string) => {
+  if (!isConnected()) return;
   try {
-    await connection?.invoke("LeaveConversation", conversationId);
+    await connection!.invoke("LeaveConversation", conversationId);
   } catch (err) {
     console.error("SignalR: Lỗi LeaveConversation", err);
   }
 };
 
 export const sendChatMessageViaHub = async (receiverId: string, content: string) => {
-  if (!connection) throw new Error("SignalR not connected");
-  await connection.invoke("SendChatMessage", { receiverId, content });
+  if (!isConnected()) throw new Error("SignalR not connected");
+  await connection!.invoke("SendChatMessage", { receiverId, content });
 };
 
 export const startTypingSignalR = async (conversationId: string) => {
+  if (!isConnected()) return;
   try {
-    await connection?.invoke("StartTyping", conversationId);
+    await connection!.invoke("StartTyping", conversationId);
   } catch { /* silent */ }
 };
 
 export const stopTypingSignalR = async (conversationId: string) => {
+  if (!isConnected()) return;
   try {
-    await connection?.invoke("StopTyping", conversationId);
+    await connection!.invoke("StopTyping", conversationId);
   } catch { /* silent */ }
 };
 

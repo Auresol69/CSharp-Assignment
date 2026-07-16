@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useChat } from "../../context/ChatContext";
 import type { ConversationDto } from "../../services/api/chatApi";
 import { useTheme } from "../../context/ThemeContext";
-import { MessageCircle, Search } from "lucide-react";
-import { useState } from "react";
+import { SquarePen, Search, MessageCircle } from "lucide-react";
+import NewChatModal from "./NewChatModal";
 
 interface Props {
   onSelect?: () => void; // Mobile: đóng sidebar sau khi chọn
@@ -14,6 +14,7 @@ const ConversationList: React.FC<Props> = ({ onSelect }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [search, setSearch] = useState("");
+  const [showNewChat, setShowNewChat] = useState(false);
 
   const filtered = conversations.filter(c =>
     c.otherUserName.toLowerCase().includes(search.toLowerCase())
@@ -35,6 +36,7 @@ const ConversationList: React.FC<Props> = ({ onSelect }) => {
   };
 
   return (
+    <>
     <div className={`flex flex-col h-full ${isDark ? "bg-gray-900" : "bg-white"}`}>
       {/* Header */}
       <div className={`px-4 pt-5 pb-3 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
@@ -42,10 +44,14 @@ const ConversationList: React.FC<Props> = ({ onSelect }) => {
           <h2 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
             Tin nhắn
           </h2>
-          <button className={`p-1.5 rounded-full transition-colors ${
-            isDark ? "text-blue-400 hover:bg-gray-800" : "text-blue-600 hover:bg-blue-50"
-          }`}>
-            <MessageCircle size={18} />
+          <button
+            onClick={() => setShowNewChat(true)}
+            title="Tin nhắn mới"
+            className={`p-1.5 rounded-full transition-colors ${
+              isDark ? "text-blue-400 hover:bg-gray-800" : "text-blue-600 hover:bg-blue-50"
+            }`}
+          >
+            <SquarePen size={18} />
           </button>
         </div>
 
@@ -156,6 +162,15 @@ const ConversationList: React.FC<Props> = ({ onSelect }) => {
         )}
       </div>
     </div>
+
+    {/* Modal chat mới */}
+    {showNewChat && (
+      <NewChatModal
+        onClose={() => setShowNewChat(false)}
+        onConversationStarted={() => { setShowNewChat(false); onSelect?.(); }}
+      />
+    )}
+    </>
   );
 };
 

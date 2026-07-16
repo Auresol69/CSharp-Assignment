@@ -15,6 +15,7 @@ import {
   startTypingSignalR,
   stopTypingSignalR,
   markConversationAsReadSignalR,
+  onSignalRReconnected,
   type NewMessageSignalDto,
 } from "../services/signalRService";
 import { getConversations, getMessages, type ConversationDto, type MessageDto } from "../services/api/chatApi";
@@ -295,6 +296,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         onMessagesMarkedAsRead(handleMessagesMarkedAsRead);
         onUserTyping(handleUserTyping);
         onUserStoppedTyping(handleUserStoppedTyping);
+
+        // Khi reconnect: rejoin group đang active nếu có
+        onSignalRReconnected(() => {
+          const activeConv = activeConvRef.current;
+          if (activeConv) {
+            void joinConversation(activeConv.idConversation);
+          }
+          void refreshConversations();
+        });
 
         // Load conversations on connect
         void refreshConversations();
