@@ -75,4 +75,22 @@ public class PresenceService : IPresenceService
         // Select tương tự Map
         return connections.Select(c => c.ToString()).ToArray();
     }
+
+    public async Task<IReadOnlyList<string>> GetAllOnlineUserIdsAsync()
+    {
+        // Dùng IServer để SCAN tất cả key khớp pattern "user:presence:*"
+        var server = _redis.Multiplexer.GetServer(
+            _redis.Multiplexer.GetEndPoints().First());
+
+        var userIds = new List<string>();
+
+        await foreach (var key in server.KeysAsync(pattern: $"{UserPresenceKeyPrefix}*"))
+        {
+            var keyStr = key.ToString();
+            var userId = keyStr[UserPresenceKeyPrefix.Length..]; // cắt prefix
+            userIds.Add(userId);
+        }
+
+        return userIds.AsReadOnly();
+    }
 }

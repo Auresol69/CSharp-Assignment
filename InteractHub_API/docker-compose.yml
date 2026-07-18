@@ -1,9 +1,30 @@
 services:
+  # ============ NGINX (Reverse Proxy + Load Balancer) ============
+  nginx:
+    image: nginx:alpine
+    container_name: interacthub_nginx
+    depends_on:
+      - api
+    ports:
+      - "80:80"       # HTTP — entry point duy nhất từ bên ngoài
+      - "5153:5153"   # Giữ port cũ để backward-compatible (map tới 80 trong nginx)
+    volumes:
+      - ../nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - interacthub_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ API (scalable — không dùng container_name cố định) ============
   api:
     build:
       context: ..
       dockerfile: InteractHub_API/Dockerfile
-    container_name: interacthub_api
+    # Không đặt container_name để có thể chạy nhiều replica với --scale api=N
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -14,11 +35,11 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      
+
       ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=Interact_Hub;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
       ConnectionStrings__Redis: redis:6379
       REDIS_CONNECTION_STRING: redis:6379
-      
+
       Neo4j__Uri: bolt://neo4j:7687
       Neo4j__User: neo4j
       Neo4j__Password: ${NEO4J_PASSWORD:-InteractHub123}
@@ -31,11 +52,19 @@ services:
       SeedUsers__Admin__Email: ${SeedUsers__Admin__Email}
       SeedUsers__Admin__Password: ${SeedUsers__Admin__Password}
       SeedUsers__Admin__TenTaiKhoan: ${SeedUsers__Admin__TenTaiKhoan}
-    ports:
-      - "5153:8080"
+    # Không expose port ra host — traffic đi qua Nginx
+    expose:
+      - "8080"
     networks:
       - interacthub_net
     restart: unless-stopped
+    # Mặc định 1 replica; override: docker compose up --scale api=3
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
 
   worker:
     build:

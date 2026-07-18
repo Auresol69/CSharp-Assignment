@@ -285,7 +285,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(ui =>
     {
         ui.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API v1");
-        ui.RoutePrefix = string.Empty; // Swagger làm trang chủ ở /
+        ui.RoutePrefix = "swagger"; // Swagger tại /swagger
     });
 }
 

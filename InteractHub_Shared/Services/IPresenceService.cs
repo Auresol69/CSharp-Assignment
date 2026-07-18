@@ -30,4 +30,9 @@ public interface IPresenceService
     /// <param name="userId">ID người dùng</param>
     /// <returns>true nếu key tồn tại trong Redis (TTL chưa hết), false nếu offline</returns>
     Task<bool> IsUserOnlineAsync(string userId);
+
+    /// <summary>
+    /// Lấy danh sách tất cả userId đang online (dựa trên các key Redis còn tồn tại).
+    /// </summary>
+    Task<IReadOnlyList<string>> GetAllOnlineUserIdsAsync();
 }
