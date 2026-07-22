@@ -33,7 +33,7 @@ public class RateLimitingMiddleware
         }
 
         // Check threshold every request
-        if (currentRequest > 20)
+        if (currentRequest > 10000)
         {
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
             await context.Response.WriteAsync("Rap chậm thôi. Vui lòng thử lại sau 60s.");

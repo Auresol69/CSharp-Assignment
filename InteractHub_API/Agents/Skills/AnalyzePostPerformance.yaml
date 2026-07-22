@@ -1,0 +1,50 @@
+id: analyze_post_performance
+name: AnalyzePostPerformance
+version: 1.0
+description: |
+  Query Redis/SQL to gather interaction metrics for a post and return normalized KPIs.
+  - Prefer Redis (aggregates / counters) for low-latency metrics.
+  - Fall back to SQL for authoritative counts when Redis keys are missing.
+inputs:
+  - name: post_id
+    type: string
+    required: true
+    description: The unique identifier of the post to analyze.
+outputs:
+  metrics:
+    type: object
+    properties:
+      likes: { type: integer }
+      comments: { type: integer }
+      reposts: { type: integer }
+      impressions: { type: integer }
+      engagement_rate: { type: number, description: "(likes+comments+reposts)/impressions" }
+      ctr: { type: number, description: "click-through rate if available" }
+  raw_sources:
+    type: object
+    description: Raw values and source (redis/sql) used to compute metrics
+implementation_notes: |
+  - Redis keys used (examples):
+      - post:{post_id}:likes -> counter
+      - post:{post_id}:comments -> counter
+      - post:{post_id}:reposts -> counter
+      - post:{post_id}:impressions -> counter
+  - Procedure:
+      1) Attempt to read the Redis keys for the post; if present, compute KPIs from those.
+      2) If any required Redis key is missing, query the SQL DB for authoritative counts and merge.
+      3) Return both `metrics` (normalized) and `raw_sources` (detailed values and where each value came from).
+  - Permissions: requires read access to Redis and read access to Posts/Interactions tables.
+examples:
+  - request:
+      post_id: "abc123"
+    response:
+      metrics:
+        likes: 120
+        comments: 18
+        reposts: 5
+        impressions: 4500
+        engagement_rate: 0.031
+        ctr: 0.012
+      raw_sources:
+        likes: { value: 120, source: redis }
+        impressions: { value: 4500, source: sql }

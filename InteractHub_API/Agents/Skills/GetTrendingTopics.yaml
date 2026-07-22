@@ -1,0 +1,37 @@
+id: get_trending_topics
+name: GetTrendingTopics
+version: 1.0
+description: |
+  Query Redis sorted sets to return top trending topics for a category. Falls back to analytics DB if needed.
+inputs:
+  - name: category
+    type: string
+    required: false
+    description: Category or namespace (e.g., "global", "sports", "tech"). Defaults to 'global'.
+  - name: limit
+    type: integer
+    required: false
+    default: 10
+    description: Max number of topics to return.
+outputs:
+  topics:
+    type: array
+    items:
+      type: object
+      properties:
+        topic: { type: string }
+        score: { type: number }
+implementation_notes: |
+  - Redis key pattern: trending:{category} (Sorted Set where score = trending score)
+  - Procedure:
+      1) Read top `limit` members with ZREVRANGE + WITHSCORES from Redis.
+      2) If Redis key not found or empty, query fallback analytics table (SQL) for aggregated trending counts.
+  - Permissions: read access to Redis; optional read access to analytics DB for fallback.
+examples:
+  - request:
+      category: tech
+      limit: 5
+    response:
+      topics:
+        - { topic: "#AI", score: 982.3 }
+        - { topic: "#DotNet", score: 712.1 }

@@ -6,6 +6,7 @@ using InteractHub_Shared.Hubs;
 using InteractHub_Shared.Services;
 using InteractHub_API.Services.Friends;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using InteractHub_API.Agents.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -193,6 +194,12 @@ builder.Services.AddScoped<FriendService>();
 // Background Service: tự động xóa Story hết hạn mỗi 1 giờ
 // AddHostedService đăng ký dưới dạng Singleton IHostedService — đúng yêu cầu BackgroundService
 builder.Services.AddHostedService<StoryCleanupService>();
+
+// ═══════════════════════════════════════════════════════════════════
+// 4.5 AGENTS/SKILLS – MVP Skills Registry & Services
+// ═══════════════════════════════════════════════════════════════════
+builder.Services.AddSkillServices(builder.Configuration);
+
 
 // ═══════════════════════════════════════════════════════════════════
 // 5. CONTROLLERS + SWAGGER / OPENAPI + SIGNALR

@@ -1,0 +1,47 @@
+id: suggest_optimization
+name: SuggestOptimization
+version: 1.0
+description: |
+  Use an LLM to analyze a post's caption and media, then return actionable optimization suggestions
+  (caption edits, hashtag suggestions, image suggestions, tone adjustments).
+inputs:
+  - name: post_content
+    type: string
+    required: true
+    description: The caption/text of the post to optimize.
+  - name: media_urls
+    type: array
+    items: { type: string }
+    required: false
+    description: Optional list of media URLs attached to the post (used to surface image suggestions).
+  - name: language
+    type: string
+    required: false
+    description: Desired language for suggestions (e.g., "en", "vi").
+outputs:
+  suggestions:
+    type: array
+    items:
+      type: object
+      properties:
+        type: { type: string, description: "caption | hashtag | image | tone" }
+        text: { type: string }
+        confidence: { type: number, description: "0..1 confidence score (optional)" }
+  llm_prompt:
+    type: string
+    description: The prompt sent to the LLM (for auditing/debugging)
+implementation_notes: |
+  - This skill uses an LLM endpoint (OpenAI/other) to generate suggestions. Implementations should:
+      1) Sanitize `post_content` to remove PII and unsafe content.
+      2) Build a prompt with examples (few-shot) and include `media_urls` context if provided.
+      3) Post-process suggestions into discrete items (caption edits, hashtag lists, tone changes).
+  - Rate-limiting / caching recommended to avoid excessive LLM calls for similar content.
+  - Permissions: requires access to whichever LLM API is configured and network egress.
+examples:
+  - request:
+      post_content: "Check out my new coding setup #devlife"
+    response:
+      suggestions:
+        - { type: "caption", text: "New coding setup — boosted productivity and comfort!", confidence: 0.87 }
+        - { type: "hashtag", text: "#coding #devsetup #productivity", confidence: 0.78 }
+      llm_prompt: "<redacted prompt used>"
