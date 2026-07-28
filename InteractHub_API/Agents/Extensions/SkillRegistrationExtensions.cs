@@ -19,11 +19,17 @@ public static class SkillRegistrationExtensions
         services.AddScoped<ISuggestOptimizationSkill, SuggestOptimizationSkill>();
         services.AddScoped<IGetTrendingTopicsSkill, GetTrendingTopicsSkill>();
 
-        // Register HttpClient for LLM calls
+        // Register HttpClient for LLM calls (SuggestOptimization)
         services.AddHttpClient<ISuggestOptimizationSkill, SuggestOptimizationSkill>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(30);
         });
+
+        // Register LLM client (OpenAI-compatible)
+        services.AddHttpClient<ILlmClient, OpenAiLlmClient>();
+
+        // Register Agent Orchestrator
+        services.AddScoped<IAgentOrchestrator, AgentOrchestratorService>();
 
         // Register skill registry loader
         services.AddSingleton<ISkillRegistryLoader, SkillRegistryLoader>();

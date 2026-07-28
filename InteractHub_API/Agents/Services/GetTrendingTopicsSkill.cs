@@ -1,3 +1,4 @@
+using System.Globalization;
 using InteractHub_API.Agents.DTOs;
 using StackExchange.Redis;
 
@@ -9,6 +10,11 @@ public class GetTrendingTopicsSkill : IGetTrendingTopicsSkill
     private readonly IConnectionMultiplexer _redis;
     private readonly ILogger<GetTrendingTopicsSkill> _logger;
 
+    // Must match the key prefixes used by HashtagService
+    private const string DailyKeyPrefix = "trending:daily";
+    private const string WeeklyKeyPrefix = "trending:weekly";
+    private const string MonthlyKeyPrefix = "trending:monthly";
+
     public GetTrendingTopicsSkill(
         IConnectionMultiplexer redis,
         ILogger<GetTrendingTopicsSkill> logger)
@@ -19,9 +25,10 @@ public class GetTrendingTopicsSkill : IGetTrendingTopicsSkill
 
     public async Task<GetTrendingTopicsResponseDto> ExecuteAsync(string category = "global", int limit = 10)
     {
-        if (string.IsNullOrWhiteSpace(category))
+        // Normalize: "global" or empty → "daily" (most useful default)
+        if (string.IsNullOrWhiteSpace(category) || category.Equals("global", StringComparison.OrdinalIgnoreCase))
         {
-            category = "global";
+            category = "daily";
         }
 
         if (limit <= 0 || limit > 100)
@@ -32,7 +39,9 @@ public class GetTrendingTopicsSkill : IGetTrendingTopicsSkill
         try
         {
             var db = _redis.GetDatabase();
-            var trendingKey = $"trending:{category}";
+            var trendingKey = ResolveKey(category, DateTime.UtcNow);
+
+            _logger.LogInformation("Fetching trending topics from Redis key: '{Key}', limit: {Limit}", trendingKey, limit);
 
             // Fetch top `limit` items from the sorted set in descending order (highest score first)
             var topItems = await db.SortedSetRangeByRankAsync(
@@ -43,7 +52,7 @@ public class GetTrendingTopicsSkill : IGetTrendingTopicsSkill
 
             if (topItems.Length == 0)
             {
-                _logger.LogInformation("No trending topics found for category '{Category}' in Redis.", category);
+                _logger.LogInformation("No trending topics found for category '{Category}' (key: '{Key}') in Redis.", category, trendingKey);
                 return new GetTrendingTopicsResponseDto { Topics = new() };
             }
 
@@ -66,5 +75,19 @@ public class GetTrendingTopicsSkill : IGetTrendingTopicsSkill
             _logger.LogError(ex, "Error fetching trending topics for category '{Category}'", category);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Resolves the Redis key for trending data — must match HashtagService.ResolveKey exactly.
+    /// </summary>
+    private static string ResolveKey(string filterType, DateTime utcNow)
+    {
+        return filterType.Trim().ToLowerInvariant() switch
+        {
+            "daily" => $"{DailyKeyPrefix}:{utcNow:yyyy-MM-dd}",
+            "weekly" => $"{WeeklyKeyPrefix}:{utcNow:yyyy}-{ISOWeek.GetWeekOfYear(utcNow):D2}",
+            "monthly" => $"{MonthlyKeyPrefix}:{utcNow:yyyy-MM}",
+            _ => $"{DailyKeyPrefix}:{utcNow:yyyy-MM-dd}" // fallback to daily
+        };
     }
 }

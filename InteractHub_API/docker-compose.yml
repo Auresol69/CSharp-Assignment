@@ -52,6 +52,9 @@ services:
       SeedUsers__Admin__Email: ${SeedUsers__Admin__Email}
       SeedUsers__Admin__Password: ${SeedUsers__Admin__Password}
       SeedUsers__Admin__TenTaiKhoan: ${SeedUsers__Admin__TenTaiKhoan}
+      LLM__OpenAI__ApiKey: ${LLM__OpenAI__ApiKey}
+      LLM__OpenAI__Model: ${LLM__OpenAI__Model:-gemini-2.0-flash}
+      LLM__OpenAI__BaseUrl: ${LLM__OpenAI__BaseUrl:-https://generativelanguage.googleapis.com/v1beta/openai}
     # Không expose port ra host — traffic đi qua Nginx
     expose:
       - "8080"
