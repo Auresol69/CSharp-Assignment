@@ -5,7 +5,11 @@ namespace InteractHub_API.IntegrationTests;
 
 public class ApiIntegrationTests
 {
-    private static readonly string BaseUrl = Environment.GetEnvironmentVariable("INTERACTHUB_API_BASEURL") ?? "http://127.0.0.1:5153";
+    // Override via env var INTERACTHUB_API_BASEURL in local or staging environments.
+    // In CI (GitHub Actions), this defaults to localhost and will be skipped gracefully
+    // because no live server is available without a full docker-compose stack.
+    private static readonly string BaseUrl =
+        Environment.GetEnvironmentVariable("INTERACTHUB_API_BASEURL") ?? "http://127.0.0.1:5153";
 
     private static async Task<bool> IsApiAvailableAsync(HttpClient client)
     {
@@ -21,16 +25,23 @@ public class ApiIntegrationTests
         }
     }
 
-    private static async Task EnsureApiAvailableAsync(HttpClient client)
+    // Skips the test instead of failing when the API server is not reachable.
+    // Use this for all integration tests that require a live running backend.
+    private static async Task SkipIfApiUnavailableAsync(HttpClient client)
     {
-        Assert.True(await IsApiAvailableAsync(client), $"API {BaseUrl} unavailable. Start backend + dependencies before integration tests.");
+        if (!await IsApiAvailableAsync(client))
+        {
+            Skip.If(true, $"[SKIPPED] API at {BaseUrl} is not reachable. " +
+                         "Run the full stack (docker-compose up) to execute integration tests locally.");
+        }
     }
 
-    [Fact]
+    [SkippableFact]
+    [Trait("Category", "Integration")]
     public async Task ProtectedEndpoints_WithoutToken_ShouldReturn401Or403()
     {
         using var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        await EnsureApiAvailableAsync(client);
+        await SkipIfApiUnavailableAsync(client);
 
         var paths = new[]
         {
@@ -50,11 +61,12 @@ public class ApiIntegrationTests
         }
     }
 
-    [Fact]
+    [SkippableFact]
+    [Trait("Category", "Integration")]
     public async Task Auth_Register_Then_Login_ShouldSucceed()
     {
         using var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        await EnsureApiAvailableAsync(client);
+        await SkipIfApiUnavailableAsync(client);
 
         var email = $"it_{Guid.NewGuid():N}@interacthub.local";
         var password = "TestUser@12345";
