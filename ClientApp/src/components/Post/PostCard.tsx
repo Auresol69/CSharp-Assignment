@@ -139,7 +139,7 @@ const PostCard = ({ post, isShared = false, onTagClick, onDeleted }: Props) => {
           <div onClick={handleOpenDetail} className='cursor-pointer flex-1 min-w-0'>
             <PostHeader
               postId={post.id}
-              authorId={post.authorId}
+              authorId={post.authorId ?? ''}
               authorName={post.authorName}
               authorAvatar={post.authorAvatar}
               createdAt={post.createdAt}

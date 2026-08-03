@@ -1,0 +1,354 @@
+name: Enterprise CI/CD Pipeline - Build, Test & Security
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  REGISTRY: docker.io
+  IMAGE_FRONTEND: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-frontend
+  IMAGE_API: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-api
+  IMAGE_WORKER: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-worker
+
+jobs:
+  # ============================================================
+  # 1. SECURITY AUDIT & CODE LINTING (Dependency Vulnerability Scan)
+  # ============================================================
+  security-audit:
+    name: 🔍 Security Audit & Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ClientApp/package-lock.json
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: "[Frontend] npm audit - Check for known CVEs"
+        run: |
+          cd ClientApp
+          npm ci
+          npm audit --audit-level=high
+
+      - name: "[Backend] dotnet list vulnerable packages"
+        run: |
+          dotnet restore CSharp-Assignment.sln
+          dotnet list CSharp-Assignment.sln package --vulnerable --include-transitive 2>&1 | tee vuln-report.txt
+          if grep -q "critical" vuln-report.txt; then
+            echo "❌ CRITICAL vulnerabilities found in NuGet packages!"
+            exit 1
+          fi
+
+  # ============================================================
+  # 2. FRONTEND BUILD & TEST MATRIX (STRICT - No || true)
+  # ============================================================
+  test-frontend:
+    name: 🌐 Frontend Build & Test
+    needs: security-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ClientApp/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd ClientApp
+          npm ci
+
+      - name: TypeScript Type Check
+        run: |
+          cd ClientApp
+          npx tsc --noEmit
+
+      - name: Run Frontend Unit Tests with Coverage
+        run: |
+          cd ClientApp
+          npm run test -- --coverage --watchAll=false
+
+      - name: Upload Frontend Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: ClientApp/coverage/lcov.info
+          retention-days: 7
+
+      - name: Build Frontend Assets
+        run: |
+          cd ClientApp
+          npm run build
+
+  # ============================================================
+  # 3. BACKEND (.NET 8) BUILD, UNIT & INTEGRATION TESTS (STRICT)
+  # ============================================================
+  test-backend:
+    name: ⚙️ Backend API & Worker Build + Tests
+    needs: security-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet Dependencies
+        run: dotnet restore CSharp-Assignment.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build CSharp-Assignment.sln --configuration Release --no-restore
+
+      - name: Run Unit Tests with Coverlet (>= 60% threshold)
+        run: |
+          dotnet test InteractHub_API.UnitTests/InteractHub_API.UnitTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=unit-tests.trx" \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./TestResults/coverage.opencover.xml \
+            /p:Threshold=60 \
+            /p:ThresholdType=line
+
+      - name: Run Integration Tests
+        run: |
+          dotnet test InteractHub_API.IntegrationTests/InteractHub_API.IntegrationTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=integration-tests.trx"
+
+      - name: Upload Backend Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: |
+            **/TestResults/*.trx
+            **/TestResults/coverage.opencover.xml
+          retention-days: 7
+
+  # ============================================================
+  # 4. SONARCLOUD CODE QUALITY GATE (Uses dotnet-sonarscanner)
+  # ============================================================
+  sonarcloud-analysis:
+    name: 🔬 SonarCloud Code Quality Gate
+    needs: [test-frontend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for SonarCloud blame data
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Download Backend Coverage Report
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-test-results
+          path: ./coverage-reports/backend
+
+      - name: Download Frontend Coverage Report
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: ./coverage-reports/frontend
+
+      - name: Run SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"interacthub" \
+            /o:"${{ github.repository_owner }}" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.opencover.reportsPaths="./coverage-reports/backend/**/coverage.opencover.xml" \
+            /d:sonar.javascript.lcov.reportPaths="./coverage-reports/frontend/lcov.info" \
+            /d:sonar.qualitygate.wait=true
+
+          dotnet restore CSharp-Assignment.sln
+          dotnet build CSharp-Assignment.sln --configuration Release --no-restore
+
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  # ============================================================
+  # 5. BUILD DOCKER IMAGES, TRIVY SECURITY SCAN & PUSH TO REGISTRY
+  # ============================================================
+  build-and-push-containers:
+    name: 🐳 Container Build, Trivy Scan & Push
+    needs: [test-frontend, test-backend]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # ---- Set Immutable Tags for each image ----
+      - name: Set Docker Metadata for API Image
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_API }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,format=short
+
+      - name: Set Docker Metadata for Frontend Image
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_FRONTEND }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,format=short
+
+      - name: Set Docker Metadata for Worker Image
+        id: meta-worker
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_WORKER }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,format=short
+
+      # ---- Single-pass Build with GHA Layer Cache ----
+      - name: Build API Image (local for scanning)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./InteractHub_API/Dockerfile
+          push: false
+          load: true
+          tags: interacthub-api:scan-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🛡️ Trivy Security Scan - API Image (Block HIGH/CRITICAL CVEs)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: interacthub-api:scan-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Build & Push API Image (after scan passed)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./InteractHub_API/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Frontend Image (local for scanning)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ClientApp
+          file: ./ClientApp/Dockerfile
+          push: false
+          load: true
+          tags: interacthub-frontend:scan-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🛡️ Trivy Security Scan - Frontend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: interacthub-frontend:scan-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Build & Push Frontend Image (after scan passed)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ClientApp
+          file: ./ClientApp/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Worker Image (local for scanning)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./InteractHub_Worker/Dockerfile
+          push: false
+          load: true
+          tags: interacthub-worker:scan-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🛡️ Trivy Security Scan - Worker Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: interacthub-worker:scan-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Build & Push Worker Image (after scan passed)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./InteractHub_Worker/Dockerfile
+          push: true
+          tags: ${{ steps.meta-worker.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

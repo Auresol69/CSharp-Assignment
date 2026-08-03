@@ -1,0 +1,165 @@
+name: Enterprise CD Pipeline - Zero-Downtime Deployment
+
+on:
+  workflow_run:
+    workflows: ["Enterprise CI/CD Pipeline - Build, Test & Security"]
+    types: [completed]
+    branches: [ main ]
+  push:
+    tags: [ 'v*.*.*' ]
+
+env:
+  REGISTRY: docker.io
+  IMAGE_API: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-api
+  IMAGE_FRONTEND: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-frontend
+  IMAGE_WORKER: ${{ secrets.DOCKER_HUB_USERNAME }}/interacthub-worker
+
+jobs:
+  # ============================================================
+  # GATE CHECK: Only deploy if CI workflow completed successfully
+  # ============================================================
+  check-ci-status:
+    name: ✅ Verify CI Pipeline Status
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || startsWith(github.ref, 'refs/tags/')
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      image_tag: ${{ steps.resolve-tag.outputs.tag }}
+    steps:
+      - name: Gate - Confirm CI passed
+        id: check
+        run: echo "should_deploy=true" >> $GITHUB_OUTPUT
+
+      - name: Resolve deployment image tag
+        id: resolve-tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=sha-$(echo '${{ github.event.workflow_run.head_sha }}' | cut -c1-7)" >> $GITHUB_OUTPUT
+          fi
+
+  # ============================================================
+  # STAGE 6A: Deploy to Staging Environment (on develop branch)
+  # ============================================================
+  deploy-staging:
+    name: 🚧 Deploy to Staging (Azure VPS)
+    needs: check-ci-status
+    if: needs.check-ci-status.outputs.should_deploy == 'true' && github.event.workflow_run.head_branch == 'develop'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: http://${{ secrets.AZURE_VPS_HOST }}/health
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📦 Copy deploy.sh to Staging Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AZURE_VPS_HOST }}
+          username: ${{ secrets.AZURE_VPS_USER }}
+          key: ${{ secrets.AZURE_VPS_SSH_KEY }}
+          source: "scripts/deploy.sh"
+          target: /app/interacthub/
+
+      - name: 🚀 Execute Zero-Downtime Deployment on Staging
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AZURE_VPS_HOST }}
+          username: ${{ secrets.AZURE_VPS_USER }}
+          key: ${{ secrets.AZURE_VPS_SSH_KEY }}
+          script: |
+            chmod +x /app/interacthub/scripts/deploy.sh
+            bash /app/interacthub/scripts/deploy.sh ${{ needs.check-ci-status.outputs.image_tag }} staging
+
+      - name: 🔬 Run Smoke Tests on Staging
+        run: |
+          STAGING_URL="http://${{ secrets.AZURE_VPS_HOST }}"
+          echo "Running smoke tests against: ${STAGING_URL}"
+
+          # API Health Check
+          curl -f --retry 5 --retry-delay 5 "${STAGING_URL}/health" || exit 1
+          echo "✅ Staging health check passed."
+
+  # ============================================================
+  # STAGE 6B: Deploy to Production (on main branch / semver tag)
+  # ============================================================
+  deploy-production:
+    name: 🚀 Deploy to Production (Azure VPS - Zero-Downtime)
+    needs: check-ci-status
+    if: |
+      needs.check-ci-status.outputs.should_deploy == 'true' &&
+      (github.event.workflow_run.head_branch == 'main' || startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://${{ secrets.AZURE_VPS_HOST }}/health
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📦 Copy deploy.sh to Production Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AZURE_VPS_HOST }}
+          username: ${{ secrets.AZURE_VPS_USER }}
+          key: ${{ secrets.AZURE_VPS_SSH_KEY }}
+          source: "scripts/deploy.sh"
+          target: /app/interacthub/
+
+      - name: 🚀 Execute Zero-Downtime Deployment on Production
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AZURE_VPS_HOST }}
+          username: ${{ secrets.AZURE_VPS_USER }}
+          key: ${{ secrets.AZURE_VPS_SSH_KEY }}
+          script: |
+            chmod +x /app/interacthub/scripts/deploy.sh
+            bash /app/interacthub/scripts/deploy.sh ${{ needs.check-ci-status.outputs.image_tag }} production
+
+      - name: 🏥 Production Health Verification
+        run: |
+          PROD_URL="http://${{ secrets.AZURE_VPS_HOST }}"
+          echo "Verifying production deployment at: ${PROD_URL}"
+
+          for i in {1..6}; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${PROD_URL}/health" || echo "000")
+            if [ "${HTTP_STATUS}" -eq 200 ]; then
+              echo "✅ Production health check passed (HTTP 200) on attempt ${i}"
+              break
+            fi
+            echo "Attempt ${i}/6: HTTP ${HTTP_STATUS}. Retrying in 10s..."
+            sleep 10
+            if [ "${i}" -eq 6 ]; then
+              echo "❌ Production health check FAILED after 6 attempts!"
+              exit 1
+            fi
+          done
+
+      # ============================================================
+      # NOTIFICATION: Slack / Discord on success or failure
+      # ============================================================
+      - name: ✅ Notify Team - Deployment Successful
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: |
+            🚀 *InteractHub Production Deployment Succeeded!*
+            Tag: `${{ needs.check-ci-status.outputs.image_tag }}`
+            Commit: `${{ github.sha }}`
+            Actor: `${{ github.actor }}`
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: ❌ Notify Team - Deployment Failed
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            🔥 *InteractHub Production Deployment FAILED!*
+            Tag: `${{ needs.check-ci-status.outputs.image_tag }}`
+            Commit: `${{ github.sha }}`
+            Actor: `${{ github.actor }}`
+            ⚠️ Rollback may have been triggered on the server. Check VPS logs immediately!
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

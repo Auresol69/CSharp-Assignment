@@ -1,6 +1,6 @@
-﻿import useFeed from '../hooks/useFeed';
+import useFeed from '../hooks/useFeed';
 import useStories from '../hooks/useStories';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PostCard from '../components/Post/PostCard';
 import PostSkeleton from '../components/Post/PostSkeleton';

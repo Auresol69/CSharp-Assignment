@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PostCard from '../components/Post/PostCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
@@ -18,7 +18,7 @@ const Profile = () => {
   const [followers, setFollowers] = useState<IProfileResponseDto[]>([]);
   const [userPosts, setUserPosts] = useState<IPost[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadProfile = async () => {

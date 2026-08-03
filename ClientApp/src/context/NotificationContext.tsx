@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { HubConnectionState } from "@microsoft/signalr";
-import { getSignalRConnection, setupSignalRListeners, offAllSignalRListeners } from "../services/signalRService";
+import { getSignalRConnection, setupSignalRListeners } from "../services/signalRService";
 
 export interface NotificationData {
   id?: string;
@@ -44,7 +44,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   useEffect(() => {
-    let pollInterval: NodeJS.Timeout;
+    let pollInterval: ReturnType<typeof setInterval>;
 
     const setupListeners = () => {
       const connection = getSignalRConnection();
