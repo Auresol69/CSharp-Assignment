@@ -352,3 +352,83 @@ jobs:
           tags: ${{ steps.meta-worker.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ============================================================
+  # 6. FAILURE NOTIFICATION - Auto-create GitHub Issue on CI failure
+  # ============================================================
+  notify-failure:
+    name: Notify - Create Issue on Failure
+    runs-on: ubuntu-latest
+    # Run after ALL upstream jobs, regardless of their result
+    needs:
+      - security-audit
+      - test-frontend
+      - test-backend
+      - sonarcloud-analysis
+      - build-and-push-containers
+    # Only trigger this job when the workflow itself is in a failed state
+    if: |
+      always() &&
+      (
+        needs.security-audit.result == 'failure' ||
+        needs.test-frontend.result == 'failure' ||
+        needs.test-backend.result == 'failure' ||
+        needs.sonarcloud-analysis.result == 'failure' ||
+        needs.build-and-push-containers.result == 'failure'
+      )
+    permissions:
+      issues: write
+    steps:
+      - name: Create GitHub Issue for CI Failure
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflowName = process.env.GITHUB_WORKFLOW;
+            const runId       = process.env.GITHUB_RUN_ID;
+            const sha         = process.env.GITHUB_SHA;
+            const shortSha    = sha.substring(0, 7);
+            const repo        = context.repo;
+            const runUrl      = `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId}`;
+
+            const failedJobs = [
+              { name: 'security-audit',          result: '${{ needs.security-audit.result }}'          },
+              { name: 'test-frontend',            result: '${{ needs.test-frontend.result }}'            },
+              { name: 'test-backend',             result: '${{ needs.test-backend.result }}'             },
+              { name: 'sonarcloud-analysis',      result: '${{ needs.sonarcloud-analysis.result }}'      },
+              { name: 'build-and-push-containers',result: '${{ needs.build-and-push-containers.result }}'},
+            ]
+              .filter(j => j.result === 'failure')
+              .map(j => `- \`${j.name}\``)
+              .join('\n');
+
+            const title = `[CI FAILURE] ${workflowName} | commit ${shortSha}`;
+
+            const body = [
+              `## CI Pipeline Failure Report`,
+              ``,
+              `| Field        | Value |`,
+              `|--------------|-------|`,
+              `| **Workflow** | \`${workflowName}\` |`,
+              `| **Commit**   | \`${sha}\` |`,
+              `| **Branch**   | \`${process.env.GITHUB_REF_NAME}\` |`,
+              `| **Triggered by** | \`${process.env.GITHUB_ACTOR}\` |`,
+              ``,
+              `### Failed Jobs`,
+              failedJobs,
+              ``,
+              `### Run Log`,
+              `View the full run log here to diagnose the root cause:`,
+              `**${runUrl}**`,
+              ``,
+              `---`,
+              `*This issue was created automatically by the CI pipeline. Close it once the root cause has been resolved.*`,
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: repo.owner,
+              repo:  repo.repo,
+              title: title,
+              body:  body,
+              labels: ['ci-failure', 'bug'],
+            });
