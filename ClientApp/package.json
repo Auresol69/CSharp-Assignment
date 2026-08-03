@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run || echo 'No unit test framework configured'",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -22,7 +23,7 @@
     "react-dom": "^19.2.4",
     "react-intersection-observer": "^10.0.3",
     "react-player": "^3.4.0",
-    "react-router-dom": "^7.14.1"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

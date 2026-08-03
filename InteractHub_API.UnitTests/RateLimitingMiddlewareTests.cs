@@ -42,7 +42,7 @@ public class RateLimitingMiddlewareTests
     {
         var redisDb = new Mock<IDatabase>();
         redisDb.Setup(db => db.StringIncrementAsync(It.IsAny<RedisKey>(), It.IsAny<long>(), It.IsAny<CommandFlags>()))
-            .ReturnsAsync(21);
+            .ReturnsAsync(10001);
 
         var mux = new Mock<IConnectionMultiplexer>();
         mux.Setup(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(redisDb.Object);

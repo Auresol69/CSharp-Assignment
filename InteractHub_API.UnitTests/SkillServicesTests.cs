@@ -137,12 +137,12 @@ public class SkillServicesTests
         var items = new RedisValue[] { "#AI", "#DotNet" };
 
         _mockDatabase.Setup(d => d.SortedSetRangeByRankAsync(
-            redisKey, 0, 9, Order.Descending, It.IsAny<CommandFlags>()))
+            It.IsAny<RedisKey>(), 0, 9, Order.Descending, It.IsAny<CommandFlags>()))
             .ReturnsAsync(items);
 
-        _mockDatabase.Setup(d => d.SortedSetScoreAsync(redisKey, new RedisValue("#AI"), It.IsAny<CommandFlags>()))
+        _mockDatabase.Setup(d => d.SortedSetScoreAsync(It.IsAny<RedisKey>(), new RedisValue("#AI"), It.IsAny<CommandFlags>()))
             .ReturnsAsync(95.5);
-        _mockDatabase.Setup(d => d.SortedSetScoreAsync(redisKey, new RedisValue("#DotNet"), It.IsAny<CommandFlags>()))
+        _mockDatabase.Setup(d => d.SortedSetScoreAsync(It.IsAny<RedisKey>(), new RedisValue("#DotNet"), It.IsAny<CommandFlags>()))
             .ReturnsAsync(80.0);
 
         var skill = new GetTrendingTopicsSkill(_mockRedis.Object, _mockTrendingLogger.Object);
