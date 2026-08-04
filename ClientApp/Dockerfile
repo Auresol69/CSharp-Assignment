@@ -6,9 +6,13 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Production stage - serve with Node (hoặc có thể dùng nginx)
+# Production stage - serve with Node (hoac co the dung nginx)
 FROM node:20-alpine
 WORKDIR /app
+
+# Upgrade Alpine packages to patch known CVEs
+RUN apk update && apk upgrade --no-cache
+
 RUN npm install -g vite
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./

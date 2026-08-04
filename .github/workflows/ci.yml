@@ -163,16 +163,18 @@ jobs:
     name: 🔬 SonarCloud Code Quality Gate
     needs: [test-frontend, test-backend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: |
+      (github.event_name == 'push' || github.event_name == 'pull_request') &&
+      secrets.SONAR_TOKEN != ''
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required for SonarCloud blame data
 
-      - name: Setup .NET 8 SDK
+      - name: Setup .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Install dotnet-sonarscanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -196,17 +198,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dotnet sonarscanner begin \
-            /k:"interacthub" \
+            /k:"Auresol69_CSharp-Assignment" \
             /o:"${{ github.repository_owner }}" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.cs.opencover.reportsPaths="./coverage-reports/backend/**/coverage.opencover.xml" \
             /d:sonar.javascript.lcov.reportPaths="./coverage-reports/frontend/lcov.info" \
             /d:sonar.qualitygate.wait=true
 
-          dotnet restore CSharp-Assignment.sln
-          dotnet build CSharp-Assignment.sln --configuration Release --no-restore
+          dotnet restore CSharp-Assignment.slnx
+          dotnet build CSharp-Assignment.slnx --configuration Release --no-restore
 
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
   # ============================================================
   # 5. BUILD DOCKER IMAGES, TRIVY SECURITY SCAN & PUSH TO REGISTRY

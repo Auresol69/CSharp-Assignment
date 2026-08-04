@@ -11,5 +11,10 @@ RUN dotnet publish ./InteractHub_Worker/InteractHub_Worker.csproj -c Release -o 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview
 WORKDIR /app
 
+# Upgrade OS packages to patch known CVEs (tar, openssl, gpgv, etc.)
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "InteractHub_Worker.dll"]
