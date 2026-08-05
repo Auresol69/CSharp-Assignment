@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: http://${{ secrets.AZURE_VPS_HOST }}/health
+      url: http://${{ vars.AZURE_VPS_HOST }}/health
     steps:
       - uses: actions/checkout@v4
 
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: http://${{ secrets.AZURE_VPS_HOST }}/health
+      url: http://${{ vars.AZURE_VPS_HOST }}/health
 
     steps:
       - uses: actions/checkout@v4

@@ -163,9 +163,11 @@ jobs:
     name: 🔬 SonarCloud Code Quality Gate
     needs: [test-frontend, test-backend]
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     if: |
       (github.event_name == 'push' || github.event_name == 'pull_request') &&
-      secrets.SONAR_TOKEN != ''
+      env.SONAR_TOKEN != ''
     steps:
       - uses: actions/checkout@v4
         with:
