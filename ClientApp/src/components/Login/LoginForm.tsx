@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import CustomInput from "../Login/CustomInput";
 import { validateEmail, validatePassword } from "../../utils/validation";
 import authService from "../../services/authService";
@@ -10,6 +10,9 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    // Nếu ProtectedRoute lưu lại trang định vào thì redirect về đó, không thì về /Home
+    const from = (location.state as { from?: Location })?.from?.pathname ?? "/Home";
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -32,7 +35,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onOpenRegister }) => {
             const resp = await authService.login({ email, password });
             authService.saveAuth(resp);
             setPassword("");
-            navigate("/");
+            navigate(from, { replace: true });
         } catch (err: any) {
             if (err?.response?.data?.message) setServerError(err.response.data.message);
             else setServerError("Đăng nhập thất bại. Vui lòng thử lại.");

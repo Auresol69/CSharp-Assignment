@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
 import MainLayout from "./layouts/MainLayout";
 import { LoginPages, Home, Profile, Notifications, Friends, Moderation} from "./pages";
@@ -42,27 +43,34 @@ function AppContent() {
   return (
     <>
       <Routes>
+        {/* Public route: không cần auth */}
         <Route path="/Login" element={<LoginPages />} />
-        <Route element={<MainLayout />}>
-          <Route path="/Home" element={<Home />}>
-            {/* ROUTE CON: Cho chi tiết bài viết */}
-            <Route path=":postId" element={<Home />} /> 
-            {/* ROUTE CON: Cho Story lồng vào Home */}
-            <Route path="stories/:userId/:storyId" element={<Home />} />
+
+        {/* Protected routes: bắt buộc phải đăng nhập */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/Home" element={<Home />}>
+              {/* ROUTE CON: Cho chi tiết bài viết */}
+              <Route path=":postId" element={<Home />} />
+              {/* ROUTE CON: Cho Story lồng vào Home */}
+              <Route path="stories/:userId/:storyId" element={<Home />} />
+            </Route>
+            <Route path="/Profile" element={<Profile />} />
+            <Route path="/Profile/:userId" element={<Profile />} />
+            <Route path="/settings/edit-information" element={<EditAccount />} />
+            <Route path="/Notifications" element={<Notifications />} />
+            <Route path="/admin/moderation" element={<Moderation />} />
+            <Route path="/friends" element={<Friends />} />
+            <Route path="/friends/list" element={<FriendsList />} />
+            <Route path="/friends/requests" element={<FriendRequests />} />
+            <Route path="/friends/suggest" element={<PeopleYouMayKnow />} />
+            <Route path="/edit" element={<EditAccount />} />
+            <Route path="/chat" element={<ChatPage />} />
           </Route>
-          <Route path="/Profile" element={<Profile />} />
-          <Route path="/Profile/:userId" element={<Profile />} />
-          <Route path="/settings/edit-information" element={<EditAccount />} />
-          <Route path="/Notifications" element={<Notifications />} />
-          <Route path="/admin/moderation" element={<Moderation />} />
-          <Route path="/friends" element={<Friends />} />
-          <Route path="/friends/list" element={<FriendsList />} />
-          <Route path="/friends/requests" element={<FriendRequests />} />
-          <Route path="/friends/suggest" element={<PeopleYouMayKnow />} />
-          <Route path="/edit" element={<EditAccount />} />
-          <Route path="/chat" element={<ChatPage />} />
         </Route>
-        <Route path="/" element={<Navigate to="/Home" />} />
+
+        {/* Default: chưa đăng nhập -> Login, đã đăng nhập -> Home */}
+        <Route path="/" element={<Navigate to="/Login" replace />} />
         <Route path="*" element={<div className="p-10 text-center">404 - Không tìm thấy trang này</div>} />
       </Routes>
       
