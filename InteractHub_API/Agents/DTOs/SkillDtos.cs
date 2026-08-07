@@ -56,6 +56,8 @@ public class TrendingTopicDto
 {
     public string Topic { get; set; }
     public double Score { get; set; }
+    /// <summary>Data origin: "redis" when read from Redis sorted set, "sql" when Redis was empty and SQL fallback was used.</summary>
+    public string Source { get; set; } = "redis";
 }
 
 public class GetTrendingTopicsResponseDto

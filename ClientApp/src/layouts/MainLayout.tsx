@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar/Sidebar";
 import MobileNav from "../components/Navigation/MobileNav";
 import { useTheme } from "../context/ThemeContext";
 import { useChat } from "../context/ChatContext";
+import ChatbotWidget from "../components/Chatbot/ChatbotWidget";
 import { LayoutDashboard, Users, Bell, SquareUserRound, LogOut, Settings, Moon, UserRoundPen, ShieldAlert, MessageCircle } from "lucide-react";
 
 const MainLayout: React.FC = () => {
@@ -49,6 +50,9 @@ const MainLayout: React.FC = () => {
                 <Outlet /> 
             </div>
         </main>
+
+        {/* AI Chatbot Widget – nổi trên tất cả các trang */}
+        <ChatbotWidget />
     </div>
   );
 };

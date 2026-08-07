@@ -101,25 +101,32 @@ public class AgentOrchestratorService : IAgentOrchestrator
     private async Task<IntentAnalysisDto> AnalyzeIntentWithLlmAsync(string message, CancellationToken ct)
     {
         const string systemPrompt = """
-            Bạn là bộ phân tích intent cho InteractHub — một nền tảng mạng xã hội.
-            Phân tích tin nhắn của người dùng và xác định skill phù hợp.
+            Ban la bo phan tich intent cho InteractHub — mot nen tang mang xa hoi.
+            Phan tich tin nhan cua nguoi dung va xac dinh skill phu hop.
 
-            CÁC SKILL CÓ SẴN:
-            1. "analyze_post_performance" — Phân tích hiệu suất bài viết (likes, comments, reposts, engagement)
-               Tham số bắt buộc: postId (string — UUID hoặc ID bất kỳ mà user đề cập)
-            2. "suggest_optimization" — Gợi ý cải thiện nội dung bài viết
-               Tham số bắt buộc: postContent (string — nội dung bài viết mà user muốn tối ưu)
-               Tham số tuỳ chọn: language (string, mặc định "vi")
-            3. "get_trending_topics" — Xem các chủ đề đang hot/trending
-               Tham số tuỳ chọn: category (string, mặc định "global"), limit (số nguyên, mặc định 10)
-            4. "general_chat" — Hội thoại thông thường, không cần skill nào.
+            CAC SKILL CO SAN:
+            1. "analyze_post_performance" — Phan tich hieu suat bai viet (likes, comments, reposts, engagement)
+               Tham so bat buoc: postId (string — UUID hoac ID bat ky ma user de cap)
+            2. "suggest_optimization" — Goi y cai thien noi dung bai viet
+               Tham so bat buoc: postContent (string — noi dung bai viet ma user muon toi uu)
+               Tham so tuy chon: language (string, mac dinh "vi")
+            3. "get_trending_topics" — Xem cac chu de dang hot/trending
+               Tham so tuy chon:
+                 - category (string, mac dinh "global")
+                 - limit (so nguyen, mac dinh 10)
+                   Cach nhan biet limit tu cau noi tu nhien:
+                   * "top 5", "5 trending", "lay 5", "cho toi 5", "5 hashtag"     → limit = 5
+                   * "3 chu de", "liet ke 3", "top 3"                              → limit = 3
+                   * "20 topics", "hien 20"                                         → limit = 20
+                   Neu khong de cap so luong cu the, de limit = 10 (mac dinh).
+            4. "general_chat" — Hoi thoai thong thuong, khong can skill nao.
 
-            Trả về DUY NHẤT JSON (không markdown, không giải thích thêm):
+            Tra ve DUY NHAT JSON (khong markdown, khong giai thich them):
             {
-              "intent": "<tên_skill>",
-              "params": { ... các tham số trích xuất được ... },
-              "confidence": <0.0 đến 1.0>,
-              "reasoning": "<giải thích ngắn gọn bằng tiếng Việt>"
+              "intent": "<ten_skill>",
+              "params": { ... cac tham so trich xuat duoc ... },
+              "confidence": <0.0 den 1.0>,
+              "reasoning": "<giai thich ngan gon bang tieng Viet>"
             }
             """;
 
@@ -208,13 +215,23 @@ public class AgentOrchestratorService : IAgentOrchestrator
         // ── get_trending_topics ──
         if (ContainsAny(lower, "trending", "xu hướng", "hot", "hashtag", "trend", "nổi bật", "phổ biến"))
         {
+            // Extract numeric limit from natural language:
+            // e.g. "top 5", "lấy 3 trending", "cho tôi 10 hashtag", "5 xu hướng"
+            var limitMatch = Regex.Match(message, @"\b(\d+)\b");
+            if (limitMatch.Success && int.TryParse(limitMatch.Groups[1].Value, out var parsedLimit) && parsedLimit > 0)
+            {
+                extractedParams["limit"] = parsedLimit.ToString();
+            }
+
             return new IntentAnalysisDto
             {
                 DetectedIntent = "get_trending_topics",
                 SkillName = "GetTrendingTopics",
                 ExtractedParams = extractedParams,
                 Confidence = 0.8,
-                Reasoning = "Phát hiện từ khoá liên quan đến trending/xu hướng."
+                Reasoning = limitMatch.Success
+                    ? $"Phát hiện từ khoá trending và số lượng limit={extractedParams["limit"]}."
+                    : "Phát hiện từ khoá liên quan đến trending/xu hướng, dùng limit mặc định."
             };
         }
 
