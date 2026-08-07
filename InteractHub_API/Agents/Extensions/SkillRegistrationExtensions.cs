@@ -14,7 +14,7 @@ public static class SkillRegistrationExtensions
     /// </summary>
     public static IServiceCollection AddSkillServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Register skill implementations
+        // ── Existing skills ──────────────────────────────────────
         services.AddScoped<IAnalyzePostPerformanceSkill, AnalyzePostPerformanceSkill>();
         services.AddScoped<ISuggestOptimizationSkill, SuggestOptimizationSkill>();
         services.AddScoped<IGetTrendingTopicsSkill, GetTrendingTopicsSkill>();
@@ -33,6 +33,21 @@ public static class SkillRegistrationExtensions
 
         // Register skill registry loader
         services.AddSingleton<ISkillRegistryLoader, SkillRegistryLoader>();
+
+        // ── Feature 1: Chat Memory ───────────────────────────────
+        // Singleton: stateless service; all state lives in Redis.
+        services.AddSingleton<IChatMemoryService, ChatMemoryService>();
+
+        // ── Feature 2: Prompt Cache + Embedding ─────────────────
+        // EmbeddingService gets its own named HttpClient.
+        services.AddHttpClient<IEmbeddingService, OpenAiEmbeddingService>();
+        services.AddSingleton<IPromptCacheService, PromptCacheService>();
+
+        // ── Feature 3: Vector DB (RAG) ───────────────────────────
+        services.AddSingleton<IVectorDbService, VectorDbService>();
+
+        // Ensure HNSW index is created at application startup.
+        services.AddHostedService<VectorDbStartupService>();
 
         return services;
     }
@@ -117,5 +132,44 @@ public class SkillRegistryLoader : ISkillRegistryLoader
 
         _logger.LogInformation("Loaded {Count} skills from registry.", definitions.Count);
         return definitions;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VectorDbStartupService
+// Ensures the HNSW RediSearch index exists once at application startup.
+// Runs as a hosted background service so the main request pipeline is
+// never blocked.
+// ═══════════════════════════════════════════════════════════════════
+
+public class VectorDbStartupService : BackgroundService
+{
+    private readonly IVectorDbService _vectorDb;
+    private readonly ILogger<VectorDbStartupService> _logger;
+
+    public VectorDbStartupService(
+        IVectorDbService vectorDb,
+        ILogger<VectorDbStartupService> logger)
+    {
+        _vectorDb = vectorDb;
+        _logger   = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        try
+        {
+            _logger.LogInformation("VectorDbStartupService: ensuring HNSW index…");
+            await _vectorDb.EnsureIndexAsync(stoppingToken);
+            _logger.LogInformation("VectorDbStartupService: index ready.");
+        }
+        catch (Exception ex)
+        {
+            // Log but do not crash the application – RediSearch may not be available
+            // in all environments (e.g., plain Redis without the Search module).
+            _logger.LogWarning(ex,
+                "VectorDbStartupService: could not create index. " +
+                "Vector search will be unavailable until RediSearch is enabled.");
+        }
     }
 }
