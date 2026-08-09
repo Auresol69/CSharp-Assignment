@@ -263,7 +263,8 @@ builder.Services.AddCors(options =>
 // ═══════════════════════════════════════════════════════════════════
 var app = builder.Build();
 
-app.UseCors("AllowReactApp");
+// CORS phải đứng TRƯỚC mọi middleware khác
+// để preflight OPTIONS request được xử lý ngay lập tức
 
 // Tự động tạo DB và chạy Migration khi khởi động
 using (var scope = app.Services.CreateScope())
@@ -286,13 +287,16 @@ await IdentitySeeder.SeedAsync(app.Services, app.Logger);
 
 // ─── Middleware Pipeline ───────────────────────────────────────────
 
+// 1. CORS trước tiên (OPTIONS preflight phải qua đây trước)
+app.UseCors("AllowReactApp");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(ui =>
     {
         ui.SwaggerEndpoint("/swagger/v1/swagger.json", "InteractHub API v1");
-        ui.RoutePrefix = "swagger"; // Swagger tại /swagger
+        ui.RoutePrefix = "swagger";
     });
 }
 
@@ -301,12 +305,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseCors("AllowReactApp");
-
+// 2. Authentication & Authorization sau CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Rate Limit
+// 3. Rate Limit sau Authentication (để có userId từ claims)
 app.UseMiddleware<RateLimitingMiddleware>();
 
 app.MapControllers();
