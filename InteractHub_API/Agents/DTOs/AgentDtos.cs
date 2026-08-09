@@ -6,6 +6,9 @@ namespace InteractHub_API.Agents.DTOs;
 
 public class AgentChatRequest
 {
+    /// <summary>Session ID của cuộc trò chuyện (mặc định là "default-session").</summary>
+    public string SessionId { get; set; } = "default-session";
+
     /// <summary>Câu hỏi / yêu cầu của user bằng ngôn ngữ tự nhiên.</summary>
     public string Message { get; set; } = string.Empty;
 }
@@ -15,7 +18,11 @@ public class AgentChatRequest
 /// </summary>
 public class AgentChatResponse
 {
+    public string SessionId { get; set; } = "default-session";
     public string UserMessage { get; set; } = string.Empty;
+
+    /// <summary>Thông tin Prompt Cache nếu câu hỏi trúng cache.</summary>
+    public CacheHit? CacheHit { get; set; }
 
     // ── Step 1 ──
     public IntentAnalysisDto IntentAnalysis { get; set; } = new();

@@ -25,6 +25,8 @@ public class AgentOrchestratorService : IAgentOrchestrator
     private readonly IAnalyzePostPerformanceSkill _analyzeSkill;
     private readonly ISuggestOptimizationSkill _suggestSkill;
     private readonly IGetTrendingTopicsSkill _trendingSkill;
+    private readonly IPromptCacheService _promptCache;
+    private readonly IChatMemoryService _chatMemory;
     private readonly ILogger<AgentOrchestratorService> _logger;
 
     public AgentOrchestratorService(
@@ -32,12 +34,16 @@ public class AgentOrchestratorService : IAgentOrchestrator
         IAnalyzePostPerformanceSkill analyzeSkill,
         ISuggestOptimizationSkill suggestSkill,
         IGetTrendingTopicsSkill trendingSkill,
+        IPromptCacheService promptCache,
+        IChatMemoryService chatMemory,
         ILogger<AgentOrchestratorService> logger)
     {
         _llm = llm;
         _analyzeSkill = analyzeSkill;
         _suggestSkill = suggestSkill;
         _trendingSkill = trendingSkill;
+        _promptCache = promptCache;
+        _chatMemory = chatMemory;
         _logger = logger;
     }
 
@@ -48,7 +54,36 @@ public class AgentOrchestratorService : IAgentOrchestrator
     public async Task<AgentChatResponse> ProcessAsync(AgentChatRequest request, CancellationToken ct = default)
     {
         var totalSw = Stopwatch.StartNew();
-        var response = new AgentChatResponse { UserMessage = request.Message };
+        var sessionId = string.IsNullOrWhiteSpace(request.SessionId) ? "default-session" : request.SessionId;
+        var response = new AgentChatResponse
+        {
+            SessionId = sessionId,
+            UserMessage = request.Message
+        };
+
+        // ── Step 0: Check Prompt Cache (Layer 1: Hash, Layer 2: Semantic) ──
+        var cacheHit = await _promptCache.TryGetCachedAsync(request.Message, ct);
+        if (cacheHit != null)
+        {
+            response.CacheHit = cacheHit;
+            response.Answer = cacheHit.Response;
+            response.IntentAnalysis = new IntentAnalysisDto
+            {
+                DetectedIntent = "prompt_cache_hit",
+                SkillName = "(cache)",
+                Confidence = 1.0,
+                Reasoning = $"Trúng cache ({cacheHit.Source}, similarity={cacheHit.Similarity:F2}). Không cần gọi LLM.",
+                Method = "cache"
+            };
+
+            // Lưu vào chat memory ngay cả khi cache hit
+            await _chatMemory.AddMessageAsync(sessionId, "user", request.Message, ct);
+            await _chatMemory.AddMessageAsync(sessionId, "assistant", cacheHit.Response, ct);
+
+            totalSw.Stop();
+            response.TotalElapsedMs = totalSw.Elapsed.TotalMilliseconds;
+            return response;
+        }
 
         // ── Step 1: Intent Analysis ──
         response.IntentAnalysis = await AnalyzeIntentAsync(request.Message, ct);
@@ -62,9 +97,21 @@ public class AgentOrchestratorService : IAgentOrchestrator
         // ── Step 3: Generate Answer ──
         response.Answer = await GenerateAnswerAsync(
             request.Message,
+            sessionId,
             response.IntentAnalysis,
             response.SkillExecution,
             ct);
+
+        // ── Step 4: Cache & Memory Persistence ──
+        if (!string.IsNullOrWhiteSpace(response.Answer))
+        {
+            // Lưu vào Prompt Cache
+            await _promptCache.SetCacheAsync(request.Message, response.Answer, ct);
+
+            // Lưu vào Chat Memory
+            await _chatMemory.AddMessageAsync(sessionId, "user", request.Message, ct);
+            await _chatMemory.AddMessageAsync(sessionId, "assistant", response.Answer, ct);
+        }
 
         totalSw.Stop();
         response.TotalElapsedMs = totalSw.Elapsed.TotalMilliseconds;
@@ -332,12 +379,15 @@ public class AgentOrchestratorService : IAgentOrchestrator
 
     private async Task<string> GenerateAnswerAsync(
         string userMessage,
+        string sessionId,
         IntentAnalysisDto intent,
         SkillExecutionDto? execution,
         CancellationToken ct)
     {
         try
         {
+            var historyPrompt = await _chatMemory.BuildPromptHistoryAsync(sessionId, ct);
+
             // Nếu general_chat → trả lời generic bằng LLM (hoặc fallback nếu lỗi)
             if (intent.DetectedIntent == "general_chat")
             {
@@ -345,8 +395,14 @@ public class AgentOrchestratorService : IAgentOrchestrator
                 {
                     try
                     {
+                        var systemPrompt = "Bạn là trợ lý AI của InteractHub. Trả lời ngắn gọn, hữu ích, bằng tiếng Việt.";
+                        if (!string.IsNullOrWhiteSpace(historyPrompt))
+                        {
+                            systemPrompt += $"\n\n{historyPrompt}";
+                        }
+
                         var resp = await _llm.ChatAsync(
-                            "Bạn là trợ lý AI của InteractHub. Trả lời ngắn gọn, hữu ích, bằng tiếng Việt.",
+                            systemPrompt,
                             userMessage, ct: ct);
                         return resp.Content;
                     }
