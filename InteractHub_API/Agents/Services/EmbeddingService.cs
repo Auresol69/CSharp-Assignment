@@ -44,10 +44,13 @@ public class OpenAiEmbeddingService : IEmbeddingService
         _logger = logger;
 
         _apiKey = configuration["LLM:OpenAI:ApiKey"] ?? "";
-        _model = configuration["ChatBot:Embedding:Model"] ?? "text-embedding-3-small";
-
         var baseUrl = configuration["LLM:OpenAI:BaseUrl"] ?? "https://api.openai.com/v1";
         _isGoogleEndpoint = baseUrl.Contains("googleapis");
+
+        var configuredModel = configuration["ChatBot:Embedding:Model"] ?? "text-embedding-3-small";
+        _model = (_isGoogleEndpoint && configuredModel == "text-embedding-3-small")
+            ? "text-embedding-004"
+            : configuredModel;
 
         _httpClient.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
@@ -63,18 +66,34 @@ public class OpenAiEmbeddingService : IEmbeddingService
     {
         if (!IsConfigured)
         {
-            // Return a zero-vector when LLM is not configured (dev/test mode).
             _logger.LogWarning("EmbeddingService: API key not configured. Returning zero vector.");
             return new float[1536];
         }
 
-        var body = new { model = _model, input = text };
-        var json = JsonSerializer.Serialize(body);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        string requestUrl;
+        string json;
 
-        var requestUrl = "embeddings";
         if (_isGoogleEndpoint)
-            requestUrl += $"?key={_apiKey}";
+        {
+            requestUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:embedContent?key={_apiKey}";
+            var googleBody = new
+            {
+                model = $"models/{_model}",
+                content = new
+                {
+                    parts = new[] { new { text } }
+                }
+            };
+            json = JsonSerializer.Serialize(googleBody);
+        }
+        else
+        {
+            requestUrl = "embeddings";
+            var body = new { model = _model, input = text };
+            json = JsonSerializer.Serialize(body);
+        }
+
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         _logger.LogDebug("→ Embedding call: model={Model}, textLen={Len}", _model, text.Length);
 
@@ -89,10 +108,21 @@ public class OpenAiEmbeddingService : IEmbeddingService
 
         using var doc = JsonDocument.Parse(responseBody);
 
-        // Response: { "data": [{ "embedding": [0.1, 0.2, ...] }] }
-        var embeddingArray = doc.RootElement
-            .GetProperty("data")[0]
-            .GetProperty("embedding");
+        JsonElement embeddingArray;
+        if (_isGoogleEndpoint)
+        {
+            // Google format: { "embedding": { "values": [0.1, 0.2, ...] } }
+            embeddingArray = doc.RootElement
+                .GetProperty("embedding")
+                .GetProperty("values");
+        }
+        else
+        {
+            // OpenAI format: { "data": [{ "embedding": [0.1, 0.2, ...] }] }
+            embeddingArray = doc.RootElement
+                .GetProperty("data")[0]
+                .GetProperty("embedding");
+        }
 
         var floats = new float[embeddingArray.GetArrayLength()];
         var i = 0;
